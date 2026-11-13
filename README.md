@@ -132,6 +132,18 @@ O limite é de 4 MiB por arquivo de evidência e 2 MiB para a foto inicial. O [P
 - No painel integrado, ler `photo` no detalhe e carregar a imagem por `GET /api/v1/notifications/{id}/photo` com a sessão atual. A Coordenação da unidade e os responsáveis pelas tratativas atribuídas podem consultar a foto. O anexo inicial da ocorrência é independente das evidências das ações.
 - O Codex atualizou os protótipos, a API, o banco, o contrato e os testes de acesso à foto. A outra IA deve reaproveitar o comportamento na branch de frontend. O protótipo HTML segue destinado a dados fictícios e usa importação ou armazenamento local. A publicação institucional depende da integração com o backend do PR nº 1.
 
+## Ícones e marcas da interface
+
+Os 50 PNGs de interface estão em [netlify/public/icons](netlify/public/icons/README.md). O portal e o painel usam esses ícones nas etapas, seções, ações e estados, mantendo rótulos de texto e imagens decorativas com `alt` vazio. A confirmação permite copiar o protocolo.
+
+| Arquivo | Uso |
+| --- | --- |
+| `uhp-notifica-login.png` | Marca horizontal do sistema no portal e no painel. |
+| `uhp-notifica-icone.png` | Favicon e marca na tela de acesso. |
+| `logo-posse-saude.png` | Marca da Prefeitura e Secretaria de Saúde ao lado da marca do sistema. |
+
+O PDF para o setor contém as duas marcas.
+
 ## Perfil Administrador
 
 O perfil Administrador (`administrator`) tem acesso à fila e às operações de gestão da própria unidade, com as mesmas permissões operacionais da Coordenação. O perfil aparece separado no login e não pode ser indicado como responsável de Segurança do Paciente ou CCIH. A conta inicial de administração foi provisionada no Supabase. As credenciais ficam fora do GitHub.
