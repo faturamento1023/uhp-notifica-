@@ -4,7 +4,7 @@ import { createHash, randomBytes, scryptSync, timingSafeEqual } from 'node:crypt
 import { readFileSync } from 'node:fs';
 import pg from 'pg';
 
-export const roles = Object.freeze(['coordination', 'patient_safety', 'ccih']);
+export const roles = Object.freeze(['coordination', 'patient_safety', 'ccih', 'administrator']);
 export const token = () => randomBytes(32).toString('hex');
 export const digest = value => createHash('sha256').update(value).digest('hex');
 
