@@ -58,7 +58,7 @@ function decodeEvidence(body, allowedTypes = Object.keys(evidenceTypes), limit =
   return { mime, name, content };
 }
 
-export function createApi(db, { origin, clock = () => new Date(), evidenceLimit = defaultEvidenceLimit }) {
+export function createApi(db, { origin, clock = () => new Date(), evidenceLimit = defaultEvidenceLimit, directIntakeUnitId = null }) {
   const secure = new URL(origin).protocol === 'https:';
   const cookieName = secure ? '__Host-uhp_session' : 'uhp_session';
   const { get, all, run, atomic } = db;
@@ -291,8 +291,11 @@ export function createApi(db, { origin, clock = () => new Date(), evidenceLimit 
 
       if (method === 'POST' && path === '/api/v1/notifications') {
         const intake = request.headers.get('x-intake-token');
-        if (!intake || !/^[a-f0-9]{64}$/.test(intake)) forbidden();
-        const unit = await get('SELECT id FROM units WHERE intake_hash=?', digest(intake));
+        if (intake !== null && !/^[a-f0-9]{64}$/.test(intake)) forbidden();
+        if (intake === null && !directIntakeUnitId) forbidden();
+        const unit = intake === null
+          ? await get('SELECT id FROM units WHERE id=?', directIntakeUnitId)
+          : await get('SELECT id FROM units WHERE intake_hash=?', digest(intake));
         if (!unit) forbidden();
         const body = await readJson(request, 160000 + Math.ceil(photoLimit / 3) * 4);
         const payload = notificationInput(body);
@@ -301,9 +304,12 @@ export function createApi(db, { origin, clock = () => new Date(), evidenceLimit 
         const photo = body.photo === undefined ? null : decodeEvidence(body.photo, photoTypes, photoLimit);
         const hash = digest(photo ? JSON.stringify([encoded, photo.name, photo.mime, digest(photo.content)]) : encoded);
         const previous = await get('SELECT id,protocol,request_hash FROM notifications WHERE unit_id=? AND request_id=?', unit.id, requestId);
-        if (!previous) await throttle('intake:' + unit.id + ':' + clientAddress, 60, 900);
+        if (!previous) await throttle((intake === null ? 'direct-intake:' : 'intake:') + unit.id + ':' + clientAddress, 60, 900);
         return await atomic(async () => {
-          if (!await get('SELECT id FROM units WHERE id=? AND intake_hash=? FOR UPDATE', unit.id, digest(intake))) forbidden();
+          const current = intake === null
+            ? await get('SELECT id FROM units WHERE id=? FOR UPDATE', unit.id)
+            : await get('SELECT id FROM units WHERE id=? AND intake_hash=? FOR UPDATE', unit.id, digest(intake));
+          if (!current) forbidden();
           const existing = await get('SELECT id,protocol,request_hash FROM notifications WHERE unit_id=? AND request_id=?', unit.id, requestId);
           if (existing) {
             if (existing.request_hash !== hash) conflict('Este identificador já foi usado em outro envio.');
