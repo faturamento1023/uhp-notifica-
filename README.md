@@ -161,3 +161,7 @@ Os 15 banners fornecidos estão em `netlify/public/banners/`, convertidos para W
 Os 12 GIFs estão em `netlify/public/carregamento/`. Use 64 px em controles e 128 ou 256 px em áreas maiores. Mostre durante a operação junto a um status textual e oculte no fim, inclusive em erro. Para `prefers-reduced-motion`, mantenha apenas o texto. Exemplo: `/carregamento/01-logo-uhp-notifica-carregando-64px.gif`.
 
 O botão do painel abre `notificacao-pdf.html` com o favicon do UHP Notifica e visualização do PDF autenticado.
+
+### Exibição dos banners
+
+O carrossel no formulário e no painel exibe apenas a arte. A rotação é automática a cada oito segundos enquanto o banner estiver visível. Com movimento reduzido ativado, a imagem fica estática.
