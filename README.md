@@ -142,4 +142,4 @@ O perfil Administrador (`administrator`) tem acesso à fila e às operações de
 
 ## Formulário e painel no Netlify
 
-A `main` publica o formulário em `/` e o painel em `/painel.html`, com os ícones e logos do PR nº 3. A API continua no Supabase, acessada pelo proxy do Netlify. O link de entrada para envio usa o QR Code da unidade. O painel usa as contas cadastradas.
+A `main` abre o login do painel em `/`. O endereço `/painel.html` continua disponível para quem já usa o link anterior. O formulário fica em `/notificar.html`. O QR Code da unidade deve usar `/notificar.html#entrada=TOKEN_DA_UNIDADE`, com o token real distribuído pelos canais internos da unidade. A API continua no Supabase, acessada pelo proxy do Netlify.
