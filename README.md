@@ -186,3 +186,5 @@ Ajuste responsivo: as logos do UHP Notifica e da Secretaria ficam alinhadas no c
 ## Ícone de instalação do aplicativo
 
 O painel referencia `/manifest.webmanifest`, com nome UHP Notifica, início no login e ícones PNG de 192 e 512 px com o símbolo da prancheta e do sino. O manifesto define a aparência da instalação no navegador.
+
+No cabeçalho do login e do painel, as marcas do UHP Notifica e da Secretaria ficam agrupadas à esquerda. A conta e o botão Sair ficam à direita no desktop e em uma linha abaixo das marcas no celular.

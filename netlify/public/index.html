@@ -210,6 +210,35 @@
     header .account { grid-column: 1 / -1; justify-content: space-between; }
     header .account:has(#identity:empty):has(#logout[hidden]) { display: none; }
   }
+
+  /* Marcas institucionais agrupadas no painel */
+  header .top {
+    display: grid;
+    grid-template-columns: max-content max-content minmax(0, 1fr);
+    justify-content: start;
+    align-items: center;
+    gap: 0 18px;
+    min-height: 70px;
+    padding-block: 8px;
+  }
+  header .brand img { width: 196px; height: auto; }
+  header .institution {
+    justify-self: start;
+    padding-inline-start: 18px;
+    border-inline-start: 1px solid var(--line);
+  }
+  header .institution img { width: 136px; height: auto; }
+  header .account { justify-content: flex-end; width: auto; min-width: 0; gap: 12px; }
+  header #identity { overflow-wrap: anywhere; }
+  header #logout { flex: none; }
+  @media (max-width: 750px) {
+    header .top { grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 8px 12px; min-height: 0; }
+    header .brand img { width: min(100%, 188px); max-height: 53px; }
+    header .institution { width: 100%; padding-inline-start: 12px; }
+    header .institution img { width: min(100%, 130px); max-height: 53px; object-position: left center; }
+    header .account { grid-column: 1 / -1; justify-content: space-between; border-top: 1px solid var(--line); padding-top: 8px; }
+    header #identity { flex: 1; }
+  }
 </style>
 <script src="painel.js" defer></script>
 <script src="banners.js" defer></script>
