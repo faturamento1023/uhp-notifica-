@@ -42,7 +42,8 @@
   textarea { min-height:95px; resize:vertical }
   button { min-height:42px; border:1px solid var(--teal); border-radius:8px; padding:7px 13px; background:var(--teal); color:#fff; font-weight:700 }
   button.secondary { background:#fff; color:var(--teal) }
-  button:hover:not(:disabled) { filter:brightness(.94) }
+  button:hover:not(:disabled),.button-link:hover { filter:brightness(.94) }
+  .button-link { display:inline-flex; align-items:center; justify-content:center; min-height:42px; border:1px solid var(--teal); border-radius:8px; padding:7px 13px; background:#fff; color:var(--teal); font-weight:700; text-decoration:none }
   :focus-visible { outline:3px solid var(--brand); outline-offset:3px }
   .form-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px }
   .filters { display:grid; grid-template-columns:1fr 1fr; gap:10px }
@@ -107,6 +108,7 @@
       <section class="card">
         <div class="row"><div><h2 id="case-title" tabindex="-1"></h2><p id="case-meta" class="muted small"></p></div><span id="case-state" class="pill"></span></div>
         <p id="case-summary" class="section-title"></p>
+        <div class="actions"><a id="pdf-link" class="button-link" target="_blank" rel="noopener" hidden>Gerar PDF para o setor ↗</a></div>
         <div class="next-step" aria-live="polite"><strong>Próxima ação</strong><span id="next-step"></span></div>
         <details><summary>Dados da notificação</summary><dl id="case-fields" class="entry-list"></dl></details>
         <div id="photo-wrap" hidden><h3 class="section-title">Foto da ocorrência</h3><img id="case-photo" class="photo" alt="Foto anexada à ocorrência"></div>

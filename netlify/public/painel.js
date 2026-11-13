@@ -341,6 +341,9 @@ function renderDetail() {
   $("case-state").textContent=caseState[record.status];
   $("case-state").className="pill"+(record.status==="closed"?" done":record.status==="received"?" received":"");
   $("case-summary").textContent=record.description || record.subject;
+  const pdfLink=$("pdf-link");
+  pdfLink.hidden=account.role!=="coordination";
+  pdfLink.href=API+"/notifications/"+encodeURIComponent(record.id)+"/pdf";
   $("next-step").textContent=nextAction(record);
   renderDetailsList(record);
   loadPhoto(record).catch(()=>{});
