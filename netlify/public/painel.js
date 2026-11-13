@@ -313,14 +313,18 @@ function notificationEntry(item,open) {
   trigger.dataset.notificationId=item.id;
   if(selected===item.id) trigger.setAttribute("aria-current","true");
   const title=el("span","","case-heading");
-  title.append(icon(item.kind==="incident"?"evento-adverso":"nao-conformidade"),
-    el("strong",item.subject || (item.kind==="incident"?"Incidente ou evento adverso":"Não conformidade")));
-  trigger.append(title);
-  trigger.append(el("small",item.protocol+" · "+(item.sector||"Setor não informado")));
-  trigger.append(labeled("span",caseState[item.status],"pill"+(item.status==="closed"?" done":item.status==="received"?" received":""),statusIcon[item.status]));
+  const mark=el("span","","case-icon");
+  mark.append(icon(item.kind==="incident"?"evento-adverso":"nao-conformidade"));
+  const copy=el("span","","case-copy");
+  copy.append(el("strong",item.subject || (item.kind==="incident"?"Incidente ou evento adverso":"Não conformidade")),
+    el("small",item.protocol+" · "+(item.sector||"Setor não informado")));
+  title.append(mark,copy);
+  const badges=el("span","","case-badges");
+  badges.append(labeled("span",caseState[item.status],"pill"+(item.status==="closed"?" done":item.status==="received"?" received":""),statusIcon[item.status]));
   if(item.assignments?.some(a=>a.overdue?.opinion || a.overdue?.actions)) {
-    trigger.append(labeled("span","Prazo vencido","pill late","atrasado"));
+    badges.append(labeled("span","Prazo vencido","pill late","atrasado"));
   }
+  trigger.append(title,badges);
   trigger.addEventListener("click",()=>perform(open));
   li.append(trigger);
   return li;

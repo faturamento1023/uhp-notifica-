@@ -243,8 +243,8 @@
 </style>
 <link rel="stylesheet" href="bate-papo.css">
 <script src="bate-papo.js" defer></script>
-<link rel="stylesheet" href="painel-layout.css?v=11">
-<script src="painel.js?v=8" defer></script>
+<link rel="stylesheet" href="painel-layout.css?v=12">
+<script src="painel.js?v=9" defer></script>
 <script src="banners.js" defer></script>
 </head>
 <body>
@@ -289,14 +289,14 @@
           <button id="refresh-home" type="button" class="btn btn-outline-primary secondary">Atualizar</button>
         </div>
         <dl class="dashboard-stats" aria-label="Resumo das notificações">
-          <div class="card"><dt>Recebidas</dt><dd id="count-received">—</dd></div>
-          <div class="card"><dt>Em tratativa</dt><dd id="count-in-progress">—</dd></div>
-          <div class="card"><dt>Finalizadas</dt><dd id="count-closed">—</dd></div>
+          <div class="card dashboard-metric"><dt>Recebidas</dt><dd id="count-received">—</dd><span class="metric-icon" aria-hidden="true"><img src="icons/notificacoes.png" alt="" width="24" height="24"></span></div>
+          <div class="card dashboard-metric"><dt>Em tratativa</dt><dd id="count-in-progress">—</dd><span class="metric-icon" aria-hidden="true"><img src="icons/acoes.png" alt="" width="24" height="24"></span></div>
+          <div class="card dashboard-metric"><dt>Finalizadas</dt><dd id="count-closed">—</dd><span class="metric-icon" aria-hidden="true"><img src="icons/sucesso.png" alt="" width="24" height="24"></span></div>
         </dl>
         <div class="dashboard-grid">
           <section class="card dashboard-recent" aria-labelledby="recent-title">
             <div class="panel-heading"><h2 id="recent-title">Últimas notificações</h2><a href="#notificacoes" class="btn btn-outline-primary button-link">Ver todas <span aria-hidden="true">→</span></a></div>
-            <p id="recent-empty" class="muted">Carregando notificações…</p>
+            <p id="recent-empty" class="muted panel-empty">Carregando notificações…</p>
             <ul id="recent-notifications" class="queue"></ul>
           </section>
           <section class="card dashboard-banner" aria-labelledby="banner-title">
@@ -312,7 +312,7 @@
           <p class="small muted">Todos os usuários do painel podem ler. Evite compartilhar dados de pacientes.</p>
           <button id="chat-older" class="btn btn-outline-primary secondary" type="button" hidden>Ver mensagens anteriores</button>
           <div id="chat-log" class="chat-log" role="region" aria-label="Histórico do bate-papo" tabindex="0">
-            <p id="chat-empty" class="small muted">Carregando mensagens…</p>
+            <p id="chat-empty" class="muted panel-empty">Carregando mensagens…</p>
             <ol id="chat-messages" aria-label="Mensagens"></ol>
           </div>
           <form id="chat-form">
@@ -399,7 +399,7 @@
         <button type="submit" class="btn btn-outline-primary secondary">Aplicar filtros</button>
         <button type="button" class="btn btn-outline-primary secondary" id="clear-filters">Limpar filtros</button>
       </form>
-      <p id="queue-empty" class="muted section-title">Nenhuma notificação nesta página.</p>
+      <p id="queue-empty" class="muted section-title panel-empty">Nenhuma notificação nesta página.</p>
       <ul id="queue" class="queue"></ul>
       <div class="actions"><button type="button" id="more" class="btn btn-outline-primary secondary" hidden><img class="ui-icon" src="icons/carregar-mais.png" alt="" width="20" height="20">Carregar mais</button></div>
     </section>
@@ -427,7 +427,7 @@
       <section id="closure" class="card" hidden><h2><img class="ui-icon" src="icons/encerrar.png" alt="" width="22" height="22">Encerramento</h2><p id="close-hint" class="muted small section-title"></p><ul id="closure-checklist"></ul><label>Conclusão do caso<textarea class="form-control" id="conclusion" maxlength="5000"></textarea></label><div class="actions"><button class="btn btn-primary" id="close-case" type="button"><img class="ui-icon" src="icons/encerrar.png" alt="" width="20" height="20">Finalizar notificação</button></div></section>
       <section class="card"><h2><img class="ui-icon" src="icons/historico.png" alt="" width="22" height="22">Histórico</h2><ol id="history" class="history"></ol></section>
     </div>
-    <section id="welcome" class="card"><h2><img class="ui-icon" src="icons/protocolo.png" alt="" width="22" height="22">Selecione um protocolo</h2><p class="muted">Acompanhe os pareceres, prazos, ações e decisões.</p></section>
+    <section id="welcome" class="card"><span class="welcome-icon" aria-hidden="true"><img class="ui-icon" src="icons/protocolo.png" alt="" width="28" height="28"></span><h2>Selecione um protocolo</h2><p class="muted">Acompanhe os pareceres, prazos, ações e decisões.</p></section>
         </div>
       </section>
     </div>
