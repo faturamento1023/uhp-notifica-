@@ -67,7 +67,7 @@ Todas as escritas desta tabela usam `POST` com JSON. Datas usam `AAAA-MM-DD`.
 | `/assignments/{id}/submit` | Responsável da área | `{ body }` ou `{}` para usar o rascunho. Cria versão do parecer e muda para `pending_approval`. |
 | `/assignments/{id}/decision` | Coordenação | `{ version, decision, reason }`. `approved` libera `actions`. `rejected` exige justificativa e devolve para `revision`. |
 | `/assignments/{id}/actions` | Responsável da área | `{ description, performedOn }`. Cria ação em `actions` ou `complement`. Retorna `201` com `id`, `description`, `performedOn`, `createdBy` e `createdAt`. |
-| `/actions/{id}/evidence` | Responsável da área | `{ name, mime, contentBase64 }`. PDF, PNG ou JPEG de até 5 MiB. Retorna `201` com `id`, `name`, `mime`, `size` e `createdAt`. Limite por tratativa de 30 arquivos e 30 MiB. |
+| `/actions/{id}/evidence` | Responsável da área | `{ name, mime, contentBase64 }`. PDF, PNG ou JPEG de até 5 MiB no servidor Node.js e de até 4 MiB no Deploy Preview do Netlify. Retorna `201` com `id`, `name`, `mime`, `size` e `createdAt`. Limite por tratativa de 30 arquivos e 30 MiB. |
 | `/assignments/{id}/submit-actions` | Responsável da área | `{}`. Envia para `pending_validation` quando cada ação registrada tem evidência. |
 | `/assignments/{id}/validate` | Coordenação | `{ submissionId, decision, reason }`. Use o `id` do último evento `actions_submitted` daquela tratativa. `validated` valida. `complement` exige justificativa e devolve para complemento. |
 | `/notifications/{id}/close` | Coordenação | `{ conclusion }`. Fecha o caso após validar todas as tratativas. Retorna o detalhe atualizado. |
