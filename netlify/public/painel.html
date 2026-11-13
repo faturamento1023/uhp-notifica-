@@ -242,8 +242,8 @@
 </style>
 <link rel="stylesheet" href="bate-papo.css">
 <script src="bate-papo.js" defer></script>
-<link rel="stylesheet" href="painel-layout.css?v=5">
-<script src="painel.js?v=2" defer></script>
+<link rel="stylesheet" href="painel-layout.css?v=6">
+<script src="painel.js?v=3" defer></script>
 <script src="banners.js" defer></script>
 </head>
 <body>
@@ -273,6 +273,9 @@
         <nav class="panel-menu" aria-label="Navegação do painel">
           <a href="#inicio" id="nav-home" aria-label="Dashboard" title="Dashboard"><img class="ui-icon" src="icons/protocolo.png" alt="" width="20" height="20"><span>Dashboard</span></a>
           <a href="#notificacoes" id="nav-notifications" aria-label="Notificações" title="Notificações"><img class="ui-icon" src="icons/notificacoes.png" alt="" width="20" height="20"><span>Notificações</span></a>
+          <a href="#bate-papo" id="nav-chat" aria-label="Bate-papo" title="Bate-papo"><img class="ui-icon" src="icons/enviar.png" alt="" width="20" height="20"><span>Bate-papo</span></a>
+          <a href="#relatorios" id="nav-reports" aria-label="Relatórios" title="Relatórios"><img class="ui-icon" src="icons/historico.png" alt="" width="20" height="20"><span>Relatórios</span></a>
+          <a href="#ajuda" id="nav-help" aria-label="Ajuda" title="Ajuda"><img class="ui-icon" src="icons/informacao.png" alt="" width="20" height="20"><span>Ajuda</span></a>
         </nav>
         <button id="logout" type="button" aria-label="Sair" title="Sair" hidden><img class="ui-icon" src="icons/sair.png" alt="" width="20" height="20"><span>Sair</span></button>
       </div>
@@ -294,8 +297,16 @@
             <p id="recent-empty" class="muted">Carregando notificações…</p>
             <ul id="recent-notifications" class="queue"></ul>
           </section>
+          <section class="card dashboard-banner" aria-labelledby="banner-title">
+            <h2 id="banner-title">Orientação do dia</h2>
+            <div class="banner-carousel" data-banner-carousel aria-label="Orientações educativas sobre notificações e segurança do paciente"></div>
+          </section>
+        </div>
+      </section>
+      <section id="chat-view" class="stack" aria-labelledby="chat-title" hidden>
+        <div class="panel-heading dashboard-heading"><h1 id="chat-title" tabindex="-1">Bate-papo</h1></div>
         <section class="card group-chat" aria-labelledby="group-chat-title">
-          <h2 id="group-chat-title">Bate-papo da equipe</h2>
+          <h2 id="group-chat-title">Conversa da equipe</h2>
           <p class="small muted">Todos os usuários do painel podem ler. Evite compartilhar dados de pacientes.</p>
           <button id="chat-older" class="secondary" type="button" hidden>Ver mensagens anteriores</button>
           <div id="chat-log" class="chat-log" role="region" aria-label="Histórico do bate-papo" tabindex="0">
@@ -309,11 +320,59 @@
           </form>
           <p id="chat-status" class="small muted" role="status"></p>
         </section>
-          <section class="card dashboard-banner" aria-labelledby="banner-title">
-            <h2 id="banner-title">Orientação do dia</h2>
-            <div class="banner-carousel" data-banner-carousel aria-label="Orientações educativas sobre notificações e segurança do paciente"></div>
-          </section>
-        </div>
+      </section>
+      <section id="reports-view" class="stack" aria-labelledby="reports-title" hidden>
+        <div class="panel-heading dashboard-heading"><h1 id="reports-title" tabindex="-1">Relatórios</h1></div>
+        <section class="card stack" aria-labelledby="report-heading">
+          <h2 id="report-heading">Relatório de notificações</h2>
+          <form id="report-form" class="report-filters">
+            <label>Situação<select id="report-status"><option value="">Todas</option><option value="received">Recebidas</option><option value="in_progress">Em tratativa</option><option value="closed">Finalizadas</option></select></label>
+            <label>Data da ocorrência de<input id="report-start" type="date"></label>
+            <label>Data da ocorrência até<input id="report-end" type="date"></label>
+            <button type="submit">Gerar relatório</button>
+          </form>
+          <div class="panel-heading">
+            <p id="report-feedback" class="muted" role="status"></p>
+            <button id="report-export" class="secondary" type="button" hidden>Baixar CSV</button>
+          </div>
+          <div id="report-results" class="report-results" tabindex="0" role="region" aria-label="Resultado do relatório" hidden>
+            <table>
+              <thead><tr><th scope="col">Protocolo</th><th scope="col">Ocorrência</th><th scope="col">Tipo</th><th scope="col">Setor</th><th scope="col">Situação</th></tr></thead>
+              <tbody id="report-rows"></tbody>
+            </table>
+          </div>
+        </section>
+      </section>
+      <section id="help-view" class="stack" aria-labelledby="help-title" hidden>
+        <div class="panel-heading dashboard-heading"><h1 id="help-title" tabindex="-1">Ajuda</h1></div>
+        <section class="card help-tutorials" aria-labelledby="tutorial-title">
+          <h2 id="tutorial-title">Como funciona o UHP Notifica</h2>
+          <details open><summary>1. Registrar e consultar uma notificação</summary>
+            <ol><li>Abra o formulário pelo QR Code ou pelo <a href="/notificar.html">link de notificação</a>. Escolha <strong>Não conformidade</strong> ou <strong>Incidente ou evento adverso</strong>.</li>
+            <li>Preencha os campos obrigatórios e, se necessário, anexe uma foto como evidência.</li>
+            <li>Clique em <strong>Revisar notificação</strong>, confira os dados e clique em <strong>Enviar notificação</strong>.</li>
+            <li>Guarde o protocolo. Na página do formulário, use a consulta por protocolo para acompanhar a situação.</li></ol>
+          </details>
+          <details><summary>2. Fazer a triagem e encaminhar</summary>
+            <ol><li>Como Coordenação ou Administração, abra <a href="#notificacoes">Notificações</a> e selecione o protocolo.</li>
+            <li>Em <strong>Triagem e encaminhamento</strong>, escolha Segurança do Paciente ou CCIH, selecione o responsável e informe os prazos do parecer e das ações.</li>
+            <li>Clique em <strong>Encaminhar à área</strong>. Consulte a tratativa e a próxima ação na página da ocorrência.</li></ol>
+          </details>
+          <details><summary>3. Enviar parecer e registrar ações</summary>
+            <ol><li>Como responsável da Segurança do Paciente ou CCIH, abra a notificação atribuída. Escreva o parecer e envie para aprovação.</li>
+            <li>Se o parecer voltar, revise a justificativa e reenvie. Após a aprovação, registre as ações realizadas e anexe as evidências dentro do prazo.</li>
+            <li>Envie as ações para validação. Se houver pedido de complemento, ajuste o registro e encaminhe novamente.</li></ol>
+          </details>
+          <details><summary>4. Aprovar, validar e finalizar</summary>
+            <ol><li>Como Coordenação ou Administração, abra a tratativa e aprove o parecer ou devolva para ajuste com justificativa.</li>
+            <li>Confira as ações e evidências. Valide ou solicite complemento.</li>
+            <li>Quando todas as áreas estiverem validadas, registre a conclusão em <strong>Encerramento</strong> e clique em <strong>Finalizar notificação</strong>. Consulte as decisões no histórico.</li></ol>
+          </details>
+          <details><summary>5. Consultar relatórios e conversar com a equipe</summary>
+            <ul><li>Em <a href="#relatorios">Relatórios</a>, escolha a situação e o período da ocorrência, gere a listagem e baixe o CSV, se precisar.</li>
+            <li>Em <a href="#bate-papo">Bate-papo</a>, envie recados para a equipe. Os usuários do painel podem ler a conversa. Mantenha dados de pacientes na notificação correspondente.</li></ul>
+          </details>
+        </section>
       </section>
       <section id="notifications-view" aria-labelledby="notifications-title" hidden>
         <div class="panel-heading"><h1 id="notifications-title" tabindex="-1">Notificações</h1></div>

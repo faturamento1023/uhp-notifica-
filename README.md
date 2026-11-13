@@ -210,3 +210,9 @@ O painel passou a usar toda a largura disponível ao lado do menu. Em monitores 
 No desktop, o botão **Sair** fica na base do menu lateral, com acesso durante a rolagem. Em telas menores, ele fica na faixa de navegação.
 
 O botão **Sair** ficou mais próximo da borda inferior no desktop e recebeu fundo e contorno discretos na barra de navegação.
+
+## Bate-papo, relatórios e ajuda
+
+Os cartões de últimas notificações e orientação do dia no Dashboard têm a mesma altura lado a lado e ficam empilhados no celular. A aba **Bate-papo** usa a conversa e o histórico da equipe que já existiam.
+
+A aba **Relatórios** lista as notificações visíveis ao perfil, com filtros por situação e data da ocorrência. O relatório percorre todas as páginas da fila autorizada, abre a ocorrência pelo protocolo e exporta as colunas exibidas em CSV. A aba **Ajuda** contém tutoriais sobre registro e consulta, triagem, pareceres, ações e evidências, validação, encerramento, relatórios e bate-papo.

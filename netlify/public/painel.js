@@ -118,6 +118,8 @@ function showLogin() {
   $("detail").hidden=true;
   $("welcome").hidden=false;
   $("notification-filters").reset();
+  $("report-form").reset();
+  clearReport();
   queueFilters={ query:"", status:"" };
   $("queue").replaceChildren();
   $("recent-notifications").replaceChildren();
@@ -155,14 +157,26 @@ $("sidebar-toggle").addEventListener("click",()=>{
 
 let queueFilters={ query:"", status:"" };
 
+const panelViews={
+  "#inicio":"home", "#notificacoes":"notifications", "#closure":"notifications",
+  "#bate-papo":"chat", "#relatorios":"reports", "#ajuda":"help"
+};
+
 function showView(focus=true) {
-  const notifications=location.hash==="#notificacoes";
-  $("home-view").hidden=notifications;
-  $("notifications-view").hidden=!notifications;
-  const active=$(notifications?"nav-notifications":"nav-home");
-  $(notifications?"nav-home":"nav-notifications").removeAttribute("aria-current");
-  active.setAttribute("aria-current","page");
-  if(focus) $(notifications?"notifications-title":"home-title").focus();
+  const currentView=panelViews[location.hash] || "home";
+  for(const view of new Set(Object.values(panelViews))) {
+    const active=view===currentView;
+    $(view+"-view").hidden=!active;
+    if(active) $("nav-"+view).setAttribute("aria-current","page");
+    else $("nav-"+view).removeAttribute("aria-current");
+  }
+  if(focus && location.hash!=="#closure") $(currentView+"-title").focus();
+}
+
+function navigateToCase(id) {
+  if(location.hash!=="#notificacoes") history.pushState(null,"","#notificacoes");
+  showView(false);
+  return openCase(id,true);
 }
 
 function renderDashboard(data) {
@@ -171,11 +185,7 @@ function renderDashboard(data) {
     $("count-"+name.replace("_","-")).textContent=data.summary?counts[name] ?? 0:"—";
   }
   const recent=$("recent-notifications");
-  recent.replaceChildren(...data.items.slice(0,3).map(item=>notificationEntry(item,()=>{
-    history.pushState(null,"","#notificacoes");
-    showView(false);
-    return openCase(item.id,true);
-  })));
+  recent.replaceChildren(...data.items.slice(0,3).map(item=>notificationEntry(item,()=>navigateToCase(item.id))));
   $("recent-empty").hidden=data.items.length>0;
   $("recent-empty").textContent="Nenhuma notificação disponível para o seu perfil.";
 }
@@ -549,6 +559,81 @@ function renderDetail() {
       (entry.detail?.reason?" · "+entry.detail.reason:""),"",eventIcon[entry.event] || "historico"));
   }
 }
+let reportRows=[];
+
+function clearReport() {
+  reportRows=[];
+  $("report-rows").replaceChildren();
+  $("report-results").hidden=true;
+  $("report-export").hidden=true;
+  $("report-feedback").textContent="";
+}
+
+function reportValues(item) {
+  return [
+    item.protocol, formatDate(item.occurredOn),
+    item.kind==="incident"?"Incidente ou evento adverso":"Não conformidade",
+    item.sector || "Setor não informado", caseState[item.status]
+  ];
+}
+
+async function generateReport() {
+  const start=$("report-start").value,end=$("report-end").value,status=$("report-status").value;
+  if(start && end && start>end) throw Error("A data inicial deve ser anterior ou igual à data final.");
+  clearReport();
+  const matches=new Map();
+  let offset=0;
+  do {
+    const params=new URLSearchParams({offset});
+    if(status) params.set("status",status);
+    const page=await api("/notifications?"+params);
+    for(const item of page.items) {
+      if((!start || item.occurredOn>=start) && (!end || item.occurredOn<=end)) matches.set(item.id,item);
+    }
+    offset=page.nextOffset;
+  } while(offset!==null);
+  reportRows=[...matches.values()];
+  const rows=document.createDocumentFragment();
+  for(const item of reportRows) {
+    const [protocol,...values]=reportValues(item);
+    const row=el("tr");
+    const protocolCell=el("td");
+    const trigger=el("button",protocol,"secondary");
+    trigger.type="button";
+    trigger.addEventListener("click",()=>perform(()=>navigateToCase(item.id)));
+    protocolCell.append(trigger);
+    row.append(protocolCell,...values.map(value=>el("td",value)));
+    rows.append(row);
+  }
+  $("report-rows").append(rows);
+  $("report-results").hidden=reportRows.length===0;
+  $("report-export").hidden=reportRows.length===0;
+  $("report-feedback").textContent=reportRows.length===0?"Nenhuma notificação encontrada."
+    :reportRows.length===1?"1 notificação encontrada.":reportRows.length+" notificações encontradas.";
+}
+
+function exportReport() {
+  if(!reportRows.length) return;
+  const headers=["Protocolo","Ocorrência","Tipo","Setor","Situação"];
+  const csv=[headers,...reportRows.map(reportValues)].map(row=>row.map(value=>{
+    let text=String(value ?? "");
+    if(/^[\s\uFEFF]*[=+@-]|^[\t\r\n]/.test(text)) text="'"+text;
+    return '"'+text.replaceAll('"','""')+'"';
+  }).join(";")).join("\r\n");
+  const url=URL.createObjectURL(new Blob(["\uFEFF",csv],{type:"text/csv;charset=utf-8"}));
+  const link=el("a");
+  link.href=url;
+  link.download="relatorio_uhp_notifica.csv";
+  link.click();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+
+$("report-form").addEventListener("submit",event=>{
+  event.preventDefault();
+  perform(generateReport);
+});
+$("report-export").addEventListener("click",exportReport);
+
 $("login-form").addEventListener("submit",event=>{
   event.preventDefault();
   perform(async()=>{
