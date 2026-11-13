@@ -147,3 +147,11 @@ O PDF para o setor contém as duas marcas.
 ## Perfil Administrador
 
 O perfil Administrador (`administrator`) tem acesso à fila e às operações de gestão da própria unidade, com as mesmas permissões operacionais da Coordenação. O perfil aparece separado no login e não pode ser indicado como responsável de Segurança do Paciente ou CCIH. A conta inicial de administração foi provisionada no Supabase. As credenciais ficam fora do GitHub.
+
+## Banners educativos
+
+Os 15 banners fornecidos estão em `netlify/public/banners/`, convertidos para WebP para reduzir o peso da página. A integração fica com quem está editando as telas.
+
+- **Formulário público (`/notificar.html`).** Usar a faixa abaixo dos três passos na tela de escolha do tipo de notificação.
+- **Painel autenticado.** Usar o espaço abaixo de **Selecione um protocolo**, à direita da fila. Exibir ali enquanto nenhum protocolo estiver selecionado, para preservar o espaço do detalhe.
+- Alternar os 15 banners em sequência. Manter a proporção da imagem, sem cortar textos ou ilustrações, com ajuste responsivo e opção de pausar. Conferir as referências normativas presentes nas artes antes da publicação.
