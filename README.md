@@ -216,3 +216,5 @@ O botão **Sair** ficou mais próximo da borda inferior no desktop e recebeu fun
 Os cartões de últimas notificações e orientação do dia no Dashboard têm a mesma altura lado a lado e ficam empilhados no celular. A aba **Bate-papo** usa a conversa e o histórico da equipe que já existiam.
 
 A aba **Relatórios** lista as notificações visíveis ao perfil, com filtros por situação e data da ocorrência. O relatório percorre todas as páginas da fila autorizada, abre a ocorrência pelo protocolo e exporta as colunas exibidas em CSV. A aba **Ajuda** contém tutoriais sobre registro e consulta, triagem, pareceres, ações e evidências, validação, encerramento, relatórios e bate-papo.
+
+O Dashboard e a fila de Notificações consultam novidades automaticamente a cada 10 segundos com a aba visível, ao voltar para a aba e ao entrar nessas telas pelo menu. A atualização da fila preserva filtros, páginas carregadas e a ocorrência em edição.

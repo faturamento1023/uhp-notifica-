@@ -82,6 +82,7 @@ function message(text,error=false) {
 async function api(path,method="GET",body) {
   const response=await fetch(API+path,{
     method,credentials:"same-origin",
+    ...(method==="GET"?{cache:"no-store"}:{}),
     headers:body===undefined?{}:{"Content-Type":"application/json"},
     ...(body===undefined?{}:{body:JSON.stringify(body)})
   });
@@ -96,6 +97,7 @@ async function api(path,method="GET",body) {
 async function perform(operation) {
   if(busy) return;
   busy=true;
+  notificationRevision++;
   document.body.style.cursor="progress";
   const loadingTimer=setTimeout(()=>{ $("loading-overlay").hidden=false;document.body.setAttribute("aria-busy","true"); },280);
   try { await operation() }
@@ -111,6 +113,9 @@ async function perform(operation) {
   }
 }
 function showLogin() {
+  clearInterval(notificationTimer);
+  notificationRevision++;
+  queuePageCount=1;
   document.body.classList.remove("panel-signed-in");
   $("login-hero").after($("feedback"));
   groupChat.stop();
@@ -141,6 +146,8 @@ function showWorkspace() {
   $("login-hero").hidden=true;
   groupChat.start(api, formatTime, showLogin);
   showView(false);
+  clearInterval(notificationTimer);
+  notificationTimer=setInterval(refreshNotifications,10000);
   $("notifications-guide").textContent=canCoordinate()
     ?"Veja a fila, encaminhe às áreas e acompanhe as decisões até a finalização."
     :"Consulte as notificações atribuídas a você e registre sua tratativa.";
@@ -156,6 +163,7 @@ $("sidebar-toggle").addEventListener("click",()=>{
 });
 
 let queueFilters={ query:"", status:"" };
+let queuePageCount=1, notificationTimer, notificationRevision=0, refreshingNotifications=false;
 
 const panelViews={
   "#inicio":"home", "#notificacoes":"notifications", "#closure":"notifications",
@@ -185,7 +193,7 @@ function renderDashboard(data) {
     $("count-"+name.replace("_","-")).textContent=data.summary?counts[name] ?? 0:"—";
   }
   const recent=$("recent-notifications");
-  recent.replaceChildren(...data.items.slice(0,3).map(item=>notificationEntry(item,()=>navigateToCase(item.id))));
+  renderNotificationList(recent,data.items.slice(0,3),navigateToCase);
   $("recent-empty").hidden=data.items.length>0;
   $("recent-empty").textContent="Nenhuma notificação disponível para o seu perfil.";
 }
@@ -194,33 +202,92 @@ async function loadDashboard() {
   renderDashboard(await api("/notifications"));
 }
 
-async function loadQueue(reset=true,filters=queueFilters) {
-  const offset=reset?0:nextOffset;
-  if(offset===null) return;
+function fetchQueuePage(offset,filters) {
   const params=new URLSearchParams({offset});
   if(filters.query) params.set("q",filters.query);
   if(filters.status) params.set("status",filters.status);
-  const data=await api("/notifications?"+params);
+  return api("/notifications?"+params);
+}
+
+function updateQueue(records,offset) {
+  const changed=JSON.stringify(records)!==JSON.stringify(items);
+  items=records;
+  nextOffset=offset;
+  $("more").hidden=offset===null;
+  if(changed || !$("queue").children.length) renderQueue();
+}
+
+async function loadQueue(reset=true,filters=queueFilters) {
+  const offset=reset?0:nextOffset;
+  if(offset===null) return;
+  const data=await fetchQueuePage(offset,filters);
   queueFilters=filters;
-  items=reset?data.items:[...items,...data.items];
-  nextOffset=data.nextOffset;
-  $("more").hidden=nextOffset===null;
-  renderQueue();
+  queuePageCount=reset?1:queuePageCount+1;
+  updateQueue(reset?data.items:[...items,...data.items],data.nextOffset);
   if(offset===0 && !filters.query && !filters.status) renderDashboard(data);
+}
+
+async function refreshNotifications() {
+  const homeVisible=!$("home-view").hidden;
+  const queueVisible=!$("notifications-view").hidden;
+  if(!account || document.hidden || busy || refreshingNotifications || (!homeVisible && !queueVisible)) return;
+
+  const revision=notificationRevision;
+  const filters=queueFilters;
+  const pageCount=queuePageCount;
+  const stillCurrent=()=>revision===notificationRevision && !document.hidden;
+  refreshingNotifications=true;
+  try {
+    if(homeVisible) {
+      const data=await api("/notifications");
+      if(stillCurrent() && !$("home-view").hidden) renderDashboard(data);
+      return;
+    }
+
+    const first=await fetchQueuePage(0,filters);
+    const records=[...first.items];
+    let offset=first.nextOffset;
+    for(let page=1;page<pageCount && offset!==null && stillCurrent();page++) {
+      const next=await fetchQueuePage(offset,filters);
+      records.push(...next.items);
+      offset=next.nextOffset;
+    }
+    if(stillCurrent() && !$("notifications-view").hidden) {
+      updateQueue([...new Map(records.map(item=>[item.id,item])).values()],offset);
+    }
+  } catch(error) {
+    if(error.status===401 && revision===notificationRevision) {
+      showLogin();
+      message("Sua sessão expirou. Entre novamente.",true);
+    }
+  } finally {
+    refreshingNotifications=false;
+  }
 }
 
 function renderQueue() {
   const list=$("queue");
-  list.replaceChildren(...items.map(item=>notificationEntry(item,()=>openCase(item.id,true))));
+  renderNotificationList(list,items,id=>openCase(id,true));
   $("queue-empty").hidden=items.length>0;
   $("queue-empty").textContent=queueFilters.query || queueFilters.status
     ?"Nenhuma notificação corresponde aos filtros.":"Nenhuma notificação disponível para o seu perfil.";
+}
+
+function renderNotificationList(list,records,open) {
+  const active=document.activeElement;
+  const focusedId=list.contains(active)?active.dataset.notificationId:null;
+  list.replaceChildren(...records.map(item=>notificationEntry(item,()=>open(item.id))));
+  if(focusedId) {
+    const trigger=Array.from(list.querySelectorAll("button")).find(button=>button.dataset.notificationId===focusedId);
+    trigger?.focus({preventScroll:true});
+  }
 }
 
 function notificationEntry(item,open) {
   const li=document.createElement("li");
   const trigger=el("button");
   trigger.type="button";
+  trigger.dataset.notificationId=item.id;
   if(selected===item.id) trigger.setAttribute("aria-current","true");
   const title=el("span","","case-heading");
   title.append(icon(item.kind==="incident"?"evento-adverso":"nao-conformidade"),
@@ -655,8 +722,9 @@ $("more").addEventListener("click",()=>perform(()=>loadQueue(false)));
 window.addEventListener("hashchange",()=>{
   if(!account) return;
   showView();
-  if(!$("home-view").hidden) perform(loadDashboard);
+  void refreshNotifications();
 });
+document.addEventListener("visibilitychange",refreshNotifications);
 $("refresh-home").addEventListener("click",()=>perform(async()=>{
   await loadDashboard();
   message("Visão geral atualizada.");
