@@ -34,17 +34,17 @@ export function createStore(connection, transaction) {
   };
 }
 
-export function openStore(env = process.env) {
+export function openStore(env = process.env, { maxConnections = 8 } = {}) {
   if (!env.UHP_DATABASE_URL) throw new Error('Configure UHP_DATABASE_URL no servidor.');
   const endpoint = new URL(env.UHP_DATABASE_URL);
   if (!['postgres:', 'postgresql:'].includes(endpoint.protocol) || endpoint.search) {
     throw new Error('Use uma URL PostgreSQL sem parâmetros. Configure o certificado em UHP_DB_CA_FILE.');
   }
-  const ca = env.UHP_DB_CA_FILE ? readFileSync(env.UHP_DB_CA_FILE, 'utf8') : undefined;
+  const ca = env.UHP_DB_CA_FILE ? readFileSync(env.UHP_DB_CA_FILE, 'utf8') : env.UHP_DB_CA_PEM;
   const pool = new pg.Pool({
     connectionString: env.UHP_DATABASE_URL,
     ssl: { rejectUnauthorized: true, ca },
-    max: 8,
+    max: maxConnections,
     connectionTimeoutMillis: 5000,
     statement_timeout: 15000,
     idle_in_transaction_session_timeout: 20000
