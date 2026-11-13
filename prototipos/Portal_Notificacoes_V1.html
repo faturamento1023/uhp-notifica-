@@ -1,0 +1,490 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; form-action 'none'; base-uri 'none'">
+<title>Portal de Notificações</title>
+<style>
+  :root {
+    color: #142f37;
+    background: #f3f7f6;
+    font: 16px/1.55 "DM Sans", "Segoe UI", system-ui, sans-serif;
+    --ink: #142f37;
+    --muted: #4b646a;
+    --teal: #00665d;
+    --line: #d5e1df;
+    --paper: #fff;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; min-width: 0; }
+  [hidden] { display: none !important; }
+  header { background: #fff; border-bottom: 1px solid var(--line); }
+  .shell { width: min(100% - 40px, 1000px); margin-inline: auto; }
+  .top { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 76px; }
+  .brand { display: flex; align-items: center; gap: 11px; font-weight: 750; line-height: 1.2; }
+  .mark { display: grid; place-items: center; flex: none; width: 37px; height: 37px; border-radius: 11px; background: #086459; color: #fff; font-size: 26px; }
+  .edition { color: var(--muted); font-size: .82rem; text-align: right; }
+  main { padding-block: 40px 64px; }
+  h1, h2, p { margin: 0; }
+  h1 { line-height: 1.08; letter-spacing: -.045em; }
+  .hero { position: relative; isolation: isolate; overflow: hidden; padding: clamp(27px, 6vw, 63px); border-radius: 24px; background: linear-gradient(120deg, #073937, #0b514a); color: #fff; }
+  .hero::after { content: ""; position: absolute; z-index: -1; width: 360px; height: 360px; border: 1px solid #ffffff2b; border-radius: 40%; right: -130px; top: -155px; box-shadow: 0 0 0 30px #ffffff0e, 0 0 0 65px #ffffff0b, 0 0 0 100px #ffffff08; transform: rotate(30deg); pointer-events: none; }
+  .hero h1 { font-size: clamp(2.1rem, 5.8vw, 4rem); max-width: 650px; }
+  .hero p { margin-top: 14px; color: #d8efea; font-size: clamp(1rem, 2vw, 1.125rem); }
+  .choices { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 22px; }
+  button, input, select, textarea { font: inherit; }
+  button { cursor: pointer; }
+  .choice { display: flex; flex-direction: column; align-items: flex-start; text-align: left; gap: 13px; border: 1px solid var(--line); border-radius: 18px; background: var(--paper); color: var(--ink); padding: clamp(21px, 4vw, 31px); box-shadow: 0 5px 20px #132d3510; }
+  .choice:hover { border-color: #588f84; background: #fcfffe; }
+  .icon { width: 47px; height: 47px; display: grid; place-items: center; border-radius: 13px; background: #e0f2ed; color: #076258; font-size: 25px; font-weight: 700; }
+  .choice:nth-child(2) .icon { background: #e8eef8; color: #325888; }
+  .choice strong { font-size: clamp(1.22rem, 2.7vw, 1.55rem); line-height: 1.2; letter-spacing: -.025em; }
+  .choice .copy { color: var(--muted); }
+  .choice .action { padding-top: 5px; margin-top: auto; font-weight: 750; color: var(--teal); }
+  .notice { margin-top: 22px; padding: 15px 18px; border-left: 3px solid #75a99f; border-radius: 0 10px 10px 0; background: #e7f0ee; color: #324f54; font-size: .92rem; }
+  .form-view, #review, #done { max-width: 820px; margin-inline: auto; }
+  .form-view h1, #review h1, #done h1 { margin-top: 13px; font-size: clamp(1.9rem, 4.6vw, 3rem); }
+  .form-view .intro, #review .intro, #done .intro { margin: 10px 0 21px; color: var(--muted); }
+  .back { color: var(--teal); background: transparent; border: 0; padding: 8px 2px; font-weight: 750; }
+  form { display: grid; gap: 16px; }
+  .panel { min-width: 0; padding: clamp(17px, 4vw, 27px); border: 1px solid var(--line); border-radius: 15px; background: var(--paper); }
+  .panel h2 { font-size: 1.16rem; margin-bottom: 15px; }
+  .panel .hint { color: var(--muted); margin: -6px 0 14px; font-size: .9rem; }
+  .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+  .field { display: grid; align-content: start; gap: 6px; min-width: 0; }
+  .wide { grid-column: 1 / -1; }
+  label, legend { font-weight: 650; }
+  input:not([type=checkbox]), select, textarea { width: 100%; min-width: 0; min-height: 46px; padding: 10px 11px; border: 1px solid #aabebc; border-radius: 8px; background: #fff; color: var(--ink); }
+  textarea { min-height: 102px; resize: vertical; }
+  .checklist { margin: 0; padding: 0; border: 0; min-width: 0; }
+  .checklist legend { padding: 0; margin: 0 0 10px; }
+  .check { display: flex; align-items: flex-start; gap: 8px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; font-size: .92rem; font-weight: 500; }
+  .check input { flex: none; margin: 3px 0 0; width: 17px; height: 17px; accent-color: var(--teal); }
+  .buttons { display: flex; flex-wrap: wrap; gap: 10px; justify-content: flex-end; margin-top: 3px; }
+  .button { min-height: 46px; border-radius: 9px; padding: 9px 17px; border: 1px solid var(--teal); background: var(--teal); color: #fff; font-weight: 750; }
+  .button:hover { background: #004f48; }
+  .button.secondary { color: var(--teal); background: #fff; }
+  .button.secondary:hover { background: #e7f0ee; }
+  :focus-visible { outline: 3px solid #218bba; outline-offset: 3px; }
+  .review-list { margin: 0; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: 0 14px; }
+  .review-list dt, .review-list dd { margin: 0; padding: 9px 0; border-bottom: 1px solid var(--line); overflow-wrap: anywhere; }
+  .review-list dt { font-weight: 700; }
+  .review-list dd { white-space: pre-wrap; }
+  #review .buttons, #done .buttons { margin-top: 17px; }
+  @media (max-width: 620px) {
+    .shell { width: min(100% - 28px, 1000px); }
+    .top { min-height: 64px; }
+    main { padding-top: 23px; }
+    .hero { border-radius: 17px; }
+    .choices, .grid { grid-template-columns: 1fr; gap: 12px; }
+    .choices { margin-top: 14px; }
+    .choice { gap: 9px; }
+    .review-list { grid-template-columns: 1fr; }
+    .review-list dt { padding-bottom: 0; border: 0; }
+    .review-list dd { padding-top: 2px; }
+    .buttons .button { flex: 1 1 auto; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="shell top">
+    <div class="brand"><span class="mark" aria-hidden="true">+</span><span>Portal de Notificações</span></div>
+    <span class="edition">Versão de teste</span>
+  </div>
+</header>
+<main class="shell">
+  <noscript><p class="notice">Ative o JavaScript no navegador para abrir os formulários.</p></noscript>
+  <section id="home" aria-labelledby="home-title">
+    <div class="hero">
+      <h1 id="home-title" tabindex="-1">O que você deseja notificar?</h1>
+      <p>Escolha o formulário de acordo com a ocorrência.</p>
+    </div>
+    <div class="choices">
+      <button class="choice" type="button" data-view="nonconformity">
+        <span class="icon" aria-hidden="true">☷</span>
+        <strong>Não conformidade</strong>
+        <span class="copy">Registre um desvio de rotina, protocolo ou condição de trabalho.</span>
+        <span class="action">Abrir formulário <span aria-hidden="true">→</span></span>
+      </button>
+      <button class="choice" type="button" data-view="incident">
+        <span class="icon" aria-hidden="true">!</span>
+        <strong>Incidente ou evento adverso</strong>
+        <span class="copy">Relate uma ocorrência relacionada à assistência, com ou sem dano ao paciente.</span>
+        <span class="action">Abrir formulário <span aria-hidden="true">→</span></span>
+      </button>
+    </div>
+    <p class="notice">Use dados fictícios. O registro de teste pode ser baixado para abrir no painel do gerente.</p>
+  </section>
+
+  <section id="nonconformity" class="form-view" hidden aria-labelledby="nonconformity-title">
+    <button type="button" class="back" data-view="home">← Escolher outro formulário</button>
+    <h1 id="nonconformity-title" tabindex="-1">Notificar não conformidade</h1>
+    <p class="intro">Preencha os campos com * e selecione os itens que se aplicam.</p>
+    <form autocomplete="off">
+      <div class="panel">
+        <h2>Dados da ocorrência</h2>
+        <div class="grid">
+          <div class="field"><label for="nc-date">Data da ocorrência *</label><input id="nc-date" name="date" type="date" required></div>
+          <div class="field"><label for="nc-sector">Setor *</label><input id="nc-sector" name="sector" required maxlength="120" placeholder="Ex. Pronto Socorro"></div>
+          <div class="field"><label for="nc-shift">Turno *</label><select id="nc-shift" name="shift" required></select></div>
+        </div>
+      </div>
+      <div class="panel">
+        <h2>Tipos de não conformidade</h2>
+        <p class="hint">Cada categoria tem uma lista suspensa. Você pode selecionar um item por categoria e detalhar outros no relato.</p>
+        <div class="grid" id="nc-categories"></div>
+      </div>
+      <div class="panel field">
+        <label for="nc-description">Relato do ocorrido *</label>
+        <textarea id="nc-description" name="description" required maxlength="5000" placeholder="Descreva o ocorrido e inclua situações que não aparecem nas listas."></textarea>
+      </div>
+      <div class="buttons"><button class="button" type="submit">Revisar notificação</button></div>
+    </form>
+  </section>
+
+  <section id="incident" class="form-view" hidden aria-labelledby="incident-title">
+    <button type="button" class="back" data-view="home">← Escolher outro formulário</button>
+    <h1 id="incident-title" tabindex="-1">Notificar incidente ou evento adverso</h1>
+    <p class="intro">Preencha os campos com *. Use somente dados fictícios para testar.</p>
+    <form autocomplete="off">
+      <div class="panel">
+        <h2>Dados da ocorrência</h2>
+        <div class="grid">
+          <div class="field wide"><label for="event-type">Tipo de incidente ou evento adverso *</label><select id="event-type" name="type" required></select></div>
+          <div class="field"><label for="event-harm">Grau do dano *</label><select id="event-harm" name="harm" required></select></div>
+          <div class="field"><label for="event-sector">Setor da ocorrência</label><select id="event-sector" name="sector"></select></div>
+          <div class="field" id="other-sector" hidden><label for="event-other-sector">Qual setor? *</label><input id="event-other-sector" name="otherSector" maxlength="120" disabled></div>
+          <div class="field"><label for="event-date">Data da ocorrência *</label><input id="event-date" name="date" type="date" required></div>
+          <div class="field"><label for="event-period">Período da ocorrência *</label><select id="event-period" name="period" required></select></div>
+          <div class="field wide"><label for="event-description">Relato do incidente *</label><textarea id="event-description" name="description" maxlength="5000" required placeholder="Descreva brevemente o que aconteceu."></textarea></div>
+        </div>
+      </div>
+      <div class="panel">
+        <h2>Dados do paciente e do atendimento</h2>
+        <div class="grid">
+          <div class="field"><label for="event-sex">Sexo</label><select id="event-sex" name="sex"></select></div>
+          <div class="field"><label for="event-race">Raça/cor</label><select id="event-race" name="race"></select></div>
+          <div class="field"><label for="event-age">Idade no momento da ocorrência</label><input id="event-age" name="age" type="number" min="0" step="1" inputmode="numeric"></div>
+          <div class="field"><label for="event-age-unit">Unidade da idade</label><select id="event-age-unit" name="ageUnit" aria-describedby="age-hint"></select><span id="age-hint" class="hint" style="margin:0">Selecione se informou a idade.</span></div>
+          <div class="field"><label for="event-admission">Data da internação ou do atendimento</label><input id="event-admission" name="admission" type="date"></div>
+          <div class="field wide"><label for="event-reason">Motivo da busca pelo serviço de saúde</label><textarea id="event-reason" name="reason" maxlength="5000"></textarea></div>
+        </div>
+      </div>
+      <div class="panel">
+        <h2>Fatores contribuintes e detecção</h2>
+        <div class="grid">
+          <fieldset class="checklist wide">
+            <legend>Quais fatores contribuíram para a ocorrência?</legend>
+            <div class="grid" id="event-factors"></div>
+          </fieldset>
+          <div class="field wide"><label for="event-detection">Como o incidente ou evento foi identificado?</label><textarea id="event-detection" name="detection" maxlength="5000"></textarea></div>
+          <div class="field wide"><label for="event-suggestion">Sugestão de ações para reduzir o risco</label><textarea id="event-suggestion" name="suggestion" maxlength="5000"></textarea></div>
+        </div>
+      </div>
+      <div class="buttons"><button class="button" type="submit">Revisar notificação</button></div>
+    </form>
+  </section>
+
+  <section id="review" hidden aria-labelledby="review-title">
+    <button type="button" class="back" data-edit>← Voltar ao formulário</button>
+    <h1 id="review-title" tabindex="-1">Revisar notificação</h1>
+    <p class="intro" id="review-type"></p>
+    <div class="panel"><dl class="review-list" id="review-list"></dl></div>
+    <p class="notice">Ao confirmar, você poderá baixar um arquivo de teste para importar no painel do gerente.</p>
+    <p class="notice" id="register-error" role="alert" hidden></p>
+    <div class="buttons">
+      <button class="button secondary" type="button" data-edit>Editar dados</button>
+      <button class="button" type="button" id="register">Registrar notificação de teste</button>
+    </div>
+  </section>
+
+  <section id="done" hidden aria-labelledby="done-title">
+    <div class="panel">
+      <h1 id="done-title" tabindex="-1">Notificação de teste gerada</h1>
+      <p class="intro" id="receipt"></p>
+      <p class="notice" id="receipt-note"></p>
+      <div class="buttons">
+        <button type="button" class="button secondary" data-view="home">Voltar ao início</button>
+        <button type="button" class="button" id="download-record">Baixar registro de teste</button>
+      </div>
+    </div>
+  </section>
+</main>
+<script>
+  "use strict";
+
+  const categories = {
+    "Assistência ao paciente": [
+      "Identificação do paciente ausente ou incorreta",
+      "Administração de medicamento ao paciente errado",
+      "Medicação administrada em dose, horário ou via incorretos",
+      "Evolução de enfermagem ou registros incompletos",
+      "Ausência de checagem da prescrição",
+      "Curativos realizados sem técnica asséptica",
+      "Falta de conferência antes de transfusão sanguínea"
+    ],
+    "Segurança do paciente": [
+      "Paciente sem pulseira de identificação",
+      "Grades da cama abaixadas em paciente com risco de queda",
+      "Falta de avaliação do risco de queda ou lesão por pressão",
+      "Não realização da higiene das mãos nos momentos indicados",
+      "Cirurgia sem checklist de segurança"
+    ],
+    "Medicamentos": [
+      "Medicamentos vencidos no posto de enfermagem",
+      "Armazenamento inadequado de medicamentos",
+      "Carrinho de emergência com itens faltando ou vencidos",
+      "Geladeira de medicamentos sem controle de temperatura"
+    ],
+    "Equipamentos": [
+      "Equipamentos sem manutenção preventiva",
+      "Bomba de infusão com defeito em uso",
+      "Oxigênio sem identificação ou com vazamento",
+      "Extintores vencidos"
+    ],
+    "Controle de infecção": [
+      "Descarte incorreto de resíduos hospitalares",
+      "Perfurocortantes descartados em recipiente inadequado",
+      "Uso incorreto de EPIs",
+      "Materiais esterilizados com validade vencida",
+      "Uso de adornos",
+      "Cabelos soltos"
+    ],
+    "Documentação": [
+      "Prontuário incompleto",
+      "Ausência de assinatura e carimbo do profissional",
+      "Prescrição médica ilegível",
+      "Falta de registro de intercorrências"
+    ],
+    "Estrutura": [
+      "Piso molhado sem sinalização",
+      "Iluminação inadequada",
+      "Saídas de emergência obstruídas",
+      "Falta de materiais essenciais para o atendimento"
+    ],
+    "Gestão": [
+      "Profissionais sem treinamento obrigatório",
+      "Escala de pessoal insuficiente",
+      "Protocolos desatualizados",
+      "Não notificação de eventos adversos"
+    ],
+    "Profissional": ["Postura ética", "Ruídos", "Vestimenta inadequada"]
+  };
+
+  const eventTypes = [
+    "Acidente do paciente",
+    "Broncoaspiração",
+    "Incidentes envolvendo intubação traqueal",
+    "Incidentes relacionados a falhas em procedimentos cirúrgicos",
+    "Incidentes relacionados a falhas em processo ou procedimento clínico",
+    "Incidentes relacionados a falhas na administração de dietas",
+    "Incidentes relacionados a falhas na administração de oxigênio",
+    "Incidentes relacionados a falhas na assistência ao parto e nascimento",
+    "Incidentes relacionados a falhas na assistência radiológica",
+    "Incidentes relacionados a falhas na documentação",
+    "Incidentes relacionados a falhas na identificação do paciente",
+    "Incidentes relacionados a falhas nas atividades administrativas",
+    "Incidentes relacionados a falhas no cuidado ou na proteção do paciente",
+    "Incidentes relacionados a falhas ocorridas em laboratórios",
+    "Incidentes relacionados à assistência à saúde envolvendo cateter, sonda ou outros dispositivos",
+    "Lesão por pressão",
+    "Queda do paciente",
+    "Tromboembolismo venoso (TEV)",
+    "Evasão",
+    "Outro (descreva no relato)"
+  ];
+
+  const factors = [
+    "Fatores do profissional — cognitivos",
+    "Fatores do profissional — de desempenho",
+    "Fatores do profissional — de comportamento",
+    "Fatores da comunicação",
+    "Fatores dirigidos ao paciente, familiar ou acompanhante",
+    "Fatores do trabalho ou do ambiente",
+    "Fatores organizacionais",
+    "Fatores externos"
+  ];
+
+  const get = id => document.getElementById(id);
+  const views = ["home", "nonconformity", "incident", "review", "done"];
+  const incidentForm = get("incident").querySelector("form");
+  const recordPrefix = "portal-notificacoes:teste:registro:";
+  let activeForm = null;
+  let latestRecord = null;
+
+  function fillSelect(select, values, placeholder = "Selecione") {
+    select.add(new Option(placeholder, ""));
+    for (const value of values) select.add(new Option(value, value));
+  }
+
+  const selectOptions = {
+    "nc-shift": ["Manhã", "Tarde", "Noite", "Madrugada"],
+    "event-type": eventTypes,
+    "event-harm": ["Nenhum (incidente sem dano)", "Leve", "Moderado", "Grave", "Óbito em decorrência do evento adverso"],
+    "event-sector": ["Pronto Socorro", "Internação", "Maternidade", "Centro Cirúrgico", "Outro"],
+    "event-period": ["Manhã", "Tarde", "Noite", "Madrugada"],
+    "event-sex": ["Feminino", "Masculino", "Não informado"],
+    "event-race": ["Branca", "Preta", "Parda", "Amarela", "Indígena", "Não informada"],
+    "event-age-unit": ["Anos", "Meses", "Dias", "Horas"]
+  };
+
+  for (const [id, options] of Object.entries(selectOptions)) fillSelect(get(id), options);
+
+  Object.entries(categories).forEach(([category, options], index) => {
+    const container = document.createElement("div");
+    container.className = "field";
+    const select = document.createElement("select");
+    select.id = "category-" + index;
+    select.name = select.id;
+    const label = document.createElement("label");
+    label.htmlFor = select.id;
+    label.textContent = category;
+    fillSelect(select, options);
+    container.append(label, select);
+    get("nc-categories").append(container);
+  });
+
+  for (const factor of factors) {
+    const label = document.createElement("label");
+    label.className = "check";
+    const input = document.createElement("input");
+    input.type = "checkbox";
+    input.name = "factors";
+    input.value = factor;
+    label.append(input, document.createTextNode(factor));
+    get("event-factors").append(label);
+  }
+
+  function show(view) {
+    for (const id of views) get(id).hidden = id !== view;
+    get(view + "-title").focus({ preventScroll: true });
+    window.scrollTo(0, 0);
+  }
+
+  document.querySelectorAll("[data-view]").forEach(button => {
+    button.addEventListener("click", () => show(button.dataset.view));
+  });
+
+  document.querySelectorAll("[data-edit]").forEach(button => {
+    button.addEventListener("click", () => show(activeForm.closest("section").id));
+  });
+
+  function updateIncidentFields() {
+    const isOtherSector = get("event-sector").value === "Outro";
+    get("other-sector").hidden = !isOtherSector;
+    get("event-other-sector").disabled = !isOtherSector;
+    get("event-other-sector").required = isOtherSector;
+    const ageUnit = get("event-age-unit");
+    ageUnit.disabled = get("event-age").value === "";
+    ageUnit.required = !ageUnit.disabled;
+    if (ageUnit.disabled) ageUnit.value = "";
+  }
+
+  get("event-sector").addEventListener("change", updateIncidentFields);
+  get("event-age").addEventListener("input", updateIncidentFields);
+  updateIncidentFields();
+
+  function reviewEntries(form) {
+    const entries = [];
+    for (const field of form.elements) {
+      if (!field.name || field.disabled || !field.value.trim()) continue;
+      if (["ageUnit", "factors", "otherSector"].includes(field.name)) continue;
+      let value = field.value.trim();
+      if (field.type === "date") value = value.split("-").reverse().join("/");
+      if (field.name === "age") value += " " + get("event-age-unit").value.toLowerCase();
+      if (field.id === "event-sector" && value === "Outro") value = get("event-other-sector").value.trim();
+      const label = field.labels[0].textContent.replace(/ \*$/, "");
+      entries.push([label, value]);
+    }
+    const selectedFactors = new FormData(form).getAll("factors");
+    if (selectedFactors.length) entries.push(["Fatores contribuintes", selectedFactors.join("\n")]);
+    return entries;
+  }
+
+  for (const form of document.querySelectorAll("form")) {
+    const requiredText = form.querySelectorAll("input:not([type]), textarea[required]");
+    requiredText.forEach(field => field.addEventListener("input", () => field.setCustomValidity("")));
+    form.addEventListener("submit", event => {
+      event.preventDefault();
+      const blank = Array.from(requiredText).find(field => field.required && !field.value.trim());
+      if (blank) {
+        blank.setCustomValidity("Preencha este campo.");
+        blank.reportValidity();
+        return;
+      }
+      activeForm = form;
+      get("register-error").hidden = true;
+      const list = get("review-list");
+      list.replaceChildren();
+      for (const [label, value] of reviewEntries(form)) {
+        const title = document.createElement("dt");
+        title.textContent = label;
+        const detail = document.createElement("dd");
+        detail.textContent = value;
+        list.append(title, detail);
+      }
+      get("review-type").textContent = form.closest("section").querySelector("h1").textContent;
+      show("review");
+    });
+  }
+
+  get("register").addEventListener("click", () => {
+    if (!activeForm) return;
+    const form = activeForm;
+    const data = new FormData(form);
+    try {
+      const bytes = crypto.getRandomValues(new Uint8Array(16));
+      const id = Array.from(bytes, byte => byte.toString(16).padStart(2, "0")).join("");
+      latestRecord = {
+        version: 1,
+        id,
+        kind: form.closest("section").id,
+        createdAt: new Date().toISOString(),
+        occurredOn: data.get("date"),
+        sector: (data.get("otherSector") || data.get("sector") || "").trim(),
+        subject: data.get("type") || "",
+        harm: data.get("harm") || "",
+        entries: reviewEntries(form)
+      };
+    } catch {
+      const error = get("register-error");
+      error.textContent = "O navegador não conseguiu gerar o registro. Seus dados continuam no formulário.";
+      error.hidden = false;
+      return;
+    }
+    let stored = false;
+    try {
+      localStorage.setItem(recordPrefix + latestRecord.id, JSON.stringify(latestRecord));
+      stored = true;
+    } catch {
+      // The file download still works when browser storage is unavailable.
+    }
+    get("receipt").textContent = "Protocolo " + latestRecord.id.slice(0, 10).toUpperCase();
+    get("receipt-note").textContent = stored
+      ? "Baixe o arquivo para importar no painel do gerente. O registro também pode aparecer automaticamente quando as duas páginas usam o mesmo endereço de hospedagem e o mesmo navegador."
+      : "Baixe o arquivo antes de sair desta tela. O navegador não disponibilizou o armazenamento local.";
+    form.reset();
+    if (form === incidentForm) updateIncidentFields();
+    activeForm = null;
+    get("review-list").replaceChildren();
+    get("review-type").textContent = "";
+    show("done");
+  });
+
+  get("download-record").addEventListener("click", () => {
+    if (!latestRecord) return;
+    const blob = new Blob([JSON.stringify(latestRecord, null, 2)], { type: "application/json" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = "Notificacao_Teste_" + latestRecord.id.slice(0, 10).toUpperCase() + ".json";
+    document.body.append(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(link.href), 1000);
+  });
+</script>
+</body>
+</html>
