@@ -160,3 +160,7 @@ Para ações curtas, use o GIF de 64 px junto a um texto de status, por exemplo:
 Mostre o indicador apenas durante a operação e oculte ao finalizar, inclusive se houver erro. Use 128 ou 256 px quando a imagem ocupar uma área maior. Para quem prefere movimento reduzido, oculte o GIF via `prefers-reduced-motion` e mantenha o texto de status.
 
 O botão do painel abre `/notificacao-pdf.html?id=...`. Essa página carrega o PDF autenticado em um visualizador e define o favicon do UHP Notifica. O botão **Abrir PDF diretamente** é uma alternativa quando o navegador não oferece visualização incorporada.
+
+## Atualização publicada
+
+O Netlify serve a revisão do PR nº 3 com consulta pública de situação por protocolo, identificação opcional, comprovante em PDF, evolução por área e GIFs de carregamento. O Supabase roda a função `uhp-api` v4 e a migração de evolução `20261113152526` (arquivo de origem `20261113150000_uhp_progress.sql` no PR nº 1). O carrossel usa 14 artes. A arte 05 fica fora da rotação pública até correção da referência ao art. 32 da RDC nº 36/2013.

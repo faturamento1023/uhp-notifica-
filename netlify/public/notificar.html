@@ -60,8 +60,9 @@
   .receipt-row .ui-icon { width: 24px; height: 24px; }
   .receipt-row .intro { margin: 0; }
   .busy-icon { animation: icon-spin 1s linear infinite; }
+  .button .loading-gif { filter: none !important; }
   @keyframes icon-spin { to { transform: rotate(360deg); } }
-  @media (prefers-reduced-motion: reduce) { .busy-icon { animation: none; } }
+  @media (prefers-reduced-motion: reduce) { .busy-icon { animation: none; } .loading-gif { display: none; } }
   .choice strong { font-size: clamp(1.22rem, 2.7vw, 1.55rem); line-height: 1.2; letter-spacing: -.025em; }
   .choice .copy { color: var(--muted); }
   .choice .action { padding-top: 5px; margin-top: auto; font-weight: 750; color: var(--teal); }
@@ -76,6 +77,20 @@
   .steps { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 12px; list-style: none; padding: 0; margin: 22px 0 0; }
   .steps li { display: flex; gap: 11px; align-items: flex-start; padding: 13px 15px; border: 1px solid var(--line); border-radius: 12px; background: #fff; color: var(--muted); font-size: .9rem; }
   .steps strong { flex: none; display: grid; place-items: center; width: 25px; height: 25px; border-radius: 50%; background: var(--yellow); color: var(--ink); }
+  .banner-carousel { margin-top: 20px; padding: 12px; border: 1px solid var(--line); border-radius: 15px; background: #fff; }
+  .banner-image { display: block; width: 100%; height: auto; border-radius: 9px; }
+  .banner-controls { display: flex; align-items: center; justify-content: center; gap: 10px; flex-wrap: wrap; padding-top: 12px; }
+  .banner-controls button { min-height: 40px; padding: 7px 12px; border: 1px solid var(--teal); border-radius: 8px; background: #fff; color: var(--teal); font-weight: 700; }
+  .banner-controls button:hover { background: #e7f2f1; }
+  .banner-count { min-width: 56px; text-align: center; color: var(--muted); }
+  .status-card { margin-top: 22px; }
+  .status-card .intro { color: var(--muted); margin: -5px 0 16px; }
+  .status-form { display: flex; gap: 10px; align-items: end; }
+  .status-form .field { flex: 1; }
+  .status-result { margin-top: 15px; padding: 13px 16px; border-radius: 10px; background: #e7f2f1; border-left: 4px solid var(--brand); }
+  .status-result strong { color: var(--dark); }
+  .status-result p { margin-top: 4px; }
+  .status-result.error { background: #fff1ef; border-left-color: var(--red); color: #842c2c; }
   .form-view, #review, #done { max-width: 820px; margin-inline: auto; }
   .form-view h1, #review h1, #done h1 { margin-top: 13px; font-size: clamp(1.9rem, 4.6vw, 3rem); }
   .form-view .intro, #review .intro, #done .intro { margin: 10px 0 21px; color: var(--muted); }
@@ -94,6 +109,10 @@
   .checklist legend { padding: 0; margin: 0 0 10px; }
   .check { display: flex; align-items: flex-start; gap: 8px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; font-size: .92rem; font-weight: 500; }
   .check input { flex: none; margin: 3px 0 0; width: 17px; height: 17px; accent-color: var(--brand); }
+  .identity-options { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; }
+  .identity-options label { display: flex; align-items: center; gap: 8px; padding: 10px 13px; border: 1px solid var(--line); border-radius: 9px; font-weight: 600; cursor: pointer; }
+  .identity-options input { accent-color: var(--brand); }
+  .identity-name { margin-top: 14px; max-width: 520px; }
   .buttons { display: flex; flex-wrap: wrap; gap: 10px; justify-content: flex-end; margin-top: 3px; }
   .button { min-height: 46px; border-radius: 9px; padding: 9px 17px; border: 1px solid var(--teal); background: var(--teal); color: #fff; font-weight: 750; }
   .button:hover { background: #004f50; }
@@ -115,6 +134,7 @@
     main { padding-top: 23px; }
     .hero { border-radius: 17px; }
     .choices, .grid, .steps { grid-template-columns: 1fr; gap: 12px; }
+    .status-form { flex-direction: column; align-items: stretch; }
     .choices { margin-top: 14px; }
     .choice { gap: 9px; }
     .review-list { grid-template-columns: 1fr; }
@@ -158,11 +178,21 @@
         <span class="action">Abrir formulário <img class="ui-icon" src="icons/avancar.png" alt="" width="20" height="20"></span>
       </button>
     </div>
+    <section class="panel status-card" aria-labelledby="status-title">
+      <h2 id="status-title"><img class="ui-icon" src="icons/buscar.png" alt="" width="22" height="22">Consultar minha notificação</h2>
+      <p class="intro">Informe o número do protocolo para ver somente a situação atual.</p>
+      <form id="status-form" class="status-form" autocomplete="off">
+        <div class="field"><label for="status-protocol">Número do protocolo</label><input id="status-protocol" name="protocol" required maxlength="25" placeholder="UHP-2026-XXXXXXXXXXXXXXXX" autocapitalize="characters" spellcheck="false"></div>
+        <button class="button" type="submit" id="status-submit"><img class="ui-icon" src="icons/buscar.png" alt="" width="20" height="20"><span id="status-label">Consultar status</span></button>
+      </form>
+      <div id="status-result" class="status-result" role="status" aria-live="polite" hidden></div>
+    </section>
     <ol class="steps" aria-label="Etapas do registro">
       <li><strong>1</strong><span>Escolha o tipo de notificação.</span></li>
       <li><strong>2</strong><span>Preencha e confira os dados.</span></li>
       <li><strong>3</strong><span>Envie e receba o protocolo.</span></li>
     </ol>
+    <div class="banner-carousel" data-banner-carousel aria-label="Orientações educativas sobre notificações e segurança do paciente"></div>
   </section>
 
   <section id="nonconformity" class="form-view" hidden aria-labelledby="nonconformity-title">
@@ -188,6 +218,15 @@
         <label for="nc-description">Relato do ocorrido *</label>
         <textarea id="nc-description" name="description" required maxlength="5000" placeholder="Descreva o ocorrido e inclua situações que não aparecem nas listas."></textarea>
       </div>
+      <fieldset class="panel checklist" data-identity>
+        <legend>Identificação de quem notifica *</legend>
+        <p class="hint">Escolha se deseja informar seu nome. Se preferir não se identificar, evite dados que revelem sua identidade no relato ou na foto.</p>
+        <div class="identity-options">
+          <label><input type="radio" name="identity" value="Anônima" required> Prefiro não me identificar</label>
+          <label><input type="radio" name="identity" value="Identificada"> Quero me identificar</label>
+        </div>
+        <div class="field identity-name" data-identity-name hidden><label for="nc-notifier">Nome de quem notifica *</label><input id="nc-notifier" name="notifierName" maxlength="160" autocomplete="name" disabled></div>
+      </fieldset>
       <div class="panel field">
         <label for="nc-photo"><img class="ui-icon" src="icons/foto.png" alt="" width="22" height="22"> Foto da ocorrência (opcional)</label>
         <input type="file" id="nc-photo" data-photo accept="image/jpeg,image/png" aria-describedby="nc-photo-hint nc-photo-error">
@@ -239,6 +278,15 @@
           <div class="field wide"><label for="event-suggestion">Sugestão de ações para reduzir o risco</label><textarea id="event-suggestion" name="suggestion" maxlength="5000"></textarea></div>
         </div>
       </div>
+      <fieldset class="panel checklist" data-identity>
+        <legend>Identificação de quem notifica *</legend>
+        <p class="hint">Escolha se deseja informar seu nome. Se preferir não se identificar, evite dados que revelem sua identidade no relato ou na foto.</p>
+        <div class="identity-options">
+          <label><input type="radio" name="identity" value="Anônima" required> Prefiro não me identificar</label>
+          <label><input type="radio" name="identity" value="Identificada"> Quero me identificar</label>
+        </div>
+        <div class="field identity-name" data-identity-name hidden><label for="event-notifier">Nome de quem notifica *</label><input id="event-notifier" name="notifierName" maxlength="160" autocomplete="name" disabled></div>
+      </fieldset>
       <div class="panel field">
         <label for="event-photo"><img class="ui-icon" src="icons/foto.png" alt="" width="22" height="22"> Foto da ocorrência (opcional)</label>
         <input type="file" id="event-photo" data-photo accept="image/jpeg,image/png" aria-describedby="event-photo-hint event-photo-error">
@@ -267,7 +315,7 @@
     <p class="notice" id="register-error" role="alert" hidden></p>
     <div class="buttons">
       <button class="button secondary" type="button" data-edit><img class="ui-icon" src="icons/editar.png" alt="" width="20" height="20">Editar dados</button>
-      <button class="button" type="button" id="register"><img class="ui-icon" src="icons/enviar.png" alt="" width="20" height="20">Enviar notificação</button>
+      <button class="button" type="button" id="register"><img class="ui-icon" src="icons/enviar.png" alt="" width="20" height="20"><span id="register-label">Enviar notificação</span></button>
     </div>
   </section>
 
@@ -279,11 +327,13 @@
       <p class="notice" id="receipt-note"></p>
       <div class="buttons">
         <button type="button" class="button secondary" id="copy-protocol"><img class="ui-icon" src="icons/copiar.png" alt="" width="20" height="20">Copiar protocolo</button>
+        <button type="button" class="button secondary" id="receipt-pdf"><img class="ui-icon" src="icons/pdf.png" alt="" width="20" height="20"><span id="receipt-pdf-label">Abrir e baixar PDF</span></button>
         <button type="button" class="button secondary" data-view="home"><img class="ui-icon" src="icons/nova-notificacao.png" alt="" width="20" height="20">Registrar outra notificação</button>
       </div>
     </div>
   </section>
 </main>
 <script src="form.js" defer></script>
+<script src="banners.js" defer></script>
 </body>
 </html>

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; form-action 'none'; base-uri 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; connect-src 'self'; form-action 'none'; base-uri 'none'">
 <link rel="icon" type="image/png" href="uhp-notifica-icone.png">
 <link rel="apple-touch-icon" href="uhp-notifica-icone.png">
 <title>UHP Notifica | Painel</title>
@@ -39,6 +39,16 @@
   .info-line { display:flex; align-items:center; gap:7px; flex-wrap:wrap }
   .info-line .ui-icon { width:18px; height:18px }
   .evidence-link { display:inline-flex; align-items:center; gap:7px; overflow-wrap:anywhere }
+  .banner-carousel { margin-top:16px; padding:10px; border:1px solid var(--line); border-radius:12px; background:#fff }
+  .banner-image { display:block; width:100%; height:auto; border-radius:8px }
+  .banner-controls { display:flex; align-items:center; justify-content:center; gap:8px; flex-wrap:wrap; padding-top:12px }
+  .banner-controls button { min-height:40px; padding:7px 11px; border:1px solid var(--teal); border-radius:8px; background:#fff; color:var(--teal); font-weight:700 }
+  .banner-controls button:hover { background:#e7f2f1 }
+  .banner-count { min-width:56px; text-align:center; color:var(--muted) }
+  .loading-overlay { position:fixed; inset:0; z-index:20; display:flex; align-items:center; justify-content:center; background:#f3f7f6e8; padding:20px }
+  .loading-card { display:grid; justify-items:center; gap:12px; width:min(100%,340px); padding:25px; border:1px solid var(--line); border-radius:16px; background:#fff; box-shadow:0 12px 35px #17343b22; text-align:center }
+  .loading-card img { width:128px; height:128px; object-fit:contain }
+  @media(prefers-reduced-motion:reduce) { .loading-card img { display:none } }
   #feedback:not(:empty) { display:flex; align-items:center; gap:9px }
   #feedback .ui-icon { width:20px; height:20px }
   main { padding:28px 0 70px }
@@ -100,9 +110,11 @@
   @media(max-width:540px) { .shell { width:min(100% - 24px,1200px) } .brand img { width:200px } .institution img { width:105px } .hero,.card { padding:17px } .form-grid,.filters,.entry-list { grid-template-columns:1fr } .wide { grid-column:auto } dt { border:0; padding-bottom:0 } dd { padding-top:0 } }
 </style>
 <script src="painel.js" defer></script>
+<script src="banners.js" defer></script>
 </head>
 <body>
 <header><div class="shell top"><div class="brand"><img src="uhp-notifica-login.png" width="240" height="80" alt="UHP Notifica — Sistema de Notificações"></div><div class="institution"><img src="logo-posse-saude.png" width="145" height="70" alt="Prefeitura Municipal de Posse e Secretaria da Saúde"></div><div class="account"><span id="identity" class="muted small"></span><button id="logout" type="button" class="secondary" hidden><img class="ui-icon" src="icons/sair.png" alt="" width="20" height="20">Sair</button></div></div></header>
+<div id="loading-overlay" class="loading-overlay" role="status" aria-live="polite" hidden><div class="loading-card"><img src="carregamento/01-logo-uhp-notifica-carregando-128px.gif" alt=""><span>Aguarde, processando sua solicitação...</span></div></div>
 <main class="shell">
   <div class="hero"><h1><img class="ui-icon" src="icons/notificacoes.png" alt="" width="34" height="34">Painel de notificações</h1><p id="panel-guide">Acompanhe cada ocorrência da triagem ao encerramento.</p></div>
   <p id="feedback" class="notice" role="status" aria-live="polite"></p>
@@ -132,11 +144,11 @@
       <section class="card">
         <div class="row"><div><h2><img class="ui-icon" src="icons/protocolo.png" alt="" width="22" height="22"><span id="case-title" tabindex="-1"></span></h2><p id="case-meta" class="muted small"></p></div><span id="case-state" class="pill"></span></div>
         <p id="case-summary" class="section-title"></p>
-        <div class="actions"><a id="pdf-link" class="button-link" target="_blank" rel="noopener" hidden><img class="ui-icon" src="icons/pdf.png" alt="" width="20" height="20">Gerar PDF para o setor<img class="ui-icon" src="icons/abrir-nova-aba.png" alt="" width="20" height="20"></a></div>
+        <div class="actions"><a id="pdf-link" class="button-link" target="_blank" rel="noopener" hidden><img class="ui-icon" src="icons/pdf.png" alt="" width="20" height="20">Abrir PDF atualizado<img class="ui-icon" src="icons/abrir-nova-aba.png" alt="" width="20" height="20"></a></div>
         <p id="pdf-hint" class="small muted info-line" hidden><img class="ui-icon" src="icons/imprimir.png" alt="" width="18" height="18">Abre em uma nova aba para impressão.</p>
         <div class="next-step" aria-live="polite"><strong class="with-icon"><img class="ui-icon" src="icons/informacao.png" alt="" width="20" height="20">Próxima ação</strong><span id="next-step"></span></div>
         <details><summary><img class="ui-icon" src="icons/dados-ocorrencia.png" alt="" width="20" height="20"> Dados da notificação</summary><dl id="case-fields" class="entry-list"></dl></details>
-        <div id="photo-wrap" hidden><h3 class="section-title"><img class="ui-icon" src="icons/foto.png" alt="" width="22" height="22">Foto da ocorrência</h3><img id="case-photo" class="photo" alt="Foto anexada à ocorrência"></div>
+        <details id="photo-wrap" hidden><summary><img class="ui-icon" src="icons/foto.png" alt="" width="22" height="22">Ver foto da ocorrência</summary><img id="case-photo" class="photo" alt="Foto anexada à ocorrência" loading="lazy"></details>
         <div id="triage" class="area" hidden>
           <h3><img class="ui-icon" src="icons/triagem.png" alt="" width="22" height="22">Triagem e encaminhamento</h3><p class="small muted">Escolha uma área, um responsável e os prazos do parecer e das ações.</p>
           <div class="form-grid">
@@ -152,7 +164,7 @@
       <section id="closure" class="card" hidden><h2><img class="ui-icon" src="icons/encerrar.png" alt="" width="22" height="22">Encerramento</h2><p id="close-hint" class="muted small section-title"></p><label>Conclusão do caso<textarea id="conclusion" maxlength="5000"></textarea></label><div class="actions"><button id="close-case" type="button"><img class="ui-icon" src="icons/encerrar.png" alt="" width="20" height="20">Finalizar notificação</button></div></section>
       <section class="card"><h2><img class="ui-icon" src="icons/historico.png" alt="" width="22" height="22">Histórico</h2><ol id="history" class="history"></ol></section>
     </div>
-    <section id="welcome" class="card"><h2><img class="ui-icon" src="icons/protocolo.png" alt="" width="22" height="22">Selecione um protocolo</h2><p class="muted">Acompanhe os pareceres, prazos, ações e decisões.</p></section>
+    <section id="welcome" class="card"><h2><img class="ui-icon" src="icons/protocolo.png" alt="" width="22" height="22">Selecione um protocolo</h2><p class="muted">Acompanhe os pareceres, prazos, ações e decisões.</p><div class="banner-carousel" data-banner-carousel aria-label="Orientações educativas sobre notificações e segurança do paciente"></div></section>
   </div>
 </main>
 </body>
