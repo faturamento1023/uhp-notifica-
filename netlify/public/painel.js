@@ -112,7 +112,24 @@ async function perform(operation) {
     busy=false;document.body.style.cursor="";
   }
 }
+const profileAvatar=$("profile-avatar");
+const profileInitials=$("profile-initials");
+
+profileAvatar.addEventListener("load",()=>{
+  if(!account || !profileAvatar.hasAttribute("src") || !profileAvatar.naturalWidth) return;
+  profileAvatar.hidden=false;
+  profileInitials.hidden=true;
+});
+profileAvatar.addEventListener("error",()=>{
+  profileAvatar.hidden=true;
+  profileInitials.hidden=false;
+});
+
 function showLogin() {
+  profileAvatar.hidden=true;
+  profileAvatar.removeAttribute("src");
+  profileInitials.hidden=false;
+  profileInitials.textContent="";
   clearInterval(notificationTimer);
   notificationRevision++;
   queuePageCount=1;
@@ -142,8 +159,9 @@ function showWorkspace() {
   setSidebarExpanded(true);
   $("login").hidden=true;$("workspace").hidden=false;$("logout").hidden=false;
   $("identity").textContent=account.name;
-  $("profile-initials").textContent=account.name.trim().split(/\s+/).filter((_,index,names)=>index===0 || index===names.length-1)
+  profileInitials.textContent=account.name.trim().split(/\s+/).filter((_,index,names)=>index===0 || index===names.length-1)
     .map(name=>Array.from(name)[0]).join("").toLocaleUpperCase("pt-BR");
+  profileAvatar.src="/api/v1/session/avatar";
   $("profile-role").textContent=(account.role==="administrator"?"Administrador":canCoordinate()?"Coordenação":areaName[account.role]);
   $("login-hero").hidden=true;
   groupChat.start(api, formatTime, showLogin);

@@ -220,3 +220,5 @@ A aba **Relatórios** lista as notificações visíveis ao perfil, com filtros p
 O Dashboard e a fila de Notificações consultam novidades automaticamente a cada 10 segundos com a aba visível, ao voltar para a aba e ao entrar nessas telas pelo menu. A atualização da fila preserva filtros, páginas carregadas e a ocorrência em edição.
 
 A barra lateral do painel autenticado agora se estende até o fim do rodapé institucional no desktop, para posicionar o botão **Sair** na base. No celular, o botão permanece na faixa de navegação.
+
+O avatar da barra lateral mostra a foto cadastrada para a conta autenticada de Ana Clara, Walkiria ou Luciana. As fotos ficam no esquema privado do Supabase e a rota `GET /api/v1/session/avatar` retorna apenas a foto da sessão atual. O painel mostra as iniciais enquanto a foto carrega ou quando a conta ainda não tem uma imagem.
