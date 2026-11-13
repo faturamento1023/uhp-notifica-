@@ -9,6 +9,7 @@
 <title>UHP Notifica | Painel</title>
 <link rel="manifest" href="/manifest.webmanifest">
 <meta name="theme-color" content="#075459">
+<link rel="stylesheet" href="vendor/bootstrap-5.3.8/bootstrap.min.css">
 <style>
   :root { font:16px/1.5 "Segoe UI",system-ui,sans-serif; color:#17343b; background:#f3f7f6; --brand:#008586; --teal:#006b6c; --dark:#075459; --green:#5cbc73; --yellow:#ffca05; --red:#bb1f25; --line:#d5e1df; --muted:#4b646a }
   * { box-sizing:border-box }
@@ -63,7 +64,7 @@
   .layout { display:grid; grid-template-columns:minmax(280px,350px) minmax(0,1fr); gap:16px; align-items:start; margin-top:18px }
   .card { background:#fff; border:1px solid var(--line); border-radius:15px; padding:20px; min-width:0 }
   .stack { display:grid; gap:16px }
-  .row { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap }
+  .panel-row { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap }
   .muted { color:var(--muted) }
   .small { font-size:.88rem }
   .notice { margin:16px 0; padding:12px 15px; border-left:3px solid var(--brand); background:#e7f2f1; border-radius:0 9px 9px 0 }
@@ -242,8 +243,8 @@
 </style>
 <link rel="stylesheet" href="bate-papo.css">
 <script src="bate-papo.js" defer></script>
-<link rel="stylesheet" href="painel-layout.css?v=10">
-<script src="painel.js?v=7" defer></script>
+<link rel="stylesheet" href="painel-layout.css?v=11">
+<script src="painel.js?v=8" defer></script>
 <script src="banners.js" defer></script>
 </head>
 <body>
@@ -251,15 +252,15 @@
 <div id="loading-overlay" class="loading-overlay" role="status" aria-live="polite" hidden><div class="loading-card"><img src="carregamento/01-logo-uhp-notifica-carregando-128px.gif" alt=""><span>Aguarde, processando sua solicitação...</span></div></div>
 <main class="shell">
   <div class="hero" id="login-hero"><h1><img class="ui-icon" src="icons/notificacoes.png" alt="" width="34" height="34">Painel de notificações</h1><p id="panel-guide">Acompanhe cada ocorrência da triagem ao encerramento.</p></div>
-  <p id="feedback" class="notice" role="status" aria-live="polite"></p>
+  <p id="feedback" class="alert notice" role="status" aria-live="polite"></p>
   <section id="login" class="card login">
     <img class="login-mark" src="uhp-notifica-icone.png" width="56" height="57" alt="">
     <h2>Acessar painel</h2>
     <p class="muted section-title">Use a conta institucional fornecida para a sua área.</p>
     <form id="login-form">
-      <label>E-mail<input id="email" type="email" autocomplete="username" required></label>
-      <label>Senha<input id="password" type="password" autocomplete="current-password" required></label>
-      <button type="submit"><img class="ui-icon" src="icons/entrar.png" alt="" width="20" height="20">Entrar</button>
+      <label>E-mail<input class="form-control" id="email" type="email" autocomplete="username" required></label>
+      <label>Senha<input class="form-control" id="password" type="password" autocomplete="current-password" required></label>
+      <button class="btn btn-primary" type="submit"><img class="ui-icon" src="icons/entrar.png" alt="" width="20" height="20">Entrar</button>
     </form>
   </section>
   <div id="workspace" class="panel-shell" hidden>
@@ -270,13 +271,13 @@
           <span class="sidebar-avatar" aria-hidden="true"><span id="profile-initials"></span><img id="profile-avatar" alt="" width="80" height="80" hidden></span>
           <div class="sidebar-profile-details"><strong id="identity"></strong><span id="profile-role"></span></div>
         </div>
-        <nav class="panel-menu" aria-label="Navegação do painel">
-          <a href="#inicio" id="nav-home" aria-label="Dashboard" title="Dashboard"><img class="ui-icon" src="icons/protocolo.png" alt="" width="20" height="20"><span>Dashboard</span></a>
-          <a href="#notificacoes" id="nav-notifications" aria-label="Notificações" title="Notificações"><img class="ui-icon" src="icons/notificacoes.png" alt="" width="20" height="20"><span>Notificações</span></a>
-          <a href="#bate-papo" id="nav-chat" aria-label="Bate-papo" title="Bate-papo"><img class="ui-icon" src="icons/enviar.png" alt="" width="20" height="20"><span>Bate-papo</span></a>
-          <a href="#alterar-senha" id="nav-password" aria-label="Alterar senha" title="Alterar senha"><img class="ui-icon" src="icons/editar.png" alt="" width="20" height="20"><span>Alterar senha</span></a>
-          <a href="#relatorios" id="nav-reports" aria-label="Relatórios" title="Relatórios"><img class="ui-icon" src="icons/historico.png" alt="" width="20" height="20"><span>Relatórios</span></a>
-          <a href="#ajuda" id="nav-help" aria-label="Ajuda" title="Ajuda"><img class="ui-icon" src="icons/informacao.png" alt="" width="20" height="20"><span>Ajuda</span></a>
+        <nav class="nav panel-menu" aria-label="Navegação do painel">
+          <a class="nav-link" href="#inicio" id="nav-home" aria-label="Dashboard" title="Dashboard"><img class="ui-icon" src="icons/protocolo.png" alt="" width="20" height="20"><span>Dashboard</span></a>
+          <a class="nav-link" href="#notificacoes" id="nav-notifications" aria-label="Notificações" title="Notificações"><img class="ui-icon" src="icons/notificacoes.png" alt="" width="20" height="20"><span>Notificações</span></a>
+          <a class="nav-link" href="#bate-papo" id="nav-chat" aria-label="Bate-papo" title="Bate-papo"><img class="ui-icon" src="icons/enviar.png" alt="" width="20" height="20"><span>Bate-papo</span></a>
+          <a class="nav-link" href="#alterar-senha" id="nav-password" aria-label="Alterar senha" title="Alterar senha"><img class="ui-icon" src="icons/editar.png" alt="" width="20" height="20"><span>Alterar senha</span></a>
+          <a class="nav-link" href="#relatorios" id="nav-reports" aria-label="Relatórios" title="Relatórios"><img class="ui-icon" src="icons/historico.png" alt="" width="20" height="20"><span>Relatórios</span></a>
+          <a class="nav-link" href="#ajuda" id="nav-help" aria-label="Ajuda" title="Ajuda"><img class="ui-icon" src="icons/informacao.png" alt="" width="20" height="20"><span>Ajuda</span></a>
         </nav>
         <button id="logout" type="button" aria-label="Sair" title="Sair" hidden><img class="ui-icon" src="icons/sair.png" alt="" width="20" height="20"><span>Sair</span></button>
       </div>
@@ -285,7 +286,7 @@
       <section id="home-view" class="stack" aria-labelledby="home-title">
         <div class="panel-heading dashboard-heading">
           <h1 id="home-title" tabindex="-1">Visão geral</h1>
-          <button id="refresh-home" type="button" class="secondary">Atualizar</button>
+          <button id="refresh-home" type="button" class="btn btn-outline-primary secondary">Atualizar</button>
         </div>
         <dl class="dashboard-stats" aria-label="Resumo das notificações">
           <div class="card"><dt>Recebidas</dt><dd id="count-received">—</dd></div>
@@ -294,7 +295,7 @@
         </dl>
         <div class="dashboard-grid">
           <section class="card dashboard-recent" aria-labelledby="recent-title">
-            <div class="panel-heading"><h2 id="recent-title">Últimas notificações</h2><a href="#notificacoes" class="button-link">Ver todas <span aria-hidden="true">→</span></a></div>
+            <div class="panel-heading"><h2 id="recent-title">Últimas notificações</h2><a href="#notificacoes" class="btn btn-outline-primary button-link">Ver todas <span aria-hidden="true">→</span></a></div>
             <p id="recent-empty" class="muted">Carregando notificações…</p>
             <ul id="recent-notifications" class="queue"></ul>
           </section>
@@ -309,15 +310,15 @@
         <section class="card group-chat" aria-labelledby="group-chat-title">
           <h2 id="group-chat-title">Conversa da equipe</h2>
           <p class="small muted">Todos os usuários do painel podem ler. Evite compartilhar dados de pacientes.</p>
-          <button id="chat-older" class="secondary" type="button" hidden>Ver mensagens anteriores</button>
+          <button id="chat-older" class="btn btn-outline-primary secondary" type="button" hidden>Ver mensagens anteriores</button>
           <div id="chat-log" class="chat-log" role="region" aria-label="Histórico do bate-papo" tabindex="0">
             <p id="chat-empty" class="small muted">Carregando mensagens…</p>
             <ol id="chat-messages" aria-label="Mensagens"></ol>
           </div>
           <form id="chat-form">
             <label for="chat-input">Mensagem</label>
-            <textarea id="chat-input" maxlength="1000" rows="2" required></textarea>
-            <button id="chat-send" type="submit">Enviar</button>
+            <textarea class="form-control" id="chat-input" maxlength="1000" rows="2" required></textarea>
+            <button class="btn btn-primary" id="chat-send" type="submit">Enviar</button>
           </form>
           <p id="chat-status" class="small muted" role="status"></p>
         </section>
@@ -327,17 +328,17 @@
         <section class="card stack" aria-labelledby="report-heading">
           <h2 id="report-heading">Relatório de notificações</h2>
           <form id="report-form" class="report-filters">
-            <label>Situação<select id="report-status"><option value="">Todas</option><option value="received">Recebidas</option><option value="in_progress">Em tratativa</option><option value="closed">Finalizadas</option></select></label>
-            <label>Data da ocorrência de<input id="report-start" type="date"></label>
-            <label>Data da ocorrência até<input id="report-end" type="date"></label>
-            <button type="submit">Gerar relatório</button>
+            <label>Situação<select class="form-select" id="report-status"><option value="">Todas</option><option value="received">Recebidas</option><option value="in_progress">Em tratativa</option><option value="closed">Finalizadas</option></select></label>
+            <label>Data da ocorrência de<input class="form-control" id="report-start" type="date"></label>
+            <label>Data da ocorrência até<input class="form-control" id="report-end" type="date"></label>
+            <button class="btn btn-primary" type="submit">Gerar relatório</button>
           </form>
           <div class="panel-heading">
             <p id="report-feedback" class="muted" role="status"></p>
-            <button id="report-export" class="secondary" type="button" hidden>Baixar CSV</button>
+            <button id="report-export" class="btn btn-outline-primary secondary" type="button" hidden>Baixar CSV</button>
           </div>
-          <div id="report-results" class="report-results" tabindex="0" role="region" aria-label="Resultado do relatório" hidden>
-            <table>
+          <div id="report-results" class="table-responsive report-results" tabindex="0" role="region" aria-label="Resultado do relatório" hidden>
+            <table class="table table-hover align-middle mb-0">
               <thead><tr><th scope="col">Protocolo</th><th scope="col">Ocorrência</th><th scope="col">Tipo</th><th scope="col">Setor</th><th scope="col">Situação</th></tr></thead>
               <tbody id="report-rows"></tbody>
             </table>
@@ -347,11 +348,11 @@
       <section id="password-view" class="stack" aria-labelledby="password-title" hidden>
         <div class="panel-heading dashboard-heading"><h1 id="password-title" tabindex="-1">Alterar senha</h1></div>
         <form id="password-form" class="card stack">
-          <label>Senha atual<input id="current-password" type="password" autocomplete="current-password" maxlength="256" required></label>
-          <label>Nova senha<input id="new-password" type="password" autocomplete="new-password" minlength="15" maxlength="256" aria-describedby="password-rules" required></label>
+          <label>Senha atual<input class="form-control" id="current-password" type="password" autocomplete="current-password" maxlength="256" required></label>
+          <label>Nova senha<input class="form-control" id="new-password" type="password" autocomplete="new-password" minlength="15" maxlength="256" aria-describedby="password-rules" required></label>
           <p id="password-rules" class="muted">Use pelo menos 15 caracteres. Após salvar, entre novamente com a nova senha.</p>
-          <label>Confirmar nova senha<input id="confirm-password" type="password" autocomplete="new-password" minlength="15" maxlength="256" required></label>
-          <button type="submit">Salvar nova senha</button>
+          <label>Confirmar nova senha<input class="form-control" id="confirm-password" type="password" autocomplete="new-password" minlength="15" maxlength="256" required></label>
+          <button class="btn btn-primary" type="submit">Salvar nova senha</button>
         </form>
       </section>
       <section id="help-view" class="stack" aria-labelledby="help-title" hidden>
@@ -386,44 +387,44 @@
         </section>
       </section>
       <section id="notifications-view" aria-labelledby="notifications-title" hidden>
-        <div class="panel-heading"><h1 id="notifications-title" tabindex="-1">Notificações</h1></div>
+        <div class="panel-heading dashboard-heading"><h1 id="notifications-title" tabindex="-1">Notificações</h1></div>
         <p id="notifications-guide" class="muted"></p>
         <div class="layout">
     <section class="card" aria-labelledby="queue-title">
-      <div class="row"><h2 id="queue-title"><img class="ui-icon" src="icons/notificacoes.png" alt="" width="22" height="22">Fila de notificações</h2><button type="button" id="refresh" class="secondary"><img class="ui-icon" src="icons/atualizar.png" alt="" width="20" height="20">Atualizar</button></div>
+      <div class="panel-row"><h2 id="queue-title"><img class="ui-icon" src="icons/notificacoes.png" alt="" width="22" height="22">Fila de notificações</h2><button type="button" id="refresh" class="btn btn-outline-primary secondary"><img class="ui-icon" src="icons/atualizar.png" alt="" width="20" height="20">Atualizar</button></div>
       <p class="small muted section-title">Selecione um registro para acompanhar a tratativa.</p>
       <form id="notification-filters" class="filters section-title">
-        <label><span class="label-heading"><img class="ui-icon" src="icons/buscar.png" alt="" width="22" height="22">Buscar notificações</span><input id="query" type="search" maxlength="120" placeholder="Protocolo ou setor"></label>
-        <label><span class="label-heading"><img class="ui-icon" src="icons/filtros.png" alt="" width="22" height="22">Situação</span><select id="status-filter"><option value="">Todas</option><option value="received">Recebidas</option><option value="in_progress">Em tratativa</option><option value="closed">Finalizadas</option></select></label>
-        <button type="submit" class="secondary">Aplicar filtros</button>
-        <button type="button" class="secondary" id="clear-filters">Limpar filtros</button>
+        <label><span class="label-heading"><img class="ui-icon" src="icons/buscar.png" alt="" width="22" height="22">Buscar notificações</span><input class="form-control" id="query" type="search" maxlength="120" placeholder="Protocolo ou setor"></label>
+        <label><span class="label-heading"><img class="ui-icon" src="icons/filtros.png" alt="" width="22" height="22">Situação</span><select class="form-select" id="status-filter"><option value="">Todas</option><option value="received">Recebidas</option><option value="in_progress">Em tratativa</option><option value="closed">Finalizadas</option></select></label>
+        <button type="submit" class="btn btn-outline-primary secondary">Aplicar filtros</button>
+        <button type="button" class="btn btn-outline-primary secondary" id="clear-filters">Limpar filtros</button>
       </form>
       <p id="queue-empty" class="muted section-title">Nenhuma notificação nesta página.</p>
       <ul id="queue" class="queue"></ul>
-      <div class="actions"><button type="button" id="more" class="secondary" hidden><img class="ui-icon" src="icons/carregar-mais.png" alt="" width="20" height="20">Carregar mais</button></div>
+      <div class="actions"><button type="button" id="more" class="btn btn-outline-primary secondary" hidden><img class="ui-icon" src="icons/carregar-mais.png" alt="" width="20" height="20">Carregar mais</button></div>
     </section>
     <div id="detail" class="stack" hidden>
       <section class="card">
-        <div class="row"><div><h2><img class="ui-icon" src="icons/protocolo.png" alt="" width="22" height="22"><span id="case-title" tabindex="-1"></span></h2><p id="case-meta" class="muted small"></p></div><span id="case-state" class="pill"></span></div>
+        <div class="panel-row"><div><h2><img class="ui-icon" src="icons/protocolo.png" alt="" width="22" height="22"><span id="case-title" tabindex="-1"></span></h2><p id="case-meta" class="muted small"></p></div><span id="case-state" class="pill"></span></div>
         <p id="case-summary" class="section-title"></p>
-        <div class="actions"><a id="pdf-link" class="button-link" target="_blank" rel="noopener" hidden><img class="ui-icon" src="icons/pdf.png" alt="" width="20" height="20">Abrir PDF atualizado<img class="ui-icon" src="icons/abrir-nova-aba.png" alt="" width="20" height="20"></a></div>
+        <div class="actions"><a id="pdf-link" class="btn btn-outline-primary button-link" target="_blank" rel="noopener" hidden><img class="ui-icon" src="icons/pdf.png" alt="" width="20" height="20">Abrir PDF atualizado<img class="ui-icon" src="icons/abrir-nova-aba.png" alt="" width="20" height="20"></a></div>
         <p id="pdf-hint" class="small muted info-line" hidden><img class="ui-icon" src="icons/imprimir.png" alt="" width="18" height="18">Abre em uma nova aba para impressão.</p>
-        <div class="next-step" aria-live="polite"><strong class="with-icon"><img class="ui-icon" src="icons/informacao.png" alt="" width="20" height="20">Próxima ação</strong><span id="next-step"></span><div><a class="button-link" id="go-closure" href="#closure" hidden>Ver etapa de encerramento</a></div></div>
+        <div class="next-step" aria-live="polite"><strong class="with-icon"><img class="ui-icon" src="icons/informacao.png" alt="" width="20" height="20">Próxima ação</strong><span id="next-step"></span><div><a class="btn btn-outline-primary button-link" id="go-closure" href="#closure" hidden>Ver etapa de encerramento</a></div></div>
         <details><summary><img class="ui-icon" src="icons/dados-ocorrencia.png" alt="" width="20" height="20"> Dados da notificação</summary><dl id="case-fields" class="entry-list"></dl></details>
         <details id="photo-wrap" hidden><summary><img class="ui-icon" src="icons/foto.png" alt="" width="22" height="22">Ver foto da ocorrência</summary><img id="case-photo" class="photo" alt="Foto anexada à ocorrência" loading="lazy"></details>
         <div id="triage" class="area" hidden>
           <h3><img class="ui-icon" src="icons/triagem.png" alt="" width="22" height="22">Triagem e encaminhamento</h3><p class="small muted">Escolha uma área, um responsável e os prazos do parecer e das ações.</p>
           <div class="form-grid">
-            <label>Área<select id="area-choice"><option value="patient_safety">Segurança do Paciente</option><option value="ccih">CCIH</option></select></label>
-            <label>Responsável<select id="assignee"></select></label>
-            <label>Prazo do parecer<input id="opinion-due" type="date"></label>
-            <label>Prazo das ações<input id="actions-due" type="date"></label>
+            <label>Área<select class="form-select" id="area-choice"><option value="patient_safety">Segurança do Paciente</option><option value="ccih">CCIH</option></select></label>
+            <label>Responsável<select class="form-select" id="assignee"></select></label>
+            <label>Prazo do parecer<input class="form-control" id="opinion-due" type="date"></label>
+            <label>Prazo das ações<input class="form-control" id="actions-due" type="date"></label>
           </div>
-          <button type="button" id="assign"><img class="ui-icon" src="icons/encaminhar.png" alt="" width="20" height="20">Encaminhar à área</button>
+          <button class="btn btn-primary" type="button" id="assign"><img class="ui-icon" src="icons/encaminhar.png" alt="" width="20" height="20">Encaminhar à área</button>
         </div>
       </section>
       <section class="card"><h2><img class="ui-icon" src="icons/acoes.png" alt="" width="22" height="22">Tratativas por área</h2><div id="areas"></div></section>
-      <section id="closure" class="card" hidden><h2><img class="ui-icon" src="icons/encerrar.png" alt="" width="22" height="22">Encerramento</h2><p id="close-hint" class="muted small section-title"></p><ul id="closure-checklist"></ul><label>Conclusão do caso<textarea id="conclusion" maxlength="5000"></textarea></label><div class="actions"><button id="close-case" type="button"><img class="ui-icon" src="icons/encerrar.png" alt="" width="20" height="20">Finalizar notificação</button></div></section>
+      <section id="closure" class="card" hidden><h2><img class="ui-icon" src="icons/encerrar.png" alt="" width="22" height="22">Encerramento</h2><p id="close-hint" class="muted small section-title"></p><ul id="closure-checklist"></ul><label>Conclusão do caso<textarea class="form-control" id="conclusion" maxlength="5000"></textarea></label><div class="actions"><button class="btn btn-primary" id="close-case" type="button"><img class="ui-icon" src="icons/encerrar.png" alt="" width="20" height="20">Finalizar notificação</button></div></section>
       <section class="card"><h2><img class="ui-icon" src="icons/historico.png" alt="" width="22" height="22">Histórico</h2><ol id="history" class="history"></ol></section>
     </div>
     <section id="welcome" class="card"><h2><img class="ui-icon" src="icons/protocolo.png" alt="" width="22" height="22">Selecione um protocolo</h2><p class="muted">Acompanhe os pareceres, prazos, ações e decisões.</p></section>

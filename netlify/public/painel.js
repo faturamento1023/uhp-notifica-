@@ -59,7 +59,7 @@ function labeled(tag,text,className,name) {
   return node;
 }
 function button(text,action,secondary=false) {
-  const node=el("button","",secondary?"secondary":"");
+  const node=el("button","",secondary?"btn btn-outline-primary secondary":"btn btn-primary");
   const name=actionIcon[text];
   if(name) node.append(icon(name));
   node.append(document.createTextNode(text));
@@ -70,13 +70,14 @@ function button(text,action,secondary=false) {
 function inputField(label,value="",type="text") {
   const wrap=el("label",label), input=document.createElement(type==="textarea"?"textarea":"input");
   if(type!=="textarea") input.type=type;
+  input.classList.add("form-control");
   input.value=value ?? "";
   wrap.append(input);
   return {wrap,input};
 }
 function message(text,error=false) {
   $("feedback").replaceChildren(icon(error?"erro":"sucesso"),document.createTextNode(text));
-  $("feedback").className=error?"notice error":"notice";
+  $("feedback").className=error?"alert notice error":"alert notice";
   if(error) $("feedback").scrollIntoView({block:"nearest"});
 }
 async function api(path,method="GET",body) {
@@ -307,7 +308,7 @@ function renderNotificationList(list,records,open) {
 
 function notificationEntry(item,open) {
   const li=document.createElement("li");
-  const trigger=el("button");
+  const trigger=el("button","","btn");
   trigger.type="button";
   trigger.dataset.notificationId=item.id;
   if(selected===item.id) trigger.setAttribute("aria-current","true");
@@ -368,6 +369,7 @@ async function loadPhoto(record) {
 }
 function makeSelect(label,options,selectedValue) {
   const wrap=el("label",label),select=document.createElement("select");
+  select.classList.add("form-select");
   for(const item of options) select.add(new Option(item.label,item.value));
   if(selectedValue) select.value=selectedValue;
   wrap.append(select);
@@ -487,7 +489,7 @@ function renderAssignment(assignment) {
   const owner=account.id===assignment.assigneeId && account.role===assignment.area;
   const coord=canCoordinate();
   const box=el("article","","area");
-  const head=el("div","","row");
+  const head=el("div","","panel-row");
   head.append(labeled("h3",areaName[assignment.area],"",assignment.area==="ccih"?"ccih":"seguranca-paciente"));
   head.append(labeled("span",stepName[assignment.status] || assignment.status,"pill"+(assignment.status==="validated"?" done":""),assignment.status==="validated"?"validar":"pendente"));
   box.append(head,labeled("p","Parecer até "+formatDate(assignment.opinionDue)+" · Ações até "+formatDate(assignment.actionsDue),"small muted info-line","prazo"));
@@ -687,7 +689,7 @@ async function generateReport() {
     const [protocol,...values]=reportValues(item);
     const row=el("tr");
     const protocolCell=el("td");
-    const trigger=el("button",protocol,"secondary");
+    const trigger=el("button",protocol,"btn btn-outline-primary secondary");
     trigger.type="button";
     trigger.addEventListener("click",()=>perform(()=>navigateToCase(item.id)));
     protocolCell.append(trigger);

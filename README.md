@@ -226,3 +226,7 @@ O avatar da barra lateral mostra a foto cadastrada para a conta autenticada de A
 A foto do perfil passou a ter 80 px no menu aberto do desktop e 48 px na navegação móvel. O menu recolhido no desktop usa o avatar compacto.
 
 Na barra lateral, **Alterar senha** fica logo abaixo de **Bate-papo** e permite alterar a senha da própria conta. A operação verifica a senha atual, exige pelo menos 15 caracteres na nova senha e encerra todas as sessões da conta após a troca. A API `POST /api/v1/session/password` limita as tentativas por conta.
+
+## Estilização do painel
+
+As páginas internas `/` e `/painel.html` usam HTML5 e o CSS local do Bootstrap 5.3.8 para cartões, navegação, botões, formulários e tabela de relatórios, com o tema institucional do UHP Notifica. O painel mantém as rotas, os fluxos e os controles existentes. A página pública `/notificar.html` e seu formulário por QR Code continuam com os arquivos próprios.

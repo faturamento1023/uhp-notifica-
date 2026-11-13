@@ -205,3 +205,96 @@ body.panel-signed-in.sidebar-collapsed { --sidebar-width: 68px; }
 #password-form { width: min(100%, 480px); }
 #password-form button { justify-self: start; }
 #password-rules { margin: 0; }
+
+/* Tema do painel sobre os componentes do Bootstrap */
+:root {
+  --bs-body-color: #17343b;
+  --bs-body-bg: #f2f6f6;
+  --bs-body-font-family: "Inter", "Segoe UI", system-ui, sans-serif;
+  --bs-primary: #006b6c;
+  --bs-primary-rgb: 0, 107, 108;
+  --bs-link-color: #006467;
+  --bs-link-color-rgb: 0, 100, 103;
+  --bs-link-hover-color-rgb: 7, 84, 89;
+  --bs-border-color: #d5e1df;
+}
+
+body { line-height: 1.55; }
+.panel-shell { background: var(--bs-body-bg); }
+.panel-sidebar { --sidebar-bg: #203746; }
+.panel-menu { --bs-nav-link-color: #eef5fa; }
+.panel-menu a[aria-current="page"] { background: #355563; }
+.sidebar-avatar { outline: 2px solid #90c6c3; outline-offset: 3px; }
+.panel-content .dashboard-heading,
+#login-hero {
+  padding: clamp(16px, 2.2vw, 26px);
+  border: 1px solid #cfe0df;
+  border-radius: 14px;
+  background: linear-gradient(110deg, #e4f1ef, #f8fbfb);
+}
+#notifications-guide { margin-top: 12px; }
+.panel-content h2, #login h2 { color: var(--dark); font-weight: 700; }
+.panel-shell .card, #login {
+  --bs-card-bg: #fff;
+  --bs-card-border-color: #d5e1df;
+  --bs-card-border-radius: 14px;
+  background: var(--bs-card-bg);
+  border-color: var(--bs-card-border-color);
+  border-radius: var(--bs-card-border-radius);
+  box-shadow: 0 3px 12px rgb(7 84 89 / 6%);
+}
+.dashboard-stats .card { border-top-width: 3px; }
+.dashboard-stats .card:nth-child(1) { border-top-color: var(--teal); }
+.dashboard-stats .card:nth-child(2) { border-top-color: var(--yellow); }
+.dashboard-stats .card:nth-child(3) { border-top-color: var(--green); }
+.dashboard-stats dd { margin-top: 6px; }
+.panel-content .btn, #login .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: .5rem;
+  min-height: 42px;
+  font-weight: 650;
+}
+.panel-content .btn-primary, #login .btn-primary {
+  --bs-btn-bg: #006b6c;
+  --bs-btn-border-color: #006b6c;
+  --bs-btn-hover-bg: #075459;
+  --bs-btn-hover-border-color: #075459;
+  --bs-btn-active-bg: #06484c;
+  --bs-btn-active-border-color: #06484c;
+  --bs-btn-disabled-bg: #006b6c;
+  --bs-btn-disabled-border-color: #006b6c;
+}
+.panel-content .btn-outline-primary {
+  --bs-btn-color: #075459;
+  --bs-btn-border-color: #a6c5c2;
+  --bs-btn-hover-color: #075459;
+  --bs-btn-hover-bg: #e7f2f1;
+  --bs-btn-hover-border-color: #91b9b5;
+  --bs-btn-active-color: #075459;
+  --bs-btn-active-bg: #deeeed;
+  --bs-btn-active-border-color: #91b9b5;
+  --bs-btn-disabled-color: #4b646a;
+  --bs-btn-disabled-border-color: #b6ccca;
+}
+.panel-content .btn:focus-visible, #login .btn:focus-visible,
+.panel-content .form-control:focus, .panel-content .form-select:focus, #login .form-control:focus {
+  border-color: #008586;
+  box-shadow: 0 0 0 .2rem rgb(0 133 134 / 18%);
+}
+.panel-content .form-select { padding-right: 2.25rem; background-image: var(--bs-form-select-bg-img); }
+.panel-content .form-control[type="file"] { padding-block: .5rem; }
+.panel-content .queue .btn {
+  display: block;
+  border-radius: 0;
+  color: #17343b;
+}
+.panel-content .queue .btn[aria-current="true"] { box-shadow: inset 3px 0 var(--brand); }
+.report-results .table { --bs-table-hover-bg: #edf5f4; }
+.help-tutorials details > summary { padding: 4px 0; color: var(--dark); }
+.help-tutorials details[open] > summary { margin-bottom: 10px; }
+@media (max-width: 540px) {
+  .panel-content .btn, #login .btn { min-height: 44px; }
+  .dashboard-stats dd { font-size: 1.4rem; }
+}
