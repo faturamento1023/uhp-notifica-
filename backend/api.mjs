@@ -202,11 +202,34 @@ export function createApi(db, { origin, clock = () => new Date(), evidenceLimit 
     const offset = Number(url.searchParams.get('offset') ?? 0);
     if (!Number.isSafeInteger(offset) || offset < 0) invalid('offset');
     const limit = 30;
-    const found = canCoordinate(user)
-      ? await all('SELECT * FROM notifications WHERE unit_id=? ORDER BY created_at DESC,id DESC LIMIT ? OFFSET ?', user.unitId, limit + 1, offset)
-      : await all(`SELECT n.* FROM notifications n JOIN assignments a ON a.notification_id=n.id
-        WHERE n.unit_id=? AND a.assignee_id=? AND a.area=? ORDER BY n.created_at DESC,n.id DESC LIMIT ? OFFSET ?`,
-        user.unitId, user.id, user.role, limit + 1, offset);
+    const status = url.searchParams.get('status');
+    if (status !== null) oneOf(status, ['received', 'in_progress', 'closed'], 'status');
+    const query = str(url.searchParams.get('q'), 'q', 120, true)
+      .toLowerCase().normalize('NFD').replace(/\p{Diacritic}/gu, '');
+    const scope = canCoordinate(user)
+      ? { from: 'notifications n', where: 'n.unit_id=?', args: [user.unitId] }
+      : { from: 'notifications n JOIN assignments a ON a.notification_id=n.id',
+          where: 'n.unit_id=? AND a.assignee_id=? AND a.area=?', args: [user.unitId, user.id, user.role] };
+    const conditions = [scope.where];
+    const args = [...scope.args];
+    if (status) {
+      conditions.push('n.status=?');
+      args.push(status);
+    }
+    if (query) {
+      const fields = ['protocol', "(n.payload::jsonb)->>'sector'", "(n.payload::jsonb)->>'subject'",
+        "CASE WHEN (n.payload::jsonb)->>'kind'='incident' THEN 'incidente evento adverso' ELSE 'não conformidade' END"];
+      const searchable = "translate(lower(concat_ws(' ', " + fields.join(', ') +
+        ")), 'áàâãäéèêëíìîïóòôõöúùûüç', 'aaaaaeeeeiiiiooooouuuuc')";
+      conditions.push('strpos(' + searchable + ', ?) > 0');
+      args.push(query);
+    }
+    const found = await all('SELECT n.* FROM ' + scope.from + ' WHERE ' + conditions.join(' AND ') +
+      ' ORDER BY n.created_at DESC,n.id DESC LIMIT ? OFFSET ?', ...args, limit + 1, offset);
+    const summary = offset === 0 && !status && !query
+      ? await all('SELECT n.status, count(*)::integer AS total FROM ' + scope.from + ' WHERE ' +
+          scope.where + ' GROUP BY n.status', ...scope.args)
+      : undefined;
     const page = found.slice(0, limit);
     const ids = page.map(row => row.id);
     const scoped = !ids.length ? [] : canCoordinate(user)
@@ -219,6 +242,7 @@ export function createApi(db, { origin, clock = () => new Date(), evidenceLimit 
         const { kind, sector, occurredOn, subject, harm } = JSON.parse(row.payload);
         return { id: row.id, protocol: row.protocol, status: row.status, createdAt: row.created_at, kind, sector, occurredOn, subject, harm, assignments: byNotification.get(row.id) };
       }),
+      summary,
       nextOffset: found.length > limit ? offset + limit : null
     };
   }
