@@ -131,3 +131,13 @@ O [PR nº 2](https://github.com/faturamento1023/uhp-notifica-/pull/2) contém a 
 ## Ícones da interface
 
 O pacote de 50 PNGs individuais, recortados e transparentes, está em [netlify/public/icons](netlify/public/icons/README.md). As telas podem referenciar os arquivos por `/icons/nome.png`. O catálogo inclui formulário, QR Code, PDF, triagem, pareceres, evidências, estados e encerramento.
+
+## Logos aprovadas para o frontend
+
+| Arquivo | Uso |
+| --- | --- |
+| `uhp-notifica-login.png` | Logo horizontal do sistema na tela de login. |
+| `uhp-notifica-icone.png` | Símbolo do sistema para o favicon (ícone da aba do navegador). |
+| `logo-posse-saude.png` | Logo institucional da Secretaria de Saúde, exibida junto à marca do UHP Notifica. |
+
+Os arquivos estão em `netlify/public/`. No HTML, referencie o favicon com `<link rel="icon" type="image/png" href="/uhp-notifica-icone.png">`.
