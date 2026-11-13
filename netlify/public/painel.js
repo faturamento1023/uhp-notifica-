@@ -414,7 +414,7 @@ function renderDetail() {
   const pdfLink=$("pdf-link");
   pdfLink.hidden=false;
   $("pdf-hint").hidden=pdfLink.hidden;
-  pdfLink.href=API+"/notifications/"+encodeURIComponent(record.id)+"/pdf";
+  pdfLink.href="/notificacao-pdf.html?id="+encodeURIComponent(record.id);
   $("next-step").textContent=nextAction(record);
   renderDetailsList(record);
   $("photo-wrap").hidden=!record.photo;
