@@ -1,6 +1,7 @@
 import { Buffer } from 'node:buffer';
 import { randomUUID } from 'node:crypto';
 import { digest, passwordHash, passwordMatches, roles, token } from './store.mjs';
+import { listGroupMessages, sendGroupMessage } from './group-chat.mjs';
 import { notificationPdf } from './notification-pdf.mjs';
 import { conflict, day, fail, forbidden, HttpError, id, invalid, oneOf, readJson, str, unavailable } from './validation.mjs';
 
@@ -384,6 +385,13 @@ export function createApi(db, { origin, clock = () => new Date(), evidenceLimit 
         if (path === '/api/v1/session' && method === 'DELETE') {
           await run('DELETE FROM sessions WHERE hash=?', sessionKey(request));
           return new Response(null, { status: 204, headers: { 'set-cookie': cookie('', 0), 'cache-control': 'no-store' } });
+        }
+        if (path === '/api/v1/chat/messages') {
+          if (method === 'GET') return json(await listGroupMessages(db, url));
+          if (method === 'POST') {
+            await throttle('chat:author:' + user.id, 15, 60);
+            return json(await sendGroupMessage(db, request, user), 201);
+          }
         }
         if (method === 'GET' && path === '/api/v1/notifications') return json(await queue(user, url));
         if (method === 'GET' && path === '/api/v1/assignees') {
