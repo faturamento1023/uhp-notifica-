@@ -1,6 +1,6 @@
 import { createServer } from 'node:http';
-import { chmodSync, createReadStream, mkdirSync, openSync, closeSync, realpathSync, statSync } from 'node:fs';
-import { dirname, extname, resolve, sep } from 'node:path';
+import { createReadStream, realpathSync, statSync } from 'node:fs';
+import { extname, resolve, sep } from 'node:path';
 import { Readable } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
 import { createApi } from './api.mjs';
@@ -14,12 +14,15 @@ if (origin.protocol !== 'https:' && !['127.0.0.1', 'localhost', '[::1]'].include
   throw new Error('Use HTTPS no endereço institucional.');
 }
 
-process.umask(0o077);
-const dbPath = resolve(process.env.UHP_DB ?? 'data/uhp.sqlite');
-mkdirSync(dirname(dbPath), { recursive: true, mode: 0o700 });
-closeSync(openSync(dbPath, 'a', 0o600));
-chmodSync(dbPath, 0o600);
-const db = openStore(dbPath);
+const db = openStore();
+try {
+  const info = await db.get('SELECT current_schema() AS schema');
+  if (info.schema !== 'uhp_notifica') throw new Error('search_path');
+  await db.get('SELECT id FROM uhp_notifica.units LIMIT 1');
+} catch (error) {
+  await db.close();
+  throw new Error('Falha ao conectar ao banco do UHP Notifica (' + (error.code ?? 'conexão') + ').');
+}
 const api = createApi(db, { origin: origin.origin });
 
 const frontend = process.env.UHP_FRONTEND_DIR ? realpathSync(process.env.UHP_FRONTEND_DIR) : null;
