@@ -229,13 +229,14 @@
   function reviewEntries(form) {
     const entries = [];
     for (const field of form.elements) {
-      if (!field.name || field.disabled || !field.value.trim()) continue;
+      if (!field.name || field.disabled || !field.value.trim() || (field.type === "radio" && !field.checked)) continue;
       if (["ageUnit", "factors", "otherSector"].includes(field.name)) continue;
       let value = field.value.trim();
       if (field.type === "date") value = value.split("-").reverse().join("/");
       if (field.name === "age") value += " " + get("event-age-unit").value.toLowerCase();
       if (field.id === "event-sector" && value === "Outro") value = get("event-other-sector").value.trim();
-      const label = field.labels[0].textContent.replace(/ \*$/, "");
+      const label = field.name === "identity" ? "Identificação de quem notifica"
+        : field.labels[0].textContent.replace(/ \*$/, "");
       entries.push([label, value]);
     }
     const selectedFactors = new FormData(form).getAll("factors");
@@ -243,7 +244,19 @@
     return entries;
   }
 
-  for (const form of document.querySelectorAll("form")) {
+  for (const form of document.querySelectorAll("#nonconformity form, #incident form")) {
+    const identity = form.querySelector("[data-identity]");
+    const nameWrap = identity.querySelector("[data-identity-name]");
+    const notifierName = nameWrap.querySelector("input");
+    function syncIdentity() {
+      const identified = identity.querySelector('input[name="identity"]:checked')?.value === "Identificada";
+      nameWrap.hidden = !identified;
+      notifierName.disabled = !identified;
+      notifierName.required = identified;
+      if (!identified) notifierName.value = "";
+    }
+    identity.addEventListener("change", syncIdentity);
+    syncIdentity();
     const photoInput = form.querySelector("[data-photo]");
     const photoError = form.querySelector("[data-photo-error]");
     const removePhoto = form.querySelector("[data-remove-photo]");
@@ -257,7 +270,7 @@
       reviewButton.disabled = false;
     }
 
-    form.addEventListener("reset", clearPhoto);
+    form.addEventListener("reset", () => { clearPhoto(); queueMicrotask(syncIdentity); });
     removePhoto.addEventListener("click", () => {
       clearPhoto();
       photoInput.focus();
