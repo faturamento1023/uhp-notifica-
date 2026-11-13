@@ -206,3 +206,5 @@ Ajuste visual da tela **Início**. O menu e os totais ganharam destaque, o texto
 O painel autenticado ganhou uma barra lateral escura com os dados do perfil, atalhos para Dashboard e Notificações e o botão Sair. No desktop, o menu pode ser recolhido. Em telas menores, a navegação fica em uma faixa acima do conteúdo. O cabeçalho exibe as duas marcas institucionais.
 
 O painel passou a usar toda a largura disponível ao lado do menu. Em monitores largos, as duas colunas do dashboard têm a mesma largura e o histórico do bate-papo tem mais espaço vertical.
+
+No desktop, o botão **Sair** fica na base do menu lateral, com acesso durante a rolagem. Em telas menores, ele fica na faixa de navegação.
