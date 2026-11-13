@@ -1,3 +1,4 @@
+import { Buffer } from 'node:buffer';
 import { randomUUID } from 'node:crypto';
 import { digest, passwordHash, passwordMatches, roles, token } from './store.mjs';
 import { conflict, day, fail, forbidden, HttpError, id, invalid, oneOf, readJson, str, unavailable } from './validation.mjs';
