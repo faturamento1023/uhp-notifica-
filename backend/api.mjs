@@ -336,6 +336,8 @@ export function createApi(db, { origin, clock = () => new Date(), evidenceLimit 
         }
         const raw = token();
         await atomic(async () => {
+          const credentials = await get('SELECT password FROM users WHERE id=? AND active=1 FOR UPDATE', user.id);
+          if (credentials?.password !== user.password) fail(401, 'invalid_credentials', 'E-mail ou senha inválidos.');
           await run('DELETE FROM sessions WHERE expires<=? OR hash=?', +clock(), sessionKey(request));
           await run('INSERT INTO sessions(hash,user_id,expires) VALUES (?,?,?)', digest(raw), user.id, +clock() + sessionSeconds * 1000);
           await run('DELETE FROM rate_limits WHERE key=?', 'login:email:' + digest(email));
@@ -406,6 +408,27 @@ export function createApi(db, { origin, clock = () => new Date(), evidenceLimit 
       const authenticated = async () => {
         const user = await actor(request);
         if (path === '/api/v1/session' && method === 'GET') return json(user);
+        if (path === '/api/v1/session/password' && method === 'POST') {
+          const body = await readJson(request, 4096);
+          const current = str(body.currentPassword, 'senha atual', 256);
+          const next = str(body.newPassword, 'nova senha', 256);
+          if (next !== body.newPassword || Array.from(next).length < 15 || next === current) {
+            fail(400, 'invalid_password', 'Use uma senha diferente, com pelo menos 15 caracteres e sem espaços no início ou no fim.');
+          }
+          const limitKey = 'password:account:' + user.id;
+          await throttle(limitKey, 8, 900);
+          await atomic(async () => {
+            const credentials = await get('SELECT password FROM users WHERE id=? AND active=1 FOR UPDATE', user.id);
+            await actor(request);
+            if (!credentials || !passwordMatches(current, credentials.password)) {
+              fail(400, 'incorrect_password', 'A senha atual está incorreta.');
+            }
+            await run('UPDATE users SET password=? WHERE id=?', passwordHash(next), user.id);
+            await run('DELETE FROM sessions WHERE user_id=?', user.id);
+            await run('DELETE FROM rate_limits WHERE key=?', limitKey);
+          });
+          return new Response(null, { status: 204, headers: { 'set-cookie': cookie('', 0), 'cache-control': 'no-store' } });
+        }
         if (path === '/api/v1/session/avatar' && method === 'GET') {
           const avatar = await get('SELECT content FROM profile_avatars WHERE user_id=?', user.id);
           if (!avatar) unavailable();
