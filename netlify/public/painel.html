@@ -242,8 +242,8 @@
 </style>
 <link rel="stylesheet" href="bate-papo.css">
 <script src="bate-papo.js" defer></script>
-<link rel="stylesheet" href="painel-layout.css?v=9">
-<script src="painel.js?v=6" defer></script>
+<link rel="stylesheet" href="painel-layout.css?v=10">
+<script src="painel.js?v=7" defer></script>
 <script src="banners.js" defer></script>
 </head>
 <body>
@@ -276,6 +276,7 @@
           <a href="#bate-papo" id="nav-chat" aria-label="Bate-papo" title="Bate-papo"><img class="ui-icon" src="icons/enviar.png" alt="" width="20" height="20"><span>Bate-papo</span></a>
           <a href="#relatorios" id="nav-reports" aria-label="Relatórios" title="Relatórios"><img class="ui-icon" src="icons/historico.png" alt="" width="20" height="20"><span>Relatórios</span></a>
           <a href="#ajuda" id="nav-help" aria-label="Ajuda" title="Ajuda"><img class="ui-icon" src="icons/informacao.png" alt="" width="20" height="20"><span>Ajuda</span></a>
+          <a href="#alterar-senha" id="nav-password" aria-label="Alterar senha" title="Alterar senha"><img class="ui-icon" src="icons/editar.png" alt="" width="20" height="20"><span>Alterar senha</span></a>
         </nav>
         <button id="logout" type="button" aria-label="Sair" title="Sair" hidden><img class="ui-icon" src="icons/sair.png" alt="" width="20" height="20"><span>Sair</span></button>
       </div>
@@ -342,6 +343,16 @@
             </table>
           </div>
         </section>
+      </section>
+      <section id="password-view" class="stack" aria-labelledby="password-title" hidden>
+        <div class="panel-heading dashboard-heading"><h1 id="password-title" tabindex="-1">Alterar senha</h1></div>
+        <form id="password-form" class="card stack">
+          <label>Senha atual<input id="current-password" type="password" autocomplete="current-password" maxlength="256" required></label>
+          <label>Nova senha<input id="new-password" type="password" autocomplete="new-password" minlength="15" maxlength="256" aria-describedby="password-rules" required></label>
+          <p id="password-rules" class="muted">Use pelo menos 15 caracteres. Após salvar, entre novamente com a nova senha.</p>
+          <label>Confirmar nova senha<input id="confirm-password" type="password" autocomplete="new-password" minlength="15" maxlength="256" required></label>
+          <button type="submit">Salvar nova senha</button>
+        </form>
       </section>
       <section id="help-view" class="stack" aria-labelledby="help-title" hidden>
         <div class="panel-heading dashboard-heading"><h1 id="help-title" tabindex="-1">Ajuda</h1></div>

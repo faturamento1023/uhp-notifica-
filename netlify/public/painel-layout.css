@@ -201,3 +201,7 @@ body.panel-signed-in.sidebar-collapsed { --sidebar-width: 68px; }
   .dashboard-stats dt { font-size: .82rem; }
   .dashboard-stats dd { font-size: 1.5rem; }
 }
+
+#password-form { width: min(100%, 480px); }
+#password-form button { justify-self: start; }
+#password-rules { margin: 0; }

@@ -140,6 +140,7 @@ function showLogin() {
   $("login-hero").hidden=false;
   $("detail").hidden=true;
   $("welcome").hidden=false;
+  $("password-form").reset();
   $("notification-filters").reset();
   $("report-form").reset();
   clearReport();
@@ -187,11 +188,12 @@ let queuePageCount=1, notificationTimer, notificationRevision=0, refreshingNotif
 
 const panelViews={
   "#inicio":"home", "#notificacoes":"notifications", "#closure":"notifications",
-  "#bate-papo":"chat", "#relatorios":"reports", "#ajuda":"help"
+  "#bate-papo":"chat", "#relatorios":"reports", "#ajuda":"help", "#alterar-senha":"password"
 };
 
 function showView(focus=true) {
   const currentView=panelViews[location.hash] || "home";
+  if(currentView!=="password") $("password-form").reset();
   for(const view of new Set(Object.values(panelViews))) {
     const active=view===currentView;
     $(view+"-view").hidden=!active;
@@ -720,6 +722,20 @@ $("report-form").addEventListener("submit",event=>{
   perform(generateReport);
 });
 $("report-export").addEventListener("click",exportReport);
+
+$("password-form").addEventListener("submit",event=>{
+  event.preventDefault();
+  perform(async()=>{
+    const currentPassword=$("current-password").value;
+    const newPassword=$("new-password").value;
+    if(newPassword!==$("confirm-password").value) throw Error("A confirmação precisa ser igual à nova senha.");
+    await api("/session/password","POST",{currentPassword,newPassword});
+    history.replaceState(null,"",location.pathname+location.search);
+    showLogin();
+    $("email").focus();
+    message("Senha alterada. Entre com a nova senha.");
+  });
+});
 
 $("login-form").addEventListener("submit",event=>{
   event.preventDefault();
