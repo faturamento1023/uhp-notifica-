@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; form-action 'none'; base-uri 'none'">
+<link rel="icon" type="image/png" href="uhp-notifica-icone.png">
+<link rel="apple-touch-icon" href="uhp-notifica-icone.png">
+<title>UHP Notifica | Painel</title>
+<style>
+  :root { font:16px/1.5 "Segoe UI",system-ui,sans-serif; color:#17343b; background:#f3f7f6; --brand:#008586; --teal:#006b6c; --dark:#075459; --green:#5cbc73; --yellow:#ffca05; --red:#bb1f25; --line:#d5e1df; --muted:#4b646a }
+  * { box-sizing:border-box }
+  [hidden] { display:none !important }
+  body { margin:0 }
+  button,input,select,textarea { font:inherit }
+  button { cursor:pointer }
+  button:disabled { cursor:not-allowed; opacity:.55 }
+  header { background:#fff; border-bottom:1px solid var(--line) }
+  header::after { content:""; display:block; height:4px; background:linear-gradient(90deg,var(--green) 0 25%,var(--yellow) 25% 50%,var(--brand) 50% 75%,var(--red) 75%) }
+  .shell { width:min(1200px,calc(100% - 32px)); margin:auto }
+  .top { min-height:86px; display:flex; align-items:center; justify-content:space-between; gap:15px }
+  .brand img { display:block; width:240px; max-width:100%; height:auto }
+  .institution img { display:block; width:145px; max-width:100%; height:auto }
+  .account { display:flex; align-items:center; gap:10px; flex-wrap:wrap; justify-content:flex-end }
+  .login-mark { display:block; width:56px; height:auto; margin-bottom:12px }
+  .ui-icon { width:22px; height:22px; object-fit:contain; flex:none; vertical-align:middle }
+  button,.button-link { display:inline-flex; align-items:center; justify-content:center; gap:8px }
+  button .ui-icon,.button-link .ui-icon { width:20px; height:20px }
+  .actions button:not(.secondary) .ui-icon,#login-form button .ui-icon,#assign .ui-icon,#close-case .ui-icon { filter:brightness(0) invert(1) }
+  .hero h1,h2,h3,.label-heading { display:flex; align-items:center; gap:9px }
+  .hero h1 .ui-icon { width:34px; height:34px }
+  .hero h1 .ui-icon { filter:brightness(0) invert(1) }
+  .label-heading { font-weight:650 }
+  .with-icon { display:inline-flex; align-items:center; gap:5px }
+  .next-step .with-icon { display:flex }
+  .pill .ui-icon { width:15px; height:15px }
+  .queue button .case-heading { display:flex; align-items:center; gap:8px }
+  .queue button .case-heading .ui-icon { width:22px; height:22px }
+  .info-line { display:flex; align-items:center; gap:7px; flex-wrap:wrap }
+  .info-line .ui-icon { width:18px; height:18px }
+  .evidence-link { display:inline-flex; align-items:center; gap:7px; overflow-wrap:anywhere }
+  #feedback:not(:empty) { display:flex; align-items:center; gap:9px }
+  #feedback .ui-icon { width:20px; height:20px }
+  main { padding:28px 0 70px }
+  h1,h2,h3,p { margin:0 }
+  h1 { font-size:clamp(2rem,4vw,3rem); line-height:1.1; letter-spacing:-.04em }
+  h2 { font-size:1.3rem }
+  h3 { font-size:1.08rem }
+  .hero { background:linear-gradient(120deg,var(--dark),var(--brand)); color:#fff; border-radius:20px; padding:28px }
+  .hero p { color:#d8efea; margin-top:7px }
+  .layout { display:grid; grid-template-columns:minmax(280px,350px) minmax(0,1fr); gap:16px; align-items:start; margin-top:18px }
+  .card { background:#fff; border:1px solid var(--line); border-radius:15px; padding:20px; min-width:0 }
+  .stack { display:grid; gap:16px }
+  .row { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap }
+  .muted { color:var(--muted) }
+  .small { font-size:.88rem }
+  .notice { margin:16px 0; padding:12px 15px; border-left:3px solid var(--brand); background:#e7f2f1; border-radius:0 9px 9px 0 }
+  .notice.error { border-color:var(--red); background:#fff2ef; color:#842c2c }
+  .next-step { margin-top:16px; padding:14px 16px; border-left:4px solid var(--yellow); border-radius:0 10px 10px 0; background:#fff9e6; color:#4c420c }
+  .next-step strong { display:block; margin-bottom:3px }
+  #feedback:empty { display:none }
+  label { display:grid; gap:5px; font-weight:650 }
+  input,select,textarea { width:100%; min-height:43px; border:1px solid #aabebc; border-radius:8px; padding:8px 10px; background:#fff; color:#17343b }
+  textarea { min-height:95px; resize:vertical }
+  button { min-height:42px; border:1px solid var(--teal); border-radius:8px; padding:7px 13px; background:var(--teal); color:#fff; font-weight:700 }
+  button.secondary { background:#fff; color:var(--teal) }
+  button:hover:not(:disabled),.button-link:hover { filter:brightness(.94) }
+  .button-link { display:inline-flex; align-items:center; justify-content:center; min-height:42px; border:1px solid var(--teal); border-radius:8px; padding:7px 13px; background:#fff; color:var(--teal); font-weight:700; text-decoration:none }
+  :focus-visible { outline:3px solid var(--brand); outline-offset:3px }
+  .form-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px }
+  .filters { display:grid; grid-template-columns:1fr 1fr; gap:10px }
+  .wide { grid-column:1/-1 }
+  .actions { display:flex; flex-wrap:wrap; gap:9px; margin-top:12px }
+  .queue { list-style:none; margin:14px 0 0; padding:0; display:grid; gap:8px }
+  .queue button { display:block; width:100%; text-align:left; background:#fff; color:#17343b; border-color:var(--line); padding:12px }
+  .queue button[aria-current="true"] { border-color:var(--brand); background:#e7f2f1 }
+  .queue button:hover { border-color:var(--brand) }
+  .queue .pill { margin:8px 7px 0 0 }
+  .queue strong,.queue small { display:block; overflow-wrap:anywhere }
+  .queue small { color:var(--muted); margin-top:3px }
+  .pill { display:inline-flex; align-items:center; gap:5px; width:max-content; border-radius:999px; padding:3px 9px; background:#e7f2f1; color:var(--dark); font-size:.83rem; font-weight:700 }
+  .pill.received { background:#fff4c8; color:#604709 }
+  .pill.late { background:#fff1ef; color:#8e2026 }
+  .pill.done { background:#e8f6eb; color:#245a34 }
+  .area { border:1px solid var(--line); border-radius:11px; padding:16px; margin-top:12px; display:grid; gap:10px }
+  .card > h2 { padding-left:10px; border-left:4px solid var(--green) }
+  .section-title { margin:12px 0 }
+  .entry-list { display:grid; grid-template-columns:minmax(120px,1fr) 2fr; gap:0 14px; margin:10px 0 }
+  dt,dd { margin:0; padding:7px 0; border-bottom:1px solid var(--line); overflow-wrap:anywhere; white-space:pre-wrap }
+  dt { font-weight:700 }
+  .history { margin:8px 0 0; padding-left:20px }
+  .history li { padding:4px 0 }
+  .photo { max-width:100%; max-height:360px; object-fit:contain; border:1px solid var(--line); border-radius:9px }
+  .inline { display:flex; align-items:end; gap:8px; flex-wrap:wrap }
+  .inline > label { flex:1 1 180px }
+  .login { max-width:450px; margin:22px auto }
+  .login form { display:grid; gap:14px }
+  @media(max-width:850px) { .layout { grid-template-columns:1fr } }
+  @media(max-width:750px) { .top { flex-wrap:wrap; padding:9px 0 } .institution img { width:120px } .account { width:100%; justify-content:flex-start } }
+  @media(max-width:540px) { .shell { width:min(100% - 24px,1200px) } .brand img { width:200px } .institution img { width:105px } .hero,.card { padding:17px } .form-grid,.filters,.entry-list { grid-template-columns:1fr } .wide { grid-column:auto } dt { border:0; padding-bottom:0 } dd { padding-top:0 } }
+</style>
+<script src="painel.js" defer></script>
+</head>
+<body>
+<header><div class="shell top"><div class="brand"><img src="uhp-notifica-login.png" width="240" height="80" alt="UHP Notifica — Sistema de Notificações"></div><div class="institution"><img src="logo-posse-saude.png" width="145" height="70" alt="Prefeitura Municipal de Posse e Secretaria da Saúde"></div><div class="account"><span id="identity" class="muted small"></span><button id="logout" type="button" class="secondary" hidden><img class="ui-icon" src="icons/sair.png" alt="" width="20" height="20">Sair</button></div></div></header>
+<main class="shell">
+  <div class="hero"><h1><img class="ui-icon" src="icons/notificacoes.png" alt="" width="34" height="34">Painel de notificações</h1><p id="panel-guide">Acompanhe cada ocorrência da triagem ao encerramento.</p></div>
+  <p id="feedback" class="notice" role="status" aria-live="polite"></p>
+  <section id="login" class="card login">
+    <img class="login-mark" src="uhp-notifica-icone.png" width="56" height="57" alt="">
+    <h2>Acessar painel</h2>
+    <p class="muted section-title">Use a conta institucional fornecida para a sua área.</p>
+    <form id="login-form">
+      <label>E-mail<input id="email" type="email" autocomplete="username" required></label>
+      <label>Senha<input id="password" type="password" autocomplete="current-password" required></label>
+      <button type="submit"><img class="ui-icon" src="icons/entrar.png" alt="" width="20" height="20">Entrar</button>
+    </form>
+  </section>
+  <div id="workspace" class="layout" hidden>
+    <section class="card" aria-labelledby="queue-title">
+      <div class="row"><h2 id="queue-title"><img class="ui-icon" src="icons/notificacoes.png" alt="" width="22" height="22">Fila de notificações</h2><button type="button" id="refresh" class="secondary"><img class="ui-icon" src="icons/atualizar.png" alt="" width="20" height="20">Atualizar</button></div>
+      <p class="small muted section-title">Selecione um registro para acompanhar a tratativa.</p>
+      <div class="filters section-title">
+        <label><span class="label-heading"><img class="ui-icon" src="icons/buscar.png" alt="" width="22" height="22">Buscar nesta página</span><input id="query" type="search" placeholder="Protocolo ou setor"></label>
+        <label><span class="label-heading"><img class="ui-icon" src="icons/filtros.png" alt="" width="22" height="22">Situação</span><select id="status-filter"><option value="">Todas</option><option value="received">Recebidas</option><option value="in_progress">Em tratativa</option><option value="closed">Finalizadas</option></select></label>
+      </div>
+      <p id="queue-empty" class="muted section-title">Nenhuma notificação nesta página.</p>
+      <ul id="queue" class="queue"></ul>
+      <div class="actions"><button type="button" id="more" class="secondary" hidden><img class="ui-icon" src="icons/carregar-mais.png" alt="" width="20" height="20">Carregar mais</button></div>
+    </section>
+    <div id="detail" class="stack" hidden>
+      <section class="card">
+        <div class="row"><div><h2><img class="ui-icon" src="icons/protocolo.png" alt="" width="22" height="22"><span id="case-title" tabindex="-1"></span></h2><p id="case-meta" class="muted small"></p></div><span id="case-state" class="pill"></span></div>
+        <p id="case-summary" class="section-title"></p>
+        <div class="actions"><a id="pdf-link" class="button-link" target="_blank" rel="noopener" hidden><img class="ui-icon" src="icons/pdf.png" alt="" width="20" height="20">Gerar PDF para o setor<img class="ui-icon" src="icons/abrir-nova-aba.png" alt="" width="20" height="20"></a></div>
+        <p id="pdf-hint" class="small muted info-line" hidden><img class="ui-icon" src="icons/imprimir.png" alt="" width="18" height="18">Abre em uma nova aba para impressão.</p>
+        <div class="next-step" aria-live="polite"><strong class="with-icon"><img class="ui-icon" src="icons/informacao.png" alt="" width="20" height="20">Próxima ação</strong><span id="next-step"></span></div>
+        <details><summary><img class="ui-icon" src="icons/dados-ocorrencia.png" alt="" width="20" height="20"> Dados da notificação</summary><dl id="case-fields" class="entry-list"></dl></details>
+        <div id="photo-wrap" hidden><h3 class="section-title"><img class="ui-icon" src="icons/foto.png" alt="" width="22" height="22">Foto da ocorrência</h3><img id="case-photo" class="photo" alt="Foto anexada à ocorrência"></div>
+        <div id="triage" class="area" hidden>
+          <h3><img class="ui-icon" src="icons/triagem.png" alt="" width="22" height="22">Triagem e encaminhamento</h3><p class="small muted">Escolha uma área, um responsável e os prazos do parecer e das ações.</p>
+          <div class="form-grid">
+            <label>Área<select id="area-choice"><option value="patient_safety">Segurança do Paciente</option><option value="ccih">CCIH</option></select></label>
+            <label>Responsável<select id="assignee"></select></label>
+            <label>Prazo do parecer<input id="opinion-due" type="date"></label>
+            <label>Prazo das ações<input id="actions-due" type="date"></label>
+          </div>
+          <button type="button" id="assign"><img class="ui-icon" src="icons/encaminhar.png" alt="" width="20" height="20">Encaminhar à área</button>
+        </div>
+      </section>
+      <section class="card"><h2><img class="ui-icon" src="icons/acoes.png" alt="" width="22" height="22">Tratativas por área</h2><div id="areas"></div></section>
+      <section id="closure" class="card" hidden><h2><img class="ui-icon" src="icons/encerrar.png" alt="" width="22" height="22">Encerramento</h2><p id="close-hint" class="muted small section-title"></p><label>Conclusão do caso<textarea id="conclusion" maxlength="5000"></textarea></label><div class="actions"><button id="close-case" type="button"><img class="ui-icon" src="icons/encerrar.png" alt="" width="20" height="20">Finalizar notificação</button></div></section>
+      <section class="card"><h2><img class="ui-icon" src="icons/historico.png" alt="" width="22" height="22">Histórico</h2><ol id="history" class="history"></ol></section>
+    </div>
+    <section id="welcome" class="card"><h2><img class="ui-icon" src="icons/protocolo.png" alt="" width="22" height="22">Selecione um protocolo</h2><p class="muted">Acompanhe os pareceres, prazos, ações e decisões.</p></section>
+  </div>
+</main>
+</body>
+</html>
