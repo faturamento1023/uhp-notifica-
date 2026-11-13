@@ -9,7 +9,7 @@ const periods = ['Manhã', 'Tarde', 'Noite', 'Madrugada'];
 const timeZone = 'America/Sao_Paulo';
 const dummyHash = passwordHash(token());
 const sessionSeconds = 8 * 60 * 60;
-const evidenceLimit = 5 * 1024 * 1024;
+const defaultEvidenceLimit = 5 * 1024 * 1024;
 const photoLimit = 2 * 1024 * 1024;
 const photoTypes = ['image/jpeg', 'image/png'];
 const evidenceTypes = {
@@ -44,7 +44,7 @@ function notificationInput(body) {
   };
 }
 
-function decodeEvidence(body, allowedTypes = Object.keys(evidenceTypes), limit = evidenceLimit) {
+function decodeEvidence(body, allowedTypes = Object.keys(evidenceTypes), limit = defaultEvidenceLimit) {
   if (!body || typeof body !== 'object' || Array.isArray(body)) invalid('photo');
   const mime = oneOf(body.mime, allowedTypes, 'mime');
   const name = str(body.name, 'name', 180);
@@ -55,7 +55,7 @@ function decodeEvidence(body, allowedTypes = Object.keys(evidenceTypes), limit =
   return { mime, name, content };
 }
 
-export function createApi(db, { origin, clock = () => new Date() }) {
+export function createApi(db, { origin, clock = () => new Date(), evidenceLimit = defaultEvidenceLimit }) {
   const secure = new URL(origin).protocol === 'https:';
   const cookieName = secure ? '__Host-uhp_session' : 'uhp_session';
   const { get, all, run, atomic } = db;
@@ -423,7 +423,7 @@ export function createApi(db, { origin, clock = () => new Date() }) {
           const action = await get('SELECT assignment_id FROM actions WHERE id=?', actionId);
           if (!action) unavailable();
           requireState(await assignment(user, action.assignment_id), ['actions', 'complement']);
-          const upload = decodeEvidence(await readJson(request, Math.ceil(evidenceLimit / 3) * 4 + 2048));
+          const upload = decodeEvidence(await readJson(request, Math.ceil(evidenceLimit / 3) * 4 + 2048), Object.keys(evidenceTypes), evidenceLimit);
           return await atomic(async () => {
             const user = await actor(request);
             areaOwner(user);
