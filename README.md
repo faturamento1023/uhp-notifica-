@@ -119,7 +119,9 @@ Falta configurar o usuário técnico e a conexão TLS no ambiente em que a API N
 
 O PR nº 1 inclui `netlify.toml`, uma Netlify Function para `/api/v1/*` e a rota `/api/v1/health` para verificar a conexão com o Supabase. Os quatro testes locais passaram. O GitHub confirmou a publicação do [Deploy Preview](https://deploy-preview-1--uhp-notifica.netlify.app). Falta configurar a credencial do usuário técnico, validar `/api/v1/health` no endereço publicado e cadastrar as contas fictícias. O limite de evidência no Netlify é de 4 MiB por arquivo, e a foto inicial continua com limite de 2 MiB. [Instruções para o Deploy Preview](https://github.com/faturamento1023/uhp-notifica-/blob/codex/backend-notificacoes/docs/NETLIFY.md)
 
-O [PR nº 2](https://github.com/faturamento1023/uhp-notifica-/pull/2) contém a identidade visual. Na última consulta, ainda não havia PR com os formulários e painéis integrados.
+O [PR nº 2](https://github.com/faturamento1023/uhp-notifica-/pull/2) contém a identidade visual. O trabalho da outra IA no frontend está pausado por orientação do responsável pelo projeto.
+
+O usuário técnico `uhp_notifica_backend` foi criado no Supabase com acesso restrito ao esquema da aplicação. A senha e a variável privada `UHP_DATABASE_URL` ainda precisam ser configuradas. A rota publicada `/api/v1/health` respondeu `database_unavailable`. O [teste HTTP de homologação](https://github.com/faturamento1023/uhp-notifica-/blob/codex/backend-notificacoes/scripts/check-preview.mjs) passou contra a API com PostgreSQL local. A execução contra o Deploy Preview depende da conexão com o banco.
 
 ### Integração da foto no frontend
 
