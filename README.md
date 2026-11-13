@@ -69,6 +69,16 @@ A exigência de dois prazos por tratativa, a validação das evidências pela Co
 
 A outra IA já pode começar pelas telas e usar o [backend do PR nº 1](https://github.com/faturamento1023/uhp-notifica-/pull/1) para testar a integração. Quando o PR do frontend estiver disponível, o Codex verifica o percurso do QR Code ao encerramento, incluindo o acesso à foto e às evidências por perfil. A publicação institucional fica para depois dessa verificação.
 
+### Instruções para repassar à outra IA
+
+> Você vai implementar o frontend do UHP Notifica. Leia o fluxo deste README, confira os HTMLs em `prototipos/` e use o contrato da API do PR nº 1. Crie uma branch de frontend a partir da `main` e use o backend do PR nº 1 em um ambiente de teste para conectar as telas.
+>
+> Entregue primeiro a entrada pelo QR Code. Reaproveite os campos dos formulários de não conformidade e de incidente ou evento adverso. Inclua foto opcional com prévia e remoção, revisão do preenchimento e confirmação do protocolo retornado pelo servidor.
+>
+> Depois, implemente o login e os painéis. A Coordenação de Enfermagem recebe, encaminha, define prazos, aprova ou devolve pareceres, valida ações e encerra a notificação. Segurança do Paciente e CCIH veem as tratativas atribuídas à conta, elaboram pareceres e registram ações com evidências. Mostre a foto da ocorrência no detalhe para as contas com acesso ao caso.
+>
+> Abra um PR para a `main` e indique a dependência do PR nº 1. Liste as telas entregues, as rotas integradas, os testes com dados fictícios e qualquer lacuna na API. Registre a entrega neste README. O Codex assume a revisão ponta a ponta e os ajustes no backend a partir desse PR.
+
 ## Critérios para considerar o fluxo pronto
 
 - Enviar pelo celular uma notificação de cada tipo, receber um protocolo por envio e visualizar os registros na fila da Coordenação em outro aparelho.
