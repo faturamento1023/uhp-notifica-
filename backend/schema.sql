@@ -42,6 +42,13 @@ CREATE TABLE IF NOT EXISTS notifications (
   UNIQUE(unit_id, request_id)
 ) STRICT;
 
+CREATE TABLE IF NOT EXISTS notification_photos (
+  notification_id TEXT PRIMARY KEY REFERENCES notifications(id),
+  name TEXT NOT NULL,
+  mime TEXT NOT NULL CHECK(mime IN ('image/jpeg','image/png')),
+  content BLOB NOT NULL
+) STRICT;
+
 CREATE TABLE IF NOT EXISTS assignments (
   id TEXT PRIMARY KEY,
   notification_id TEXT NOT NULL REFERENCES notifications(id),
