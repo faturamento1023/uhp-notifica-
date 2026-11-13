@@ -12,7 +12,7 @@ const periods = ['Manhã', 'Tarde', 'Noite', 'Madrugada'];
 const timeZone = 'America/Sao_Paulo';
 const dummyHash = passwordHash(token());
 const sessionSeconds = 8 * 60 * 60;
-const defaultEvidenceLimit = 5 * 1024 * 1024;
+const defaultEvidenceLimit = 4 * 1024 * 1024;
 const photoLimit = 2 * 1024 * 1024;
 const photoTypes = ['image/jpeg', 'image/png'];
 const evidenceTypes = {
@@ -58,7 +58,7 @@ function decodeEvidence(body, allowedTypes = Object.keys(evidenceTypes), limit =
   return { mime, name, content };
 }
 
-export function createApi(db, { origin, clock = () => new Date(), evidenceLimit = defaultEvidenceLimit }) {
+export function createApi(db, { origin, clock = () => new Date(), evidenceLimit = defaultEvidenceLimit, directIntakeUnitId = null }) {
   const secure = new URL(origin).protocol === 'https:';
   const cookieName = secure ? '__Host-uhp_session' : 'uhp_session';
   const { get, all, run, atomic } = db;
@@ -143,6 +143,16 @@ export function createApi(db, { origin, clock = () => new Date(), evidenceLimit 
     };
   }
 
+  function fileResponse(row, inline = false) {
+    const filename = row.name.toWellFormed().replace(/[\\/\r\n]/g, '_');
+    const encoded = encodeURIComponent(filename).replace(/['()*]/g, char => '%' + char.charCodeAt(0).toString(16));
+    return new Response(row.content, { headers: {
+      'cache-control': 'no-store', 'content-type': inline ? row.mime : 'application/octet-stream',
+      'x-content-type-options': 'nosniff',
+      'content-disposition': (inline ? 'inline' : 'attachment') + "; filename*=UTF-8''" + encoded
+    } });
+  }
+
   async function detail(user, row) {
     const assignments = canCoordinate(user)
       ? await all('SELECT * FROM assignments WHERE notification_id=? ORDER BY area', row.id)
@@ -151,28 +161,34 @@ export function createApi(db, { origin, clock = () => new Date(), evidenceLimit 
       ? await all('SELECT * FROM history WHERE notification_id=? ORDER BY id', row.id)
       : await all(`SELECT h.* FROM history h JOIN assignments a ON a.id=h.assignment_id
         WHERE h.notification_id=? AND a.assignee_id=? AND a.area=? ORDER BY h.id`, row.id, user.id, user.role);
-    const treatments = [];
-    for (const item of assignments) {
-      const opinions = await all(`SELECT version, body, submitted_by AS "submittedBy", submitted_at AS "submittedAt",
+    const assignmentIds = assignments.map(item => item.id);
+    const [opinions, actions, attachments, progress, photo] = await Promise.all([
+      assignmentIds.length ? all(`SELECT assignment_id, version, body, submitted_by AS "submittedBy", submitted_at AS "submittedAt",
         decision, reason, decided_by AS "decidedBy", decided_at AS "decidedAt"
-        FROM opinions WHERE assignment_id=? ORDER BY version`, item.id);
-      const actions = await all(`SELECT id, description, performed_on AS "performedOn", created_by AS "createdBy", created_at AS "createdAt"
-        FROM actions WHERE assignment_id=? ORDER BY created_at,id`, item.id);
-      const attachments = await all(`SELECT e.action_id, e.id, e.name, e.mime, octet_length(e.content) AS size, e.created_at AS "createdAt"
-        FROM evidence e JOIN actions a ON a.id=e.action_id WHERE a.assignment_id=? ORDER BY e.created_at,e.id`, item.id);
-      const byAction = new Map(actions.map(action => [action.id, []]));
-      for (const { action_id, ...attachment } of attachments) byAction.get(action_id).push(attachment);
-      treatments.push({
+        FROM opinions WHERE assignment_id=ANY(?::text[]) ORDER BY assignment_id,version`, assignmentIds) : [],
+      assignmentIds.length ? all(`SELECT id, assignment_id, description, performed_on AS "performedOn", created_by AS "createdBy", created_at AS "createdAt"
+        FROM actions WHERE assignment_id=ANY(?::text[]) ORDER BY created_at,id`, assignmentIds) : [],
+      assignmentIds.length ? all(`SELECT a.assignment_id, e.action_id, e.id, e.name, e.mime, octet_length(e.content) AS size, e.created_at AS "createdAt"
+        FROM evidence e JOIN actions a ON a.id=e.action_id WHERE a.assignment_id=ANY(?::text[]) ORDER BY e.created_at,e.id`, assignmentIds) : [],
+      assignmentIds.length ? all(`SELECT p.id, p.assignment_id, p.body, p.file_name AS "fileName", p.file_mime AS "fileMime",
+        octet_length(p.file_content) AS "fileSize", p.created_by AS "createdBy", u.name AS "author",
+        p.created_at AS "createdAt" FROM progress_entries p JOIN users u ON u.id=p.created_by
+        WHERE p.assignment_id=ANY(?::text[]) ORDER BY p.created_at,p.id`, assignmentIds) : [],
+      get('SELECT name,mime,octet_length(content) AS size FROM notification_photos WHERE notification_id=?', row.id)
+    ]);
+    const byAction = new Map(actions.map(action => [action.id, []]));
+    for (const { assignment_id, action_id, ...attachment } of attachments) byAction.get(action_id).push(attachment);
+    const treatments = assignments.map(item => ({
         ...assignmentView(item),
         draft: item.assignee_id === user.id ? item.draft : null,
-        opinions,
-        actions: actions.map(action => ({ ...action, evidence: byAction.get(action.id) }))
-      });
-    }
+        opinions: opinions.filter(opinion => opinion.assignment_id === item.id).map(({ assignment_id, ...opinion }) => opinion),
+        actions: actions.filter(action => action.assignment_id === item.id).map(({ assignment_id, ...action }) => ({ ...action, evidence: byAction.get(action.id) })),
+        progress: progress.filter(entry => entry.assignment_id === item.id).map(({ assignment_id, ...entry }) => entry)
+      }));
     return {
       id: row.id, protocol: row.protocol, status: row.status, createdAt: row.created_at, ...JSON.parse(row.payload),
       closure: row.closure, closedAt: row.closed_at, closedBy: row.closed_by,
-      photo: await get('SELECT name,mime,octet_length(content) AS size FROM notification_photos WHERE notification_id=?', row.id) ?? null,
+      photo: photo ?? null,
       assignments: treatments,
       history: events.map(event => ({
         id: event.id, assignmentId: event.assignment_id, actorId: event.actor_id,
@@ -192,7 +208,7 @@ export function createApi(db, { origin, clock = () => new Date(), evidenceLimit 
         user.unitId, user.id, user.role, limit + 1, offset);
     const page = found.slice(0, limit);
     const ids = page.map(row => row.id);
-    const scoped = canCoordinate(user)
+    const scoped = !ids.length ? [] : canCoordinate(user)
       ? await all('SELECT * FROM assignments WHERE notification_id=ANY(?::text[]) ORDER BY area', ids)
       : await all('SELECT * FROM assignments WHERE notification_id=ANY(?::text[]) AND assignee_id=? AND area=?', ids, user.id, user.role);
     const byNotification = new Map(ids.map(notificationId => [notificationId, []]));
@@ -204,6 +220,19 @@ export function createApi(db, { origin, clock = () => new Date(), evidenceLimit 
       }),
       nextOffset: found.length > limit ? offset + limit : null
     };
+  }
+
+  async function pdfResponse(user, row) {
+    const [record, photo] = await Promise.all([
+      detail(user, row),
+      get('SELECT mime,content FROM notification_photos WHERE notification_id=?', row.id)
+    ]);
+    const bytes = await notificationPdf(record, clock(), photo);
+    return new Response(bytes, { headers: {
+      'cache-control': 'no-store', 'content-type': 'application/pdf',
+      'content-disposition': 'inline; filename="' + row.protocol + '.pdf"',
+      'x-content-type-options': 'nosniff'
+    } });
   }
 
   async function updateAssignment(user, row, operation, body) {
@@ -291,8 +320,11 @@ export function createApi(db, { origin, clock = () => new Date(), evidenceLimit 
 
       if (method === 'POST' && path === '/api/v1/notifications') {
         const intake = request.headers.get('x-intake-token');
-        if (!intake || !/^[a-f0-9]{64}$/.test(intake)) forbidden();
-        const unit = await get('SELECT id FROM units WHERE intake_hash=?', digest(intake));
+        if (intake !== null && !/^[a-f0-9]{64}$/.test(intake)) forbidden();
+        if (intake === null && !directIntakeUnitId) forbidden();
+        const unit = intake === null
+          ? await get('SELECT id FROM units WHERE id=?', directIntakeUnitId)
+          : await get('SELECT id FROM units WHERE intake_hash=?', digest(intake));
         if (!unit) forbidden();
         const body = await readJson(request, 160000 + Math.ceil(photoLimit / 3) * 4);
         const payload = notificationInput(body);
@@ -301,9 +333,12 @@ export function createApi(db, { origin, clock = () => new Date(), evidenceLimit 
         const photo = body.photo === undefined ? null : decodeEvidence(body.photo, photoTypes, photoLimit);
         const hash = digest(photo ? JSON.stringify([encoded, photo.name, photo.mime, digest(photo.content)]) : encoded);
         const previous = await get('SELECT id,protocol,request_hash FROM notifications WHERE unit_id=? AND request_id=?', unit.id, requestId);
-        if (!previous) await throttle('intake:' + unit.id + ':' + clientAddress, 60, 900);
+        if (!previous) await throttle((intake === null ? 'direct-intake:' : 'intake:') + unit.id + ':' + clientAddress, 60, 900);
         return await atomic(async () => {
-          if (!await get('SELECT id FROM units WHERE id=? AND intake_hash=? FOR UPDATE', unit.id, digest(intake))) forbidden();
+          const current = intake === null
+            ? await get('SELECT id FROM units WHERE id=? FOR UPDATE', unit.id)
+            : await get('SELECT id FROM units WHERE id=? AND intake_hash=? FOR UPDATE', unit.id, digest(intake));
+          if (!current) forbidden();
           const existing = await get('SELECT id,protocol,request_hash FROM notifications WHERE unit_id=? AND request_id=?', unit.id, requestId);
           if (existing) {
             if (existing.request_hash !== hash) conflict('Este identificador já foi usado em outro envio.');
@@ -320,6 +355,17 @@ export function createApi(db, { origin, clock = () => new Date(), evidenceLimit 
           await audit(identifier, null, null, 'notification_received', photo ? { photoAttached: true } : null);
           return json({ id: identifier, protocol }, 201);
         });
+      }
+
+      // The random requestId is the notifier's private receipt credential. Require it in
+      // a header so it is never put into a URL, browser history or referrer.
+      const receipt = path.match(/^\/api\/v1\/notifications\/([^/]+)\/receipt-pdf$/);
+      if (method === 'POST' && receipt) {
+        const notificationId = id(receipt[1]);
+        const requestId = id(request.headers.get('x-receipt-token'), 'receiptToken');
+        const row = await get('SELECT * FROM notifications WHERE id=? AND request_id=?', notificationId, requestId);
+        if (!row) unavailable();
+        return await db.read(() => pdfResponse({ role: 'coordination', unitId: row.unit_id }, row));
       }
 
       const authenticated = async () => {
@@ -349,16 +395,8 @@ export function createApi(db, { origin, clock = () => new Date(), evidenceLimit 
             } });
           }
           if (method === 'GET' && operation === 'pdf') {
-            coordinator(user);
             const row = await notification(user, notificationId);
-            const photo = await get('SELECT mime,content FROM notification_photos WHERE notification_id=?', notificationId);
-            const bytes = await notificationPdf({ protocol: row.protocol, ...JSON.parse(row.payload) }, clock(), photo);
-            return new Response(bytes, { headers: {
-              'cache-control': 'no-store',
-              'content-type': 'application/pdf',
-              'content-disposition': 'inline; filename="' + row.protocol + '.pdf"',
-              'x-content-type-options': 'nosniff'
-            } });
+            return pdfResponse(user, row);
           }
           if (operation === 'photo' || operation === 'pdf') unavailable();
           if (method !== 'POST' || !operation) unavailable();
@@ -455,19 +493,53 @@ export function createApi(db, { origin, clock = () => new Date(), evidenceLimit 
           });
         }
 
-        match = path.match(/^\/api\/v1\/evidence\/([^/]+)$/);
+        match = path.match(/^\/api\/v1\/assignments\/([^/]+)\/progress$/);
+        if (match && method === 'POST') {
+          areaOwner(user);
+          const assignmentId = id(match[1]);
+          const body = await readJson(request, Math.ceil(evidenceLimit / 3) * 4 + 8192);
+          const note = str(body.body, 'body', 5000);
+          const upload = body.attachment == null ? null : decodeEvidence(body.attachment, Object.keys(evidenceTypes), evidenceLimit);
+          return await atomic(async () => {
+            const owner = await actor(request);
+            areaOwner(owner);
+            const row = await assignment(owner, assignmentId, true);
+            requireState(row, ['draft', 'revision', 'pending_approval', 'actions', 'pending_validation', 'complement']);
+            const counts = await get(`SELECT count(*)::integer AS total,
+              count(file_content)::integer AS files,
+              coalesce(sum(octet_length(file_content)),0)::integer AS bytes
+              FROM progress_entries WHERE assignment_id=?`, row.id);
+            if (counts.total >= 100 || (upload && (counts.files >= 20 || counts.bytes + upload.content.length > 30 * 1024 * 1024))) {
+              conflict('Limite de evoluções ou anexos da tratativa atingido.');
+            }
+            const entryId = randomUUID(), createdAt = clock().toISOString();
+            await run(`INSERT INTO progress_entries(id,assignment_id,body,file_name,file_mime,file_content,created_by,created_at)
+              VALUES (?,?,?,?,?,?,?,?)`, entryId, row.id, note, upload?.name ?? null, upload?.mime ?? null,
+              upload?.content ?? null, owner.id, createdAt);
+            await audit(row.notification_id, row.id, owner.id, 'progress_added', { entryId });
+            return json({ id: entryId, body: note, fileName: upload?.name ?? null, fileMime: upload?.mime ?? null,
+              fileSize: upload?.content.length ?? null, createdBy: owner.id, author: owner.name, createdAt }, 201);
+          });
+        }
+
+        match = path.match(/^\/api\/v1\/progress\/([^/]+)\/attachment$/);
+        if (match && method === 'GET') {
+          const entryId = id(match[1]);
+          const locator = await get('SELECT assignment_id FROM progress_entries WHERE id=? AND file_content IS NOT NULL', entryId);
+          if (!locator) unavailable();
+          await assignment(user, locator.assignment_id);
+          const file = await get('SELECT file_name AS name,file_mime AS mime,file_content AS content FROM progress_entries WHERE id=?', entryId);
+          return fileResponse(file, true);
+        }
+
+        match = path.match(/^\/api\/v1\/evidence\/([^/]+)(?:\/(preview))?$/);
         if (match && method === 'GET') {
           const evidenceId = id(match[1]);
           const locator = await get('SELECT a.assignment_id FROM evidence e JOIN actions a ON a.id=e.action_id WHERE e.id=?', evidenceId);
           if (!locator) unavailable();
           await assignment(user, locator.assignment_id);
-          const row = await get('SELECT name,content FROM evidence WHERE id=?', evidenceId);
-          const filename = row.name.toWellFormed().replace(/[\\/\r\n]/g, '_');
-          const encoded = encodeURIComponent(filename).replace(/['()*]/g, char => '%' + char.charCodeAt(0).toString(16));
-          return new Response(row.content, { headers: {
-            'cache-control': 'no-store', 'content-type': 'application/octet-stream', 'x-content-type-options': 'nosniff',
-            'content-disposition': "attachment; filename*=UTF-8''" + encoded
-          } });
+          const row = await get('SELECT name,mime,content FROM evidence WHERE id=?', evidenceId);
+          return fileResponse(row, !!match[2]);
         }
         unavailable();
       };

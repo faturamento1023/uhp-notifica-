@@ -12,12 +12,12 @@ const eventName = {
   notification_received:"Notificação recebida", assignment_created:"Encaminhada",
   assignment_updated:"Responsável ou prazo alterado", opinion_submitted:"Parecer enviado",
   opinion_approved:"Parecer aprovado", opinion_rejected:"Parecer devolvido",
-  action_registered:"Ação registrada", evidence_added:"Evidência anexada",
+  action_registered:"Ação registrada", evidence_added:"Evidência anexada", progress_added:"Evolução registrada",
   actions_submitted:"Ações enviadas para validação", actions_validated:"Ações validadas",
   actions_complement_requested:"Complemento solicitado", notification_closed:"Notificação finalizada"
 };
 const actionIcon = {
-  "Enviar evidência":"anexar", "Salvar rascunho":"rascunho", "Enviar parecer":"enviar",
+  "Enviar evidência":"anexar", "Registrar evolução":"historico", "Salvar rascunho":"rascunho", "Enviar parecer":"enviar",
   "Aprovar parecer":"aprovar", "Devolver para ajuste":"devolver", "Registrar ação":"acoes",
   "Enviar ações para validação":"enviar", "Validar ações":"validar",
   "Pedir complemento":"complemento", "Salvar alteração":"rascunho"
@@ -25,7 +25,7 @@ const actionIcon = {
 const eventIcon = {
   notification_received:"notificacoes", assignment_created:"encaminhar",
   assignment_updated:"editar", opinion_submitted:"parecer", opinion_approved:"aprovar",
-  opinion_rejected:"devolver", action_registered:"acoes", evidence_added:"evidencia",
+  opinion_rejected:"devolver", action_registered:"acoes", evidence_added:"evidencia", progress_added:"historico",
   actions_submitted:"enviar", actions_validated:"validar",
   actions_complement_requested:"complemento", notification_closed:"encerrar"
 };
@@ -38,7 +38,7 @@ const localToday = () => new Intl.DateTimeFormat("en-CA", {
   timeZone:"America/Sao_Paulo",year:"numeric",month:"2-digit",day:"2-digit"
 }).format(new Date());
 const normalize = value => String(value || "").toLowerCase().normalize("NFD").replace(/\p{Diacritic}/gu,"");
-let account = null, assignees = [], items = [], nextOffset = null, selected = null, current = null, busy = false;
+let account = null, assignees = [], items = [], nextOffset = null, selected = null, current = null, busy = false, photoUrl = null;
 
 function el(tag,text="",className="") {
   const node=document.createElement(tag);
@@ -97,12 +97,13 @@ async function api(path,method="GET",body) {
 async function perform(operation) {
   if(busy) return;
   busy=true;
+  document.body.style.cursor="progress";
   try { await operation() }
   catch(error) {
     message(error.message || "Falha de comunicação. Tente novamente.",true);
     if(error.status===401) showLogin();
     if(error.status===409 && selected) await openCase(selected).catch(()=>{});
-  } finally { busy=false }
+  } finally { busy=false;document.body.style.cursor="" }
 }
 function showLogin() {
   account=null; current=null;selected=null;items=[];nextOffset=null;
@@ -166,6 +167,7 @@ function nextAction(record) {
   return "Tratativa validada. A Coordenação poderá finalizar o caso.";
 }
 async function openCase(id,focus=false) {
+  if(selected!==id) {if(photoUrl) URL.revokeObjectURL(photoUrl);photoUrl=null;$("case-photo").removeAttribute("src");$("photo-wrap").open=false;}
   current=await api("/notifications/"+encodeURIComponent(id));
   selected=id;
   renderQueue();
@@ -179,16 +181,15 @@ function renderDetailsList(record) {
   }
 }
 async function loadPhoto(record) {
-  const wrap=$("photo-wrap"), image=$("case-photo");
-  wrap.hidden=true;image.removeAttribute("src");
-  if(!record.photo) return;
+  const image=$("case-photo");
+  if(!record.photo || photoUrl) return;
   const id=record.id;
   const response=await fetch(API+"/notifications/"+encodeURIComponent(id)+"/photo",{credentials:"same-origin"});
   if(!response.ok || selected!==id) return;
   const blob=await response.blob();
-  const reader=new FileReader();
-  reader.onload=()=>{if(selected===id){image.src=reader.result;wrap.hidden=false}};
-  reader.readAsDataURL(blob);
+  if(selected!==id) return;
+  photoUrl=URL.createObjectURL(blob);
+  image.src=photoUrl;
 }
 function makeSelect(label,options,selectedValue) {
   const wrap=el("label",label),select=document.createElement("select");
@@ -220,11 +221,11 @@ function renderAction(action,assignment,areaOwner) {
   const container=el("div","","area");
   container.append(labeled("p",formatDate(action.performedOn)+" · "+action.description,"info-line","acoes"));
   for(const evidence of action.evidence) {
-    const link=el("a",evidence.name+" ("+Math.ceil(evidence.size/1024)+" KB)");
-    link.href=API+"/evidence/"+encodeURIComponent(evidence.id);
-    link.download=evidence.name;
+    const link=el("a",evidence.name+" ("+Math.ceil(evidence.size/1024)+" KB) · Abrir");
+    link.href=API+"/evidence/"+encodeURIComponent(evidence.id)+"/preview";
+    link.target="_blank";link.rel="noopener noreferrer";
     link.className="evidence-link";
-    link.prepend(icon("baixar"));
+    link.prepend(icon(evidence.mime==="application/pdf"?"pdf":"foto"));
     container.append(link);
   }
   if(areaOwner && ["actions","complement"].includes(assignment.status)) {
@@ -253,9 +254,42 @@ function fileToBase64(file) {
   });
 }
 async function refreshCase(text) {
-  await openCase(selected);
-  await loadQueue();
+  await Promise.all([openCase(selected),loadQueue()]);
   if(text) message(text);
+}
+function renderProgress(assignment,owner) {
+  const box=el("section","","section-title");
+  box.append(labeled("h3","Evolução da tratativa","","historico"));
+  if(!assignment.progress.length) box.append(el("p","Nenhuma evolução registrada.","small muted"));
+  for(const entry of assignment.progress) {
+    const card=el("div","","area");
+    card.append(el("strong",formatTime(entry.createdAt)+" · "+entry.author,"small"),el("p",entry.body));
+    if(entry.fileName) {
+      const link=el("a",entry.fileName+" ("+Math.ceil(entry.fileSize/1024)+" KB) · Abrir");
+      link.href=API+"/progress/"+encodeURIComponent(entry.id)+"/attachment";
+      link.target="_blank";link.rel="noopener noreferrer";link.className="evidence-link";
+      link.prepend(icon(entry.fileMime==="application/pdf"?"pdf":"foto"));
+      card.append(link);
+    }
+    box.append(card);
+  }
+  if(owner && current.status!=="closed" && assignment.status!=="validated") {
+    const note=inputField("Descreva a evolução (até 5.000 caracteres)","","textarea");
+    note.input.maxLength=5000;
+    const file=inputField("Anexo opcional: imagem ou PDF (até 4 MB por arquivo)","","file");
+    file.input.accept=".pdf,.png,.jpg,.jpeg,application/pdf,image/png,image/jpeg";
+    box.append(note.wrap,file.wrap,button("Registrar evolução",async()=>{
+      const body=note.input.value.trim();
+      if(!body) throw Error("Descreva a evolução antes de salvar.");
+      const chosen=file.input.files[0];
+      if(chosen && (!chosen.size || chosen.size>4*1024*1024 || !["application/pdf","image/png","image/jpeg"].includes(chosen.type)))
+        throw Error("Use PDF, PNG ou JPEG de até 4 MB.");
+      const attachment=chosen?{name:chosen.name.slice(0,180),mime:chosen.type,contentBase64:await fileToBase64(chosen)}:null;
+      await api("/assignments/"+encodeURIComponent(assignment.id)+"/progress","POST",{body,attachment});
+      await refreshCase("Evolução registrada.");
+    }));
+  }
+  return box;
 }
 function renderAssignment(assignment) {
   const owner=account.id===assignment.assigneeId && account.role===assignment.area;
@@ -331,6 +365,7 @@ function renderAssignment(assignment) {
     },true));
     box.append(actions);
   }
+  box.append(renderProgress(assignment,owner));
   if(coord && assignment.status==="pending_validation") {
     const submission=current.history.filter(event=>event.assignmentId===assignment.id && event.event==="actions_submitted").at(-1);
     const reason=inputField("Justificativa para complemento","");
@@ -377,12 +412,13 @@ function renderDetail() {
   $("case-state").className="pill"+(record.status==="closed"?" done":record.status==="received"?" received":"");
   $("case-summary").textContent=record.description || record.subject;
   const pdfLink=$("pdf-link");
-  pdfLink.hidden=!canCoordinate();
+  pdfLink.hidden=false;
   $("pdf-hint").hidden=pdfLink.hidden;
   pdfLink.href=API+"/notifications/"+encodeURIComponent(record.id)+"/pdf";
   $("next-step").textContent=nextAction(record);
   renderDetailsList(record);
-  loadPhoto(record).catch(()=>{});
+  $("photo-wrap").hidden=!record.photo;
+  if(record.photo && $("photo-wrap").open) loadPhoto(record).catch(()=>{});
   renderTriage(record);
   const areas=$("areas");areas.replaceChildren();
   if(!record.assignments.length) areas.append(el("p","Aguardando encaminhamento da Coordenação.","muted section-title"));
@@ -409,8 +445,7 @@ $("login-form").addEventListener("submit",event=>{
     account=await api("/session","POST",{email,password});
     $("password").value="";
     showWorkspace();
-    if(canCoordinate()) assignees=(await api("/assignees")).items;
-    await loadQueue();
+    await Promise.all([loadQueue(),canCoordinate()?api("/assignees").then(data=>{assignees=data.items}):Promise.resolve()]);
     message("Sessão iniciada.");
   });
 });
@@ -418,12 +453,13 @@ $("logout").addEventListener("click",()=>perform(async()=>{
   await api("/session","DELETE");showLogin();message("Sessão encerrada.");
 }));
 $("refresh").addEventListener("click",()=>perform(async()=>{
-  await loadQueue();if(selected) await openCase(selected);message("Painel atualizado.");
+  await Promise.all([loadQueue(),selected?openCase(selected):Promise.resolve()]);message("Painel atualizado.");
 }));
 $("more").addEventListener("click",()=>perform(()=>loadQueue(false)));
 $("query").addEventListener("input",renderQueue);
 $("status-filter").addEventListener("change",renderQueue);
 $("area-choice").addEventListener("change",updateAssigneeSelect);
+$("photo-wrap").addEventListener("toggle",()=>{if($( "photo-wrap").open && current) loadPhoto(current).catch(()=>message("Não foi possível carregar a foto.",true));});
 $("assign").addEventListener("click",()=>perform(async()=>{
   if(!current || !canCoordinate()) return;
   const area=$("area-choice").value,assigneeId=$("assignee").value;
@@ -444,8 +480,7 @@ perform(async()=>{
   try {
     account=await api("/session");
     showWorkspace();
-    if(canCoordinate()) assignees=(await api("/assignees")).items;
-    await loadQueue();
+    await Promise.all([loadQueue(),canCoordinate()?api("/assignees").then(data=>{assignees=data.items}):Promise.resolve()]);
   } catch(error) {
     if(error.status!==401) message(error.message,true);
     showLogin();

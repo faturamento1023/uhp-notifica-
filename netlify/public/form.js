@@ -296,18 +296,27 @@
 
   const intakeToken = new URLSearchParams(location.hash.slice(1)).get("entrada");
   const pending = { requestId: null, body: null };
-  if (!intakeToken) {
-    const error = get("entry-notice");
-    error.textContent = "Abra o formulário pelo QR Code institucional para registrar uma notificação.";
-    error.hidden = false;
-  }
+  let receiptCredentials = null;
+  get("receipt-pdf").addEventListener("click",async()=>{
+    if(!receiptCredentials) return;
+    const tab=window.open("","_blank");
+    const button=get("receipt-pdf");button.disabled=true;
+    try {
+      const response=await fetch("/api/v1/notifications/"+encodeURIComponent(receiptCredentials.id)+"/receipt-pdf",{
+        method:"POST",credentials:"same-origin",headers:{"X-Receipt-Token":receiptCredentials.requestId}
+      });
+      if(!response.ok) throw Error("Não foi possível gerar o PDF. Tente novamente.");
+      const url=URL.createObjectURL(await response.blob());
+      if(tab) tab.location.href=url;
+      else {const link=document.createElement("a");link.href=url;link.download=receiptCredentials.protocol+".pdf";link.click();}
+      setTimeout(()=>URL.revokeObjectURL(url),120000);
+    } catch(error) {
+      if(tab) tab.close();
+      get("receipt-note").textContent=error.message;
+    } finally {button.disabled=false;}
+  });
   get("register").addEventListener("click", async () => {
-    if (!activeForm || !intakeToken) {
-      const error = get("register-error");
-      error.textContent = "Abra pelo QR Code institucional para enviar.";
-      error.hidden = false;
-      return;
-    }
+    if (!activeForm) return;
     const form = activeForm;
     const data = new FormData(form);
     const kind = form.closest("section").id;
@@ -336,12 +345,13 @@
     try {
       const response = await fetch("/api/v1/notifications", {
         method: "POST", credentials: "same-origin",
-        headers: { "Content-Type": "application/json", "X-Intake-Token": intakeToken },
+        headers: { "Content-Type": "application/json", ...(intakeToken ? { "X-Intake-Token": intakeToken } : {}) },
         body: JSON.stringify({ requestId: pending.requestId, ...payload })
       });
       const result = await response.json();
       if (!response.ok) throw new Error(result.error?.message || "Não foi possível registrar. Tente novamente.");
       lastProtocol = result.protocol;
+      receiptCredentials={id:result.id,requestId:pending.requestId,protocol:result.protocol};
       get("receipt").textContent = "Protocolo " + result.protocol;
       get("receipt-note").textContent = "Guarde este protocolo. A Coordenação de Enfermagem recebeu a notificação.";
       form.reset();

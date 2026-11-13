@@ -3,286 +3,157 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta name="color-scheme" content="light">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; form-action 'none'; base-uri 'none'">
 <link rel="icon" type="image/png" href="uhp-notifica-icone.png">
 <link rel="apple-touch-icon" href="uhp-notifica-icone.png">
-<title>Portal de Notificações</title>
+<title>UHP Notifica | Painel</title>
 <style>
-  :root {
-    color: #142f37;
-    background: #f3f7f6;
-    font: 16px/1.55 "DM Sans", "Segoe UI", system-ui, sans-serif;
-    --ink: #142f37;
-    --muted: #4b646a;
-    --brand: #008586;
-    --teal: #006b6c;
-    --green: #5cbc73;
-    --yellow: #ffca05;
-    --red: #bb1f25;
-    --dark: #075459;
-    --line: #d5e1df;
-    --paper: #fff;
-  }
-  * { box-sizing: border-box; }
-  body { margin: 0; min-width: 0; }
-  [hidden] { display: none !important; }
-  header { background: #fff; border-bottom: 1px solid var(--line); }
-  header::after { content: ""; display: block; height: 4px; background: linear-gradient(90deg, var(--green) 0 25%, var(--yellow) 25% 50%, var(--brand) 50% 75%, var(--red) 75%); }
-  .shell { width: min(100% - 40px, 1000px); margin-inline: auto; }
-  .top { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 76px; }
-  .brand { display: flex; align-items: center; min-width: 0; }
-  .brand img { display: block; width: min(250px, 100%); height: auto; }
-  .institution img { display: block; width: 155px; max-width: 100%; height: auto; }
-  main { padding-block: 40px 64px; }
-  h1, h2, p { margin: 0; }
-  h1 { line-height: 1.08; letter-spacing: -.045em; }
-  .hero { position: relative; isolation: isolate; overflow: hidden; padding: clamp(27px, 6vw, 63px); border-radius: 24px; background: linear-gradient(120deg, var(--dark), var(--brand)); color: #fff; }
-  .hero::after { content: ""; position: absolute; z-index: -1; width: 360px; height: 360px; border: 1px solid #ffffff2b; border-radius: 40%; right: -130px; top: -155px; box-shadow: 0 0 0 30px #ffffff0e, 0 0 0 65px #ffffff0b, 0 0 0 100px #ffffff08; transform: rotate(30deg); pointer-events: none; }
-  .hero h1 { font-size: clamp(2.1rem, 5.8vw, 4rem); max-width: 650px; }
-  .hero p { margin-top: 14px; color: #d8efea; font-size: clamp(1rem, 2vw, 1.125rem); }
-  .choices { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 22px; }
-  button, input, select, textarea { font: inherit; }
-  button { cursor: pointer; }
-  .choice { display: flex; flex-direction: column; align-items: flex-start; text-align: left; gap: 13px; border: 1px solid var(--line); border-radius: 18px; background: var(--paper); color: var(--ink); padding: clamp(21px, 4vw, 31px); box-shadow: 0 5px 20px #132d3510; }
-  .choice:hover { border-color: var(--brand); background: #fcfffe; transform: translateY(-2px); }
-  .icon { width: 47px; height: 47px; display: grid; place-items: center; border-radius: 13px; background: #e8f6eb; color: var(--dark); font-size: 25px; font-weight: 700; border-bottom: 3px solid var(--green); }
-  .choice:nth-child(2) .icon { background: #fff0ef; color: var(--red); border-bottom-color: var(--red); }
-  .icon img { width: 31px; height: 31px; object-fit: contain; }
-  .ui-icon { width: 22px; height: 22px; object-fit: contain; flex: none; vertical-align: middle; }
-  .back, .button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
-  .back .ui-icon, .button .ui-icon { width: 20px; height: 20px; }
-  .button:not(.secondary) .ui-icon { filter: brightness(0) invert(1); }
-  .choice .action .ui-icon { width: 17px; height: 17px; }
-  .panel h2, .photo-preview h2 { display: flex; align-items: center; gap: 9px; }
-  .title-icon { width: 34px; height: 34px; object-fit: contain; vertical-align: -.12em; margin-right: 7px; }
-  .receipt-row { display: flex; align-items: center; gap: 9px; }
-  .receipt-row .ui-icon { width: 24px; height: 24px; }
-  .receipt-row .intro { margin: 0; }
-  .busy-icon { animation: icon-spin 1s linear infinite; }
-  @keyframes icon-spin { to { transform: rotate(360deg); } }
-  @media (prefers-reduced-motion: reduce) { .busy-icon { animation: none; } }
-  .choice strong { font-size: clamp(1.22rem, 2.7vw, 1.55rem); line-height: 1.2; letter-spacing: -.025em; }
-  .choice .copy { color: var(--muted); }
-  .choice .action { padding-top: 5px; margin-top: auto; font-weight: 750; color: var(--teal); }
-  .notice { margin-top: 22px; padding: 15px 18px; border-left: 3px solid var(--brand); border-radius: 0 10px 10px 0; background: #e7f2f1; color: #254b4d; font-size: .92rem; }
-  #entry-notice { border-left-color: var(--yellow); background: #fff9e6; color: #55440c; }
-  .notice.error, #register-error { border-left-color: var(--red); background: #fff1ef; color: #842c2c; }
-  #entry-notice, #register-error { background-repeat: no-repeat; background-position: 16px center; background-size: 20px; padding-left: 47px; }
-  #entry-notice { background-image: url('icons/qr-code.png'); }
-  #register-error { background-image: url('icons/erro.png'); }
-  .step-label { display: inline-block; margin: 0 0 13px; padding: 5px 11px; border-radius: 999px; background: #e7f2f1; color: var(--teal); font-size: .85rem; font-weight: 750; }
-  .hero .step-label { background: #ffffffed; color: var(--dark); }
-  .steps { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 12px; list-style: none; padding: 0; margin: 22px 0 0; }
-  .steps li { display: flex; gap: 11px; align-items: flex-start; padding: 13px 15px; border: 1px solid var(--line); border-radius: 12px; background: #fff; color: var(--muted); font-size: .9rem; }
-  .steps strong { flex: none; display: grid; place-items: center; width: 25px; height: 25px; border-radius: 50%; background: var(--yellow); color: var(--ink); }
-  .form-view, #review, #done { max-width: 820px; margin-inline: auto; }
-  .form-view h1, #review h1, #done h1 { margin-top: 13px; font-size: clamp(1.9rem, 4.6vw, 3rem); }
-  .form-view .intro, #review .intro, #done .intro { margin: 10px 0 21px; color: var(--muted); }
-  .back { color: var(--teal); background: transparent; border: 0; padding: 8px 2px; font-weight: 750; }
-  form { display: grid; gap: 16px; }
-  .panel { min-width: 0; padding: clamp(17px, 4vw, 27px); border: 1px solid var(--line); border-radius: 15px; background: var(--paper); }
-  .panel h2 { font-size: 1.16rem; margin-bottom: 15px; padding-left: 11px; border-left: 4px solid var(--green); }
-  .panel .hint { color: var(--muted); margin: -6px 0 14px; font-size: .9rem; }
-  .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
-  .field { display: grid; align-content: start; gap: 6px; min-width: 0; }
-  .wide { grid-column: 1 / -1; }
-  label, legend { font-weight: 650; }
-  input:not([type=checkbox]), select, textarea { width: 100%; min-width: 0; min-height: 46px; padding: 10px 11px; border: 1px solid #aabebc; border-radius: 8px; background: #fff; color: var(--ink); }
-  textarea { min-height: 102px; resize: vertical; }
-  .checklist { margin: 0; padding: 0; border: 0; min-width: 0; }
-  .checklist legend { padding: 0; margin: 0 0 10px; }
-  .check { display: flex; align-items: flex-start; gap: 8px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; font-size: .92rem; font-weight: 500; }
-  .check input { flex: none; margin: 3px 0 0; width: 17px; height: 17px; accent-color: var(--brand); }
-  .buttons { display: flex; flex-wrap: wrap; gap: 10px; justify-content: flex-end; margin-top: 3px; }
-  .button { min-height: 46px; border-radius: 9px; padding: 9px 17px; border: 1px solid var(--teal); background: var(--teal); color: #fff; font-weight: 750; }
-  .button:hover { background: #004f50; }
-  .button.secondary { color: var(--teal); background: #fff; }
-  .button.secondary:hover { background: #e7f0ee; }
-  :focus-visible { outline: 3px solid var(--brand); outline-offset: 3px; }
-  .photo-preview { margin-top: 16px; }
-  .photo-preview img { display: block; width: auto; max-width: 100%; max-height: 360px; border-radius: 9px; margin-top: 8px; }
-  .photo-preview p { overflow-wrap: anywhere; }
-  .photo-error { color: var(--red); }
-  .review-list { margin: 0; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: 0 14px; }
-  .review-list dt, .review-list dd { margin: 0; padding: 9px 0; border-bottom: 1px solid var(--line); overflow-wrap: anywhere; }
-  .review-list dt { font-weight: 700; }
-  .review-list dd { white-space: pre-wrap; }
-  #review .buttons, #done .buttons { margin-top: 17px; }
-  @media (max-width: 620px) {
-    .shell { width: min(100% - 28px, 1000px); }
-    .top { min-height: 64px; }
-    main { padding-top: 23px; }
-    .hero { border-radius: 17px; }
-    .choices, .grid, .steps { grid-template-columns: 1fr; gap: 12px; }
-    .choices { margin-top: 14px; }
-    .choice { gap: 9px; }
-    .review-list { grid-template-columns: 1fr; }
-    .review-list dt { padding-bottom: 0; border: 0; }
-    .review-list dd { padding-top: 2px; }
-    .buttons .button { flex: 1 1 auto; }
-    .brand img { width: min(205px, 100%); }
-    .institution img { width: 118px; }
-    .top { flex-wrap: wrap; padding-block: 7px; }
-  }
+  :root { font:16px/1.5 "Segoe UI",system-ui,sans-serif; color:#17343b; background:#f3f7f6; --brand:#008586; --teal:#006b6c; --dark:#075459; --green:#5cbc73; --yellow:#ffca05; --red:#bb1f25; --line:#d5e1df; --muted:#4b646a }
+  * { box-sizing:border-box }
+  [hidden] { display:none !important }
+  body { margin:0 }
+  button,input,select,textarea { font:inherit }
+  button { cursor:pointer }
+  button:disabled { cursor:not-allowed; opacity:.55 }
+  header { background:#fff; border-bottom:1px solid var(--line) }
+  header::after { content:""; display:block; height:4px; background:linear-gradient(90deg,var(--green) 0 25%,var(--yellow) 25% 50%,var(--brand) 50% 75%,var(--red) 75%) }
+  .shell { width:min(1200px,calc(100% - 32px)); margin:auto }
+  .top { min-height:86px; display:flex; align-items:center; justify-content:space-between; gap:15px }
+  .brand img { display:block; width:240px; max-width:100%; height:auto }
+  .institution img { display:block; width:145px; max-width:100%; height:auto }
+  .account { display:flex; align-items:center; gap:10px; flex-wrap:wrap; justify-content:flex-end }
+  .login-mark { display:block; width:56px; height:auto; margin-bottom:12px }
+  .ui-icon { width:22px; height:22px; object-fit:contain; flex:none; vertical-align:middle }
+  button,.button-link { display:inline-flex; align-items:center; justify-content:center; gap:8px }
+  button .ui-icon,.button-link .ui-icon { width:20px; height:20px }
+  .actions button:not(.secondary) .ui-icon,#login-form button .ui-icon,#assign .ui-icon,#close-case .ui-icon { filter:brightness(0) invert(1) }
+  .hero h1,h2,h3,.label-heading { display:flex; align-items:center; gap:9px }
+  .hero h1 .ui-icon { width:34px; height:34px }
+  .hero h1 .ui-icon { filter:brightness(0) invert(1) }
+  .label-heading { font-weight:650 }
+  .with-icon { display:inline-flex; align-items:center; gap:5px }
+  .next-step .with-icon { display:flex }
+  .pill .ui-icon { width:15px; height:15px }
+  .queue button .case-heading { display:flex; align-items:center; gap:8px }
+  .queue button .case-heading .ui-icon { width:22px; height:22px }
+  .info-line { display:flex; align-items:center; gap:7px; flex-wrap:wrap }
+  .info-line .ui-icon { width:18px; height:18px }
+  .evidence-link { display:inline-flex; align-items:center; gap:7px; overflow-wrap:anywhere }
+  #feedback:not(:empty) { display:flex; align-items:center; gap:9px }
+  #feedback .ui-icon { width:20px; height:20px }
+  main { padding:28px 0 70px }
+  h1,h2,h3,p { margin:0 }
+  h1 { font-size:clamp(2rem,4vw,3rem); line-height:1.1; letter-spacing:-.04em }
+  h2 { font-size:1.3rem }
+  h3 { font-size:1.08rem }
+  .hero { background:linear-gradient(120deg,var(--dark),var(--brand)); color:#fff; border-radius:20px; padding:28px }
+  .hero p { color:#d8efea; margin-top:7px }
+  .layout { display:grid; grid-template-columns:minmax(280px,350px) minmax(0,1fr); gap:16px; align-items:start; margin-top:18px }
+  .card { background:#fff; border:1px solid var(--line); border-radius:15px; padding:20px; min-width:0 }
+  .stack { display:grid; gap:16px }
+  .row { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap }
+  .muted { color:var(--muted) }
+  .small { font-size:.88rem }
+  .notice { margin:16px 0; padding:12px 15px; border-left:3px solid var(--brand); background:#e7f2f1; border-radius:0 9px 9px 0 }
+  .notice.error { border-color:var(--red); background:#fff2ef; color:#842c2c }
+  .next-step { margin-top:16px; padding:14px 16px; border-left:4px solid var(--yellow); border-radius:0 10px 10px 0; background:#fff9e6; color:#4c420c }
+  .next-step strong { display:block; margin-bottom:3px }
+  #feedback:empty { display:none }
+  label { display:grid; gap:5px; font-weight:650 }
+  input,select,textarea { width:100%; min-height:43px; border:1px solid #aabebc; border-radius:8px; padding:8px 10px; background:#fff; color:#17343b }
+  textarea { min-height:95px; resize:vertical }
+  button { min-height:42px; border:1px solid var(--teal); border-radius:8px; padding:7px 13px; background:var(--teal); color:#fff; font-weight:700 }
+  button.secondary { background:#fff; color:var(--teal) }
+  button:hover:not(:disabled),.button-link:hover { filter:brightness(.94) }
+  .button-link { display:inline-flex; align-items:center; justify-content:center; min-height:42px; border:1px solid var(--teal); border-radius:8px; padding:7px 13px; background:#fff; color:var(--teal); font-weight:700; text-decoration:none }
+  :focus-visible { outline:3px solid var(--brand); outline-offset:3px }
+  .form-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px }
+  .filters { display:grid; grid-template-columns:1fr 1fr; gap:10px }
+  .wide { grid-column:1/-1 }
+  .actions { display:flex; flex-wrap:wrap; gap:9px; margin-top:12px }
+  .queue { list-style:none; margin:14px 0 0; padding:0; display:grid; gap:8px }
+  .queue button { display:block; width:100%; text-align:left; background:#fff; color:#17343b; border-color:var(--line); padding:12px }
+  .queue button[aria-current="true"] { border-color:var(--brand); background:#e7f2f1 }
+  .queue button:hover { border-color:var(--brand) }
+  .queue .pill { margin:8px 7px 0 0 }
+  .queue strong,.queue small { display:block; overflow-wrap:anywhere }
+  .queue small { color:var(--muted); margin-top:3px }
+  .pill { display:inline-flex; align-items:center; gap:5px; width:max-content; border-radius:999px; padding:3px 9px; background:#e7f2f1; color:var(--dark); font-size:.83rem; font-weight:700 }
+  .pill.received { background:#fff4c8; color:#604709 }
+  .pill.late { background:#fff1ef; color:#8e2026 }
+  .pill.done { background:#e8f6eb; color:#245a34 }
+  .area { border:1px solid var(--line); border-radius:11px; padding:16px; margin-top:12px; display:grid; gap:10px }
+  .card > h2 { padding-left:10px; border-left:4px solid var(--green) }
+  .section-title { margin:12px 0 }
+  .entry-list { display:grid; grid-template-columns:minmax(120px,1fr) 2fr; gap:0 14px; margin:10px 0 }
+  dt,dd { margin:0; padding:7px 0; border-bottom:1px solid var(--line); overflow-wrap:anywhere; white-space:pre-wrap }
+  dt { font-weight:700 }
+  .history { margin:8px 0 0; padding-left:20px }
+  .history li { padding:4px 0 }
+  .photo { max-width:100%; max-height:360px; object-fit:contain; border:1px solid var(--line); border-radius:9px }
+  .inline { display:flex; align-items:end; gap:8px; flex-wrap:wrap }
+  .inline > label { flex:1 1 180px }
+  .login { max-width:450px; margin:22px auto }
+  .login form { display:grid; gap:14px }
+  @media(max-width:850px) { .layout { grid-template-columns:1fr } }
+  @media(max-width:750px) { .top { flex-wrap:wrap; padding:9px 0 } .institution img { width:120px } .account { width:100%; justify-content:flex-start } }
+  @media(max-width:540px) { .shell { width:min(100% - 24px,1200px) } .brand img { width:200px } .institution img { width:105px } .hero,.card { padding:17px } .form-grid,.filters,.entry-list { grid-template-columns:1fr } .wide { grid-column:auto } dt { border:0; padding-bottom:0 } dd { padding-top:0 } }
 </style>
+<script src="painel.js" defer></script>
 </head>
 <body>
-<header>
-  <div class="shell top">
-    <div class="brand"><img src="uhp-notifica-login.png" width="250" height="83" alt="UHP Notifica — Sistema de Notificações"></div>
-    <div class="institution"><img src="logo-posse-saude.png" width="155" height="75" alt="Prefeitura Municipal de Posse e Secretaria da Saúde"></div>
-  </div>
-</header>
+<header><div class="shell top"><div class="brand"><img src="uhp-notifica-login.png" width="240" height="80" alt="UHP Notifica — Sistema de Notificações"></div><div class="institution"><img src="logo-posse-saude.png" width="145" height="70" alt="Prefeitura Municipal de Posse e Secretaria da Saúde"></div><div class="account"><span id="identity" class="muted small"></span><button id="logout" type="button" class="secondary" hidden><img class="ui-icon" src="icons/sair.png" alt="" width="20" height="20">Sair</button></div></div></header>
 <main class="shell">
-  <noscript><p class="notice">Ative o JavaScript no navegador para abrir os formulários.</p></noscript>
-  <section id="home" aria-labelledby="home-title">
-    <div class="hero">
-      <span class="step-label">1 de 3 · Escolha</span>
-      <h1 id="home-title" tabindex="-1">O que você deseja notificar?</h1>
-      <p>Selecione a opção que melhor descreve o que aconteceu.</p>
-    </div>
-    <p class="notice" id="entry-notice" hidden></p>
-    <div class="choices">
-      <button class="choice" type="button" data-view="nonconformity">
-        <span class="icon" aria-hidden="true"><img src="icons/nao-conformidade.png" alt="" width="31" height="31"></span>
-        <strong>Não conformidade</strong>
-        <span class="copy">Registre um desvio de rotina, protocolo ou condição de trabalho.</span>
-        <span class="action">Abrir formulário <img class="ui-icon" src="icons/avancar.png" alt="" width="20" height="20"></span>
-      </button>
-      <button class="choice" type="button" data-view="incident">
-        <span class="icon" aria-hidden="true"><img src="icons/evento-adverso.png" alt="" width="31" height="31"></span>
-        <strong>Incidente ou evento adverso</strong>
-        <span class="copy">Relate uma ocorrência relacionada à assistência, com ou sem dano ao paciente.</span>
-        <span class="action">Abrir formulário <img class="ui-icon" src="icons/avancar.png" alt="" width="20" height="20"></span>
-      </button>
-    </div>
-    <ol class="steps" aria-label="Etapas do registro">
-      <li><strong>1</strong><span>Escolha o tipo de notificação.</span></li>
-      <li><strong>2</strong><span>Preencha e confira os dados.</span></li>
-      <li><strong>3</strong><span>Envie e receba o protocolo.</span></li>
-    </ol>
-  </section>
-
-  <section id="nonconformity" class="form-view" hidden aria-labelledby="nonconformity-title">
-    <button type="button" class="back" data-view="home"><img class="ui-icon" src="icons/voltar.png" alt="" width="20" height="20">Escolher outro formulário</button>
-    <span class="step-label">2 de 3 · Preencha</span>
-    <h1 id="nonconformity-title" tabindex="-1">Notificar não conformidade</h1>
-    <p class="intro">Os campos com * são obrigatórios. Selecione as categorias que se aplicam e descreva o ocorrido.</p>
-    <form autocomplete="off">
-      <div class="panel">
-        <h2><img class="ui-icon" src="icons/dados-ocorrencia.png" alt="" width="22" height="22">Dados da ocorrência</h2>
-        <div class="grid">
-          <div class="field"><label for="nc-date">Data da ocorrência *</label><input id="nc-date" name="date" type="date" required></div>
-          <div class="field"><label for="nc-sector">Setor *</label><input id="nc-sector" name="sector" required maxlength="120" placeholder="Ex. Pronto Socorro"></div>
-          <div class="field"><label for="nc-shift">Turno *</label><select id="nc-shift" name="shift" required></select></div>
-        </div>
-      </div>
-      <div class="panel">
-        <h2><img class="ui-icon" src="icons/nao-conformidade.png" alt="" width="22" height="22">Tipos de não conformidade</h2>
-        <p class="hint">Cada categoria tem uma lista suspensa. Você pode selecionar um item por categoria e detalhar outros no relato.</p>
-        <div class="grid" id="nc-categories"></div>
-      </div>
-      <div class="panel field">
-        <label for="nc-description">Relato do ocorrido *</label>
-        <textarea id="nc-description" name="description" required maxlength="5000" placeholder="Descreva o ocorrido e inclua situações que não aparecem nas listas."></textarea>
-      </div>
-      <div class="panel field">
-        <label for="nc-photo"><img class="ui-icon" src="icons/foto.png" alt="" width="22" height="22"> Foto da ocorrência (opcional)</label>
-        <input type="file" id="nc-photo" data-photo accept="image/jpeg,image/png" aria-describedby="nc-photo-hint nc-photo-error">
-        <p id="nc-photo-hint" class="hint" style="margin:0">Escolha uma foto JPEG ou PNG de até 2 MB.</p>
-        <p id="nc-photo-error" class="photo-error" data-photo-error role="alert" hidden></p>
-        <button class="button secondary" type="button" data-remove-photo hidden><img class="ui-icon" src="icons/remover.png" alt="" width="20" height="20">Remover foto</button>
-      </div>
-      <div class="buttons"><button class="button" type="submit"><img class="ui-icon" src="icons/revisar.png" alt="" width="20" height="20">Revisar notificação</button></div>
+  <div class="hero"><h1><img class="ui-icon" src="icons/notificacoes.png" alt="" width="34" height="34">Painel de notificações</h1><p id="panel-guide">Acompanhe cada ocorrência da triagem ao encerramento.</p></div>
+  <p id="feedback" class="notice" role="status" aria-live="polite"></p>
+  <section id="login" class="card login">
+    <img class="login-mark" src="uhp-notifica-icone.png" width="56" height="57" alt="">
+    <h2>Acessar painel</h2>
+    <p class="muted section-title">Use a conta institucional fornecida para a sua área.</p>
+    <form id="login-form">
+      <label>E-mail<input id="email" type="email" autocomplete="username" required></label>
+      <label>Senha<input id="password" type="password" autocomplete="current-password" required></label>
+      <button type="submit"><img class="ui-icon" src="icons/entrar.png" alt="" width="20" height="20">Entrar</button>
     </form>
   </section>
-
-  <section id="incident" class="form-view" hidden aria-labelledby="incident-title">
-    <button type="button" class="back" data-view="home"><img class="ui-icon" src="icons/voltar.png" alt="" width="20" height="20">Escolher outro formulário</button>
-    <span class="step-label">2 de 3 · Preencha</span>
-    <h1 id="incident-title" tabindex="-1">Notificar incidente ou evento adverso</h1>
-    <p class="intro">Os campos com * são obrigatórios. Pode deixar em branco os dados que não souber.</p>
-    <form autocomplete="off">
-      <div class="panel">
-        <h2><img class="ui-icon" src="icons/dados-ocorrencia.png" alt="" width="22" height="22">Dados da ocorrência</h2>
-        <div class="grid">
-          <div class="field wide"><label for="event-type">Tipo de incidente ou evento adverso *</label><select id="event-type" name="type" required></select></div>
-          <div class="field"><label for="event-harm">Grau do dano *</label><select id="event-harm" name="harm" required></select></div>
-          <div class="field"><label for="event-sector">Setor da ocorrência</label><select id="event-sector" name="sector"></select></div>
-          <div class="field" id="other-sector" hidden><label for="event-other-sector">Qual setor? *</label><input id="event-other-sector" name="otherSector" maxlength="120" disabled></div>
-          <div class="field"><label for="event-date">Data da ocorrência *</label><input id="event-date" name="date" type="date" required></div>
-          <div class="field"><label for="event-period">Período da ocorrência *</label><select id="event-period" name="period" required></select></div>
-          <div class="field wide"><label for="event-description">Relato do incidente *</label><textarea id="event-description" name="description" maxlength="5000" required placeholder="Descreva brevemente o que aconteceu."></textarea></div>
+  <div id="workspace" class="layout" hidden>
+    <section class="card" aria-labelledby="queue-title">
+      <div class="row"><h2 id="queue-title"><img class="ui-icon" src="icons/notificacoes.png" alt="" width="22" height="22">Fila de notificações</h2><button type="button" id="refresh" class="secondary"><img class="ui-icon" src="icons/atualizar.png" alt="" width="20" height="20">Atualizar</button></div>
+      <p class="small muted section-title">Selecione um registro para acompanhar a tratativa.</p>
+      <div class="filters section-title">
+        <label><span class="label-heading"><img class="ui-icon" src="icons/buscar.png" alt="" width="22" height="22">Buscar nesta página</span><input id="query" type="search" placeholder="Protocolo ou setor"></label>
+        <label><span class="label-heading"><img class="ui-icon" src="icons/filtros.png" alt="" width="22" height="22">Situação</span><select id="status-filter"><option value="">Todas</option><option value="received">Recebidas</option><option value="in_progress">Em tratativa</option><option value="closed">Finalizadas</option></select></label>
+      </div>
+      <p id="queue-empty" class="muted section-title">Nenhuma notificação nesta página.</p>
+      <ul id="queue" class="queue"></ul>
+      <div class="actions"><button type="button" id="more" class="secondary" hidden><img class="ui-icon" src="icons/carregar-mais.png" alt="" width="20" height="20">Carregar mais</button></div>
+    </section>
+    <div id="detail" class="stack" hidden>
+      <section class="card">
+        <div class="row"><div><h2><img class="ui-icon" src="icons/protocolo.png" alt="" width="22" height="22"><span id="case-title" tabindex="-1"></span></h2><p id="case-meta" class="muted small"></p></div><span id="case-state" class="pill"></span></div>
+        <p id="case-summary" class="section-title"></p>
+        <div class="actions"><a id="pdf-link" class="button-link" target="_blank" rel="noopener" hidden><img class="ui-icon" src="icons/pdf.png" alt="" width="20" height="20">Abrir PDF atualizado<img class="ui-icon" src="icons/abrir-nova-aba.png" alt="" width="20" height="20"></a></div>
+        <p id="pdf-hint" class="small muted info-line" hidden><img class="ui-icon" src="icons/imprimir.png" alt="" width="18" height="18">Abre em uma nova aba para impressão.</p>
+        <div class="next-step" aria-live="polite"><strong class="with-icon"><img class="ui-icon" src="icons/informacao.png" alt="" width="20" height="20">Próxima ação</strong><span id="next-step"></span></div>
+        <details><summary><img class="ui-icon" src="icons/dados-ocorrencia.png" alt="" width="20" height="20"> Dados da notificação</summary><dl id="case-fields" class="entry-list"></dl></details>
+        <details id="photo-wrap" hidden><summary><img class="ui-icon" src="icons/foto.png" alt="" width="22" height="22">Ver foto da ocorrência</summary><img id="case-photo" class="photo" alt="Foto anexada à ocorrência" loading="lazy"></details>
+        <div id="triage" class="area" hidden>
+          <h3><img class="ui-icon" src="icons/triagem.png" alt="" width="22" height="22">Triagem e encaminhamento</h3><p class="small muted">Escolha uma área, um responsável e os prazos do parecer e das ações.</p>
+          <div class="form-grid">
+            <label>Área<select id="area-choice"><option value="patient_safety">Segurança do Paciente</option><option value="ccih">CCIH</option></select></label>
+            <label>Responsável<select id="assignee"></select></label>
+            <label>Prazo do parecer<input id="opinion-due" type="date"></label>
+            <label>Prazo das ações<input id="actions-due" type="date"></label>
+          </div>
+          <button type="button" id="assign"><img class="ui-icon" src="icons/encaminhar.png" alt="" width="20" height="20">Encaminhar à área</button>
         </div>
-      </div>
-      <div class="panel">
-        <h2><img class="ui-icon" src="icons/paciente.png" alt="" width="22" height="22">Dados do paciente e do atendimento</h2>
-        <div class="grid">
-          <div class="field"><label for="event-sex">Sexo</label><select id="event-sex" name="sex"></select></div>
-          <div class="field"><label for="event-race">Raça/cor</label><select id="event-race" name="race"></select></div>
-          <div class="field"><label for="event-age">Idade no momento da ocorrência</label><input id="event-age" name="age" type="number" min="0" step="1" inputmode="numeric"></div>
-          <div class="field"><label for="event-age-unit">Unidade da idade</label><select id="event-age-unit" name="ageUnit" aria-describedby="age-hint"></select><span id="age-hint" class="hint" style="margin:0">Selecione se informou a idade.</span></div>
-          <div class="field"><label for="event-admission">Data da internação ou do atendimento</label><input id="event-admission" name="admission" type="date"></div>
-          <div class="field wide"><label for="event-reason">Motivo da busca pelo serviço de saúde</label><textarea id="event-reason" name="reason" maxlength="5000"></textarea></div>
-        </div>
-      </div>
-      <div class="panel">
-        <h2><img class="ui-icon" src="icons/fatores-contribuintes.png" alt="" width="22" height="22">Fatores contribuintes e detecção</h2>
-        <div class="grid">
-          <fieldset class="checklist wide">
-            <legend>Quais fatores contribuíram para a ocorrência?</legend>
-            <div class="grid" id="event-factors"></div>
-          </fieldset>
-          <div class="field wide"><label for="event-detection">Como o incidente ou evento foi identificado?</label><textarea id="event-detection" name="detection" maxlength="5000"></textarea></div>
-          <div class="field wide"><label for="event-suggestion">Sugestão de ações para reduzir o risco</label><textarea id="event-suggestion" name="suggestion" maxlength="5000"></textarea></div>
-        </div>
-      </div>
-      <div class="panel field">
-        <label for="event-photo"><img class="ui-icon" src="icons/foto.png" alt="" width="22" height="22"> Foto da ocorrência (opcional)</label>
-        <input type="file" id="event-photo" data-photo accept="image/jpeg,image/png" aria-describedby="event-photo-hint event-photo-error">
-        <p id="event-photo-hint" class="hint" style="margin:0">Escolha uma foto JPEG ou PNG de até 2 MB.</p>
-        <p id="event-photo-error" class="photo-error" data-photo-error role="alert" hidden></p>
-        <button class="button secondary" type="button" data-remove-photo hidden><img class="ui-icon" src="icons/remover.png" alt="" width="20" height="20">Remover foto</button>
-      </div>
-      <div class="buttons"><button class="button" type="submit"><img class="ui-icon" src="icons/revisar.png" alt="" width="20" height="20">Revisar notificação</button></div>
-    </form>
-  </section>
-
-  <section id="review" hidden aria-labelledby="review-title">
-    <button type="button" class="back" data-edit><img class="ui-icon" src="icons/voltar.png" alt="" width="20" height="20">Voltar ao formulário</button>
-    <span class="step-label">3 de 3 · Confira e envie</span>
-    <h1 id="review-title" tabindex="-1">Revisar notificação</h1>
-    <p class="intro" id="review-type"></p>
-    <div class="panel">
-      <dl class="review-list" id="review-list"></dl>
-      <div class="photo-preview" id="review-photo" hidden>
-        <h2><img class="ui-icon" src="icons/foto.png" alt="" width="22" height="22">Foto da ocorrência</h2>
-        <p id="review-photo-name"></p>
-        <img id="review-photo-image" alt="Foto anexada à notificação">
-      </div>
+      </section>
+      <section class="card"><h2><img class="ui-icon" src="icons/acoes.png" alt="" width="22" height="22">Tratativas por área</h2><div id="areas"></div></section>
+      <section id="closure" class="card" hidden><h2><img class="ui-icon" src="icons/encerrar.png" alt="" width="22" height="22">Encerramento</h2><p id="close-hint" class="muted small section-title"></p><label>Conclusão do caso<textarea id="conclusion" maxlength="5000"></textarea></label><div class="actions"><button id="close-case" type="button"><img class="ui-icon" src="icons/encerrar.png" alt="" width="20" height="20">Finalizar notificação</button></div></section>
+      <section class="card"><h2><img class="ui-icon" src="icons/historico.png" alt="" width="22" height="22">Histórico</h2><ol id="history" class="history"></ol></section>
     </div>
-    <p class="notice">Confira os dados antes de enviar. O protocolo será emitido após a confirmação do servidor.</p>
-    <p class="notice" id="register-error" role="alert" hidden></p>
-    <div class="buttons">
-      <button class="button secondary" type="button" data-edit><img class="ui-icon" src="icons/editar.png" alt="" width="20" height="20">Editar dados</button>
-      <button class="button" type="button" id="register"><img class="ui-icon" src="icons/enviar.png" alt="" width="20" height="20">Enviar notificação</button>
-    </div>
-  </section>
-
-  <section id="done" hidden aria-labelledby="done-title">
-    <div class="panel">
-      <span class="step-label">Registro concluído</span>
-      <h1 id="done-title" tabindex="-1"><img class="title-icon" src="icons/sucesso.png" alt="" width="34" height="34">Notificação registrada</h1>
-      <div class="receipt-row"><img class="ui-icon" src="icons/protocolo.png" alt="" width="24" height="24"><p class="intro" id="receipt"></p></div>
-      <p class="notice" id="receipt-note"></p>
-      <div class="buttons">
-        <button type="button" class="button secondary" id="copy-protocol"><img class="ui-icon" src="icons/copiar.png" alt="" width="20" height="20">Copiar protocolo</button>
-        <button type="button" class="button secondary" data-view="home"><img class="ui-icon" src="icons/nova-notificacao.png" alt="" width="20" height="20">Registrar outra notificação</button>
-      </div>
-    </div>
-  </section>
+    <section id="welcome" class="card"><h2><img class="ui-icon" src="icons/protocolo.png" alt="" width="22" height="22">Selecione um protocolo</h2><p class="muted">Acompanhe os pareceres, prazos, ações e decisões.</p></section>
+  </div>
 </main>
-<script src="form.js" defer></script>
 </body>
 </html>

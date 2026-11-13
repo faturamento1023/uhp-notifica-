@@ -88,7 +88,7 @@ export async function notificationPdf(record, issuedAt = new Date(), photo = nul
     page.drawRectangle({ x: 0, y: A4[1] - 8, width: A4[0], height: 8, color: COLORS.teal });
     page.drawImage(systemLogo, { x: MARGIN, y: A4[1] - 119, width: 245, height: 82 });
     page.drawImage(logo, { x: 379, y: A4[1] - 120, width: 166, height: 80 });
-    page.drawText('NOTIFICAÇÃO INTERNA AO SETOR', { x: MARGIN, y: A4[1] - 146, size: 12, font: bold, color: COLORS.dark });
+    page.drawText('NOTIFICAÇÃO E EVOLUÇÃO', { x: MARGIN, y: A4[1] - 146, size: 12, font: bold, color: COLORS.dark });
     page.drawText('Coordenação de Enfermagem', { x: 402, y: A4[1] - 145, size: 8.5, font: regular, color: COLORS.muted });
     page.drawLine({ start: { x: MARGIN, y: A4[1] - 160 }, end: { x: A4[0] - MARGIN, y: A4[1] - 160 }, thickness: 1.5, color: COLORS.teal });
     y = A4[1] - 180;
@@ -136,7 +136,7 @@ export async function notificationPdf(record, issuedAt = new Date(), photo = nul
 
   doc.setTitle('Notificação interna ' + record.protocol);
   doc.setAuthor('UHP Notifica · Coordenação de Enfermagem');
-  doc.setSubject('Notificação ao setor destinatário');
+  doc.setSubject('Notificação e evolução das tratativas');
   newPage();
   ensure(62);
   page.drawRectangle({ x: MARGIN, y: y - 52, width, height: 54, color: COLORS.pale, borderColor: COLORS.teal, borderWidth: 0.8 });
@@ -176,15 +176,33 @@ export async function notificationPdf(record, issuedAt = new Date(), photo = nul
     y -= imageHeight + 12;
   }
 
-  ensure(130);
-  section('Ciência do setor');
-  line('Preenchimento após a entrega da via impressa.', regular, 8.5, COLORS.muted);
-  y -= 24;
-  page.drawLine({ start: { x: MARGIN, y }, end: { x: MARGIN + 305, y }, thickness: 0.8, color: COLORS.muted });
-  y -= 16;
-  line('Nome e assinatura de quem recebeu', regular, 8, COLORS.muted);
-  y -= 10;
-  line('Data: ____ / ____ / ______', regular, 9, COLORS.ink);
+  if (record.assignments?.length) {
+    const dateTime = value => value ? new Intl.DateTimeFormat('pt-BR', {
+      dateStyle: 'short', timeStyle: 'short', timeZone: 'America/Sao_Paulo'
+    }).format(new Date(value)) : '';
+    for (const assignment of record.assignments) {
+      section('Tratativa · ' + (assignment.area === 'ccih' ? 'CCIH' : 'Segurança do Paciente'));
+      field('Situação', ({ draft: 'Aguardando parecer', revision: 'Parecer em revisão', pending_approval: 'Parecer enviado',
+        actions: 'Ações em andamento', pending_validation: 'Aguardando validação', complement: 'Complemento solicitado',
+        validated: 'Validada' })[assignment.status] || assignment.status);
+      for (const opinion of assignment.opinions || []) {
+        field('Parecer ' + opinion.version + ' · ' + dateTime(opinion.submittedAt), opinion.body);
+        if (opinion.reason) field('Devolução', opinion.reason);
+      }
+      for (const action of assignment.actions || []) {
+        field('Ação · ' + (action.performedOn?.split('-').reverse().join('/') || ''), action.description);
+        if (action.evidence?.length) field('Evidências anexadas', action.evidence.map(file => file.name).join('; '));
+      }
+      for (const entry of assignment.progress || []) {
+        field('Evolução · ' + dateTime(entry.createdAt) + ' · ' + (entry.author || 'Responsável'), entry.body);
+        if (entry.fileName) field('Anexo da evolução', entry.fileName + ' (' + entry.fileMime + ')');
+      }
+    }
+  }
+  if (record.closure) {
+    section('Conclusão da Coordenação');
+    line(record.closure);
+  }
 
   const pages = doc.getPages();
   pages.forEach((sheet, index) => {
