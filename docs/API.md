@@ -34,9 +34,10 @@ Envie `POST /notifications` com `Content-Type: application/json`.
 | `period` | `Manhã`, `Tarde`, `Noite` ou `Madrugada`. |
 | `description` | Relato obrigatório, até 5.000 caracteres. |
 | `subject`, `harm` | Obrigatórios em incidentes. Os graus são `Nenhum (incidente sem dano)`, `Leve`, `Moderado`, `Grave` e `Óbito em decorrência do evento adverso`. |
+| `photo` | Opcional em ambos os tipos. Objeto `{ name, mime, contentBase64 }` para uma foto JPEG ou PNG de até 2 MiB. Envie apenas o conteúdo Base64, sem o prefixo da URL de dados. O registro e a foto são gravados juntos. |
 | `entries` | Até 30 pares `[rótulo, valor]` para categorias selecionadas e campos complementares dos protótipos. Rótulo de até 160 caracteres e valor de até 5.000. Envie apenas campos preenchidos. |
 
-O servidor retorna `201` com `{ "id": "uuid", "protocol": "UHP-2026-8A1E68CE6C5E4CF8" }`. Uma repetição idêntica retorna `200` com o mesmo registro. Uma repetição com conteúdo diferente retorna `409`.
+O servidor retorna `201` com `{ "id": "uuid", "protocol": "UHP-2026-8A1E68CE6C5E4CF8" }`. Uma repetição idêntica retorna `200` com o mesmo registro. Uma repetição com conteúdo diferente, inclusive se a foto mudar, retorna `409`.
 
 ## Sessão e filas
 
@@ -47,11 +48,12 @@ O servidor retorna `201` com `{ "id": "uuid", "protocol": "UHP-2026-8A1E68CE6C5E
 | `DELETE /session` | Autenticado | Encerra a sessão e retorna `204`. |
 | `GET /notifications?offset=0` | Autenticado | `{ items, nextOffset }`, 30 por página. A Coordenação vê a unidade. As áreas veem apenas casos atribuídos à conta. |
 | `GET /notifications/{id}` | Autenticado e vinculado | Dados do caso, tratativas acessíveis e histórico. |
+| `GET /notifications/{id}/photo` | Autenticado e vinculado | Imagem JPEG ou PNG, com `Cache-Control: no-store`. Retorna `404` se a notificação estiver fora do escopo ou não houver foto. |
 | `GET /assignees` | Coordenação | `{ items: [{ id, name, role }] }` com profissionais ativos da unidade. |
 
 Os perfis são `coordination`, `patient_safety` e `ccih`. O navegador envia o cookie automaticamente na mesma origem. Em desenvolvimento, o servidor usa `http://127.0.0.1:3000`. Em homologação e produção, configure HTTPS. A API exige o cabeçalho `Origin` correspondente à aplicação em operações de escrita.
 
-Cada item da fila contém `id`, `protocol`, `status`, `createdAt`, `kind`, `sector`, `occurredOn`, `subject`, `harm` e `assignments`. O detalhe inclui também `period`, `description`, `entries`, `closure`, `closedAt`, `closedBy` e `history`. O histórico traz `id`, `assignmentId`, `actorId`, `event`, `detail` e `createdAt`.
+Cada item da fila contém `id`, `protocol`, `status`, `createdAt`, `kind`, `sector`, `occurredOn`, `subject`, `harm` e `assignments`. O detalhe inclui também `period`, `description`, `entries`, `closure`, `closedAt`, `closedBy` e `history`, além de `photo` (`null` ou `{ name, mime, size }`). Use a rota de foto com a sessão atual para visualizar a imagem. O histórico traz `id`, `assignmentId`, `actorId`, `event`, `detail` e `createdAt`.
 
 ## Tratativa, parecer e encerramento
 
