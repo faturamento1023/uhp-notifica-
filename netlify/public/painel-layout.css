@@ -85,7 +85,7 @@ body.panel-signed-in.sidebar-collapsed { --sidebar-width: 68px; }
 .sidebar-collapsed #logout span { display: none; }
 .sidebar-collapsed .panel-menu a, .sidebar-collapsed #logout { justify-content: center; padding-inline: 0; }
 .sidebar-collapsed .sidebar-avatar { width: 38px; height: 38px; font-size: .85rem; }
-.panel-content { min-width: 0; width: 100%; max-width: 1440px; padding: 24px clamp(24px, 3vw, 44px) 40px; }
+.panel-content { min-width: 0; width: 100%; padding: 24px clamp(24px, 2vw, 40px) 40px; }
 .panel-heading {
   display: flex;
   align-items: center;
@@ -146,6 +146,13 @@ body.panel-signed-in.sidebar-collapsed { --sidebar-width: 68px; }
 #notifications-view .layout { grid-template-columns: minmax(250px, 300px) minmax(0, 1fr); }
 #notification-filters { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 #notification-filters label { grid-column: 1 / -1; }
+@media (min-width: 1440px) {
+  .dashboard-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .dashboard-grid .group-chat .chat-log {
+    min-height: clamp(180px, 14vw, 290px);
+    max-height: 380px;
+  }
+}
 @media (max-width: 900px) {
   .panel-signed-in main.shell { background: none; }
   .panel-signed-in .institutional-footer { margin-inline-start: 0; box-shadow: none; }

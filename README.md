@@ -204,3 +204,5 @@ Em **Notificações**, a busca por protocolo, setor, assunto ou tipo e o filtro 
 Ajuste visual da tela **Início**. O menu e os totais ganharam destaque, o texto ficou maior e a orientação do dia passou a ficar logo abaixo das últimas notificações no desktop. No celular, as seções aparecem na ordem últimas notificações, bate-papo e orientação do dia.
 
 O painel autenticado ganhou uma barra lateral escura com os dados do perfil, atalhos para Dashboard e Notificações e o botão Sair. No desktop, o menu pode ser recolhido. Em telas menores, a navegação fica em uma faixa acima do conteúdo. O cabeçalho exibe as duas marcas institucionais.
+
+O painel passou a usar toda a largura disponível ao lado do menu. Em monitores largos, as duas colunas do dashboard têm a mesma largura e o histórico do bate-papo tem mais espaço vertical.
