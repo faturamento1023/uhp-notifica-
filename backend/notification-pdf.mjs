@@ -1,5 +1,6 @@
 import { PDFDocument, StandardFonts, rgb } from 'pdf-lib';
 import { logoBase64 } from './pdf-logo.mjs';
+import { systemLogoBase64 } from './pdf-system-logo.mjs';
 
 const A4 = [595.28, 841.89];
 const MARGIN = 46;
@@ -74,6 +75,7 @@ export async function notificationPdf(record, issuedAt = new Date(), photo = nul
   const regular = await doc.embedFont(StandardFonts.Helvetica);
   const bold = await doc.embedFont(StandardFonts.HelveticaBold);
   const logo = await doc.embedPng(Uint8Array.from(atob(logoBase64), char => char.charCodeAt(0)));
+  const systemLogo = await doc.embedPng(Uint8Array.from(atob(systemLogoBase64), char => char.charCodeAt(0)));
   const width = A4[0] - 2 * MARGIN;
   const issued = new Intl.DateTimeFormat('pt-BR', {
     dateStyle: 'short', timeStyle: 'short', timeZone: 'America/Sao_Paulo'
@@ -84,12 +86,12 @@ export async function notificationPdf(record, issuedAt = new Date(), photo = nul
   function newPage() {
     page = doc.addPage(A4);
     page.drawRectangle({ x: 0, y: A4[1] - 8, width: A4[0], height: 8, color: COLORS.teal });
-    page.drawImage(logo, { x: MARGIN, y: A4[1] - 129, width: 190, height: 92 });
-    page.drawText('NOTIFICAÇÃO INTERNA', { x: 260, y: A4[1] - 68, size: 15, font: bold, color: COLORS.dark });
-    page.drawText('AO SETOR', { x: 260, y: A4[1] - 88, size: 15, font: bold, color: COLORS.dark });
-    page.drawText('Coordenação de Enfermagem', { x: 260, y: A4[1] - 109, size: 9, font: regular, color: COLORS.muted });
-    page.drawLine({ start: { x: MARGIN, y: A4[1] - 144 }, end: { x: A4[0] - MARGIN, y: A4[1] - 144 }, thickness: 1.5, color: COLORS.teal });
-    y = A4[1] - 164;
+    page.drawImage(systemLogo, { x: MARGIN, y: A4[1] - 119, width: 245, height: 82 });
+    page.drawImage(logo, { x: 379, y: A4[1] - 120, width: 166, height: 80 });
+    page.drawText('NOTIFICAÇÃO INTERNA AO SETOR', { x: MARGIN, y: A4[1] - 146, size: 12, font: bold, color: COLORS.dark });
+    page.drawText('Coordenação de Enfermagem', { x: 402, y: A4[1] - 145, size: 8.5, font: regular, color: COLORS.muted });
+    page.drawLine({ start: { x: MARGIN, y: A4[1] - 160 }, end: { x: A4[0] - MARGIN, y: A4[1] - 160 }, thickness: 1.5, color: COLORS.teal });
+    y = A4[1] - 180;
   }
   function ensure(height) {
     if (y - height < 75) newPage();
