@@ -108,6 +108,10 @@
   @media(max-width:850px) { .layout { grid-template-columns:1fr } }
   @media(max-width:750px) { .top { flex-wrap:wrap; padding:9px 0 } .institution img { width:120px } .account { width:100%; justify-content:flex-start } }
   @media(max-width:540px) { .shell { width:min(100% - 24px,1200px) } .brand img { width:200px } .institution img { width:105px } .hero,.card { padding:17px } .form-grid,.filters,.entry-list { grid-template-columns:1fr } .wide { grid-column:auto } dt { border:0; padding-bottom:0 } dd { padding-top:0 } }
+  .institutional-footer { padding: 18px 16px; border-top: 1px solid #d5e1df; background: #fff; color: #405c61; text-align: center; font-size: .875rem; line-height: 1.55; }
+  .institutional-footer p { margin: 0; }
+  .institutional-footer strong { color: #14373b; }
+  .institutional-footer .cnpj { white-space: nowrap; }
 </style>
 <script src="painel.js" defer></script>
 <script src="banners.js" defer></script>
@@ -167,5 +171,9 @@
     <section id="welcome" class="card"><h2><img class="ui-icon" src="icons/protocolo.png" alt="" width="22" height="22">Selecione um protocolo</h2><p class="muted">Acompanhe os pareceres, prazos, ações e decisões.</p><div class="banner-carousel" data-banner-carousel aria-label="Orientações educativas sobre notificações e segurança do paciente"></div></section>
   </div>
 </main>
+<footer class="institutional-footer">
+  <p>Direitos reservados para</p>
+  <p><strong><em>HOSPITAL MUNICIPAL DR ARQUIMEDES VIEIRA DE BRITO POSSE</em></strong> – <strong class="cnpj">24.855.744/0001-56</strong></p>
+</footer>
 </body>
 </html>

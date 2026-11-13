@@ -165,3 +165,5 @@ O botão do painel abre `notificacao-pdf.html` com o favicon do UHP Notifica e v
 ### Exibição dos banners
 
 O formulário e o painel exibem a mesma arte durante todo o dia. O banner muda à meia-noite no horário de Brasília, seguindo a ordem das 14 artes da rotação pública.
+
+O login, o painel e o formulário público exibem no rodapé os direitos reservados ao Hospital Municipal Dr Arquimedes Vieira de Brito Posse e o CNPJ 24.855.744/0001-56.
