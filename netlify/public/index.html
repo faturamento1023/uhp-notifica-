@@ -39,6 +39,12 @@
   .info-line { display:flex; align-items:center; gap:7px; flex-wrap:wrap }
   .info-line .ui-icon { width:18px; height:18px }
   .evidence-link { display:inline-flex; align-items:center; gap:7px; overflow-wrap:anywhere }
+  .banner-carousel { margin-top:16px; padding:10px; border:1px solid var(--line); border-radius:12px; background:#fff }
+  .banner-image { display:block; width:100%; height:auto; border-radius:8px }
+  .banner-controls { display:flex; align-items:center; justify-content:center; gap:8px; flex-wrap:wrap; padding-top:12px }
+  .banner-controls button { min-height:40px; padding:7px 11px; border:1px solid var(--teal); border-radius:8px; background:#fff; color:var(--teal); font-weight:700 }
+  .banner-controls button:hover { background:#e7f2f1 }
+  .banner-count { min-width:56px; text-align:center; color:var(--muted) }
   #feedback:not(:empty) { display:flex; align-items:center; gap:9px }
   #feedback .ui-icon { width:20px; height:20px }
   main { padding:28px 0 70px }
@@ -100,6 +106,7 @@
   @media(max-width:540px) { .shell { width:min(100% - 24px,1200px) } .brand img { width:200px } .institution img { width:105px } .hero,.card { padding:17px } .form-grid,.filters,.entry-list { grid-template-columns:1fr } .wide { grid-column:auto } dt { border:0; padding-bottom:0 } dd { padding-top:0 } }
 </style>
 <script src="painel.js" defer></script>
+<script src="banners.js" defer></script>
 </head>
 <body>
 <header><div class="shell top"><div class="brand"><img src="uhp-notifica-login.png" width="240" height="80" alt="UHP Notifica — Sistema de Notificações"></div><div class="institution"><img src="logo-posse-saude.png" width="145" height="70" alt="Prefeitura Municipal de Posse e Secretaria da Saúde"></div><div class="account"><span id="identity" class="muted small"></span><button id="logout" type="button" class="secondary" hidden><img class="ui-icon" src="icons/sair.png" alt="" width="20" height="20">Sair</button></div></div></header>
@@ -152,7 +159,7 @@
       <section id="closure" class="card" hidden><h2><img class="ui-icon" src="icons/encerrar.png" alt="" width="22" height="22">Encerramento</h2><p id="close-hint" class="muted small section-title"></p><label>Conclusão do caso<textarea id="conclusion" maxlength="5000"></textarea></label><div class="actions"><button id="close-case" type="button"><img class="ui-icon" src="icons/encerrar.png" alt="" width="20" height="20">Finalizar notificação</button></div></section>
       <section class="card"><h2><img class="ui-icon" src="icons/historico.png" alt="" width="22" height="22">Histórico</h2><ol id="history" class="history"></ol></section>
     </div>
-    <section id="welcome" class="card"><h2><img class="ui-icon" src="icons/protocolo.png" alt="" width="22" height="22">Selecione um protocolo</h2><p class="muted">Acompanhe os pareceres, prazos, ações e decisões.</p></section>
+    <section id="welcome" class="card"><h2><img class="ui-icon" src="icons/protocolo.png" alt="" width="22" height="22">Selecione um protocolo</h2><p class="muted">Acompanhe os pareceres, prazos, ações e decisões.</p><div class="banner-carousel" data-banner-carousel aria-label="Orientações educativas sobre notificações e segurança do paciente"></div></section>
   </div>
 </main>
 </body>

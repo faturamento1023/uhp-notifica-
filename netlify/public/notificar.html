@@ -76,6 +76,12 @@
   .steps { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 12px; list-style: none; padding: 0; margin: 22px 0 0; }
   .steps li { display: flex; gap: 11px; align-items: flex-start; padding: 13px 15px; border: 1px solid var(--line); border-radius: 12px; background: #fff; color: var(--muted); font-size: .9rem; }
   .steps strong { flex: none; display: grid; place-items: center; width: 25px; height: 25px; border-radius: 50%; background: var(--yellow); color: var(--ink); }
+  .banner-carousel { margin-top: 20px; padding: 12px; border: 1px solid var(--line); border-radius: 15px; background: #fff; }
+  .banner-image { display: block; width: 100%; height: auto; border-radius: 9px; }
+  .banner-controls { display: flex; align-items: center; justify-content: center; gap: 10px; flex-wrap: wrap; padding-top: 12px; }
+  .banner-controls button { min-height: 40px; padding: 7px 12px; border: 1px solid var(--teal); border-radius: 8px; background: #fff; color: var(--teal); font-weight: 700; }
+  .banner-controls button:hover { background: #e7f2f1; }
+  .banner-count { min-width: 56px; text-align: center; color: var(--muted); }
   .status-card { margin-top: 22px; }
   .status-card .intro { color: var(--muted); margin: -5px 0 16px; }
   .status-form { display: flex; gap: 10px; align-items: end; }
@@ -181,6 +187,7 @@
       <li><strong>2</strong><span>Preencha e confira os dados.</span></li>
       <li><strong>3</strong><span>Envie e receba o protocolo.</span></li>
     </ol>
+    <div class="banner-carousel" data-banner-carousel aria-label="Orientações educativas sobre notificações e segurança do paciente"></div>
   </section>
 
   <section id="nonconformity" class="form-view" hidden aria-labelledby="nonconformity-title">
@@ -304,5 +311,6 @@
   </section>
 </main>
 <script src="form.js" defer></script>
+<script src="banners.js" defer></script>
 </body>
 </html>
