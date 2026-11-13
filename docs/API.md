@@ -49,6 +49,7 @@ O servidor retorna `201` com `{ "id": "uuid", "protocol": "UHP-2026-8A1E68CE6C5E
 | `GET /notifications?offset=0` | Autenticado | `{ items, nextOffset }`, 30 por página. A Coordenação vê a unidade. As áreas veem apenas casos atribuídos à conta. |
 | `GET /notifications/{id}` | Autenticado e vinculado | Dados do caso, tratativas acessíveis e histórico. |
 | `GET /notifications/{id}/photo` | Autenticado e vinculado | Imagem JPEG ou PNG, com `Cache-Control: no-store`. Retorna `404` se a notificação estiver fora do escopo ou não houver foto. |
+| `GET /notifications/{id}/pdf` | Coordenação | Gera um PDF A4 da notificação para entrega ao setor, com logo institucional, protocolo, dados da ocorrência e campo de ciência. Retorna `application/pdf` com `Content-Disposition: inline` e `Cache-Control: no-store`, para abrir no visualizador do navegador e imprimir. Exige sessão e vínculo com a unidade; perfis das áreas recebem `403`. |
 | `GET /assignees` | Coordenação | `{ items: [{ id, name, role }] }` com profissionais ativos da unidade. |
 
 Os perfis são `coordination`, `patient_safety` e `ccih`. O navegador envia o cookie automaticamente na mesma origem. Em desenvolvimento, o servidor usa `http://127.0.0.1:3000`. Em homologação, use o Deploy Preview HTTPS do Netlify, que encaminha as chamadas ao Supabase. A API exige o cabeçalho `Origin` correspondente à aplicação em operações de escrita.

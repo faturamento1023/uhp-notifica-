@@ -1,6 +1,7 @@
 import { Buffer } from 'node:buffer';
 import { randomUUID } from 'node:crypto';
 import { digest, passwordHash, passwordMatches, roles, token } from './store.mjs';
+import { notificationPdf } from './notification-pdf.mjs';
 import { conflict, day, fail, forbidden, HttpError, id, invalid, oneOf, readJson, str, unavailable } from './validation.mjs';
 
 const areas = roles.slice(1);
@@ -333,7 +334,7 @@ export function createApi(db, { origin, clock = () => new Date(), evidenceLimit 
           return json({ items: await all("SELECT id,name,role FROM users WHERE unit_id=? AND active=1 AND role!='coordination' ORDER BY name", user.unitId) });
         }
 
-        let match = path.match(/^\/api\/v1\/notifications\/([^/]+)(?:\/(assignments|close|photo))?$/);
+        let match = path.match(/^\/api\/v1\/notifications\/([^/]+)(?:\/(assignments|close|photo|pdf))?$/);
         if (match) {
           const notificationId = id(match[1]);
           const operation = match[2];
@@ -346,7 +347,18 @@ export function createApi(db, { origin, clock = () => new Date(), evidenceLimit 
               'cache-control': 'no-store', 'content-type': photo.mime, 'x-content-type-options': 'nosniff'
             } });
           }
-          if (operation === 'photo') unavailable();
+          if (method === 'GET' && operation === 'pdf') {
+            coordinator(user);
+            const row = await notification(user, notificationId);
+            const bytes = await notificationPdf({ protocol: row.protocol, ...JSON.parse(row.payload) }, clock());
+            return new Response(bytes, { headers: {
+              'cache-control': 'no-store',
+              'content-type': 'application/pdf',
+              'content-disposition': 'inline; filename="' + row.protocol + '.pdf"',
+              'x-content-type-options': 'nosniff'
+            } });
+          }
+          if (operation === 'photo' || operation === 'pdf') unavailable();
           if (method !== 'POST' || !operation) unavailable();
           coordinator(user);
           const body = await readJson(request);

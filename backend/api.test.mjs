@@ -3,6 +3,7 @@ import { randomUUID } from 'node:crypto';
 import { test } from 'node:test';
 import { readFileSync } from 'node:fs';
 import { PGlite } from '@electric-sql/pglite';
+import { PDFDocument, PDFName } from 'pdf-lib';
 import { createApi } from './api.mjs';
 import { createStore, digest, passwordHash, token } from './store.mjs';
 
@@ -162,6 +163,36 @@ test('troca o responsável, limita o acesso da conta anterior e mantém o histó
   const detail = await json('GET', path, { user: replacement });
   assert.equal(detail.assignments[0].assigneeId, replacement.id);
   assert.equal(detail.history.at(-1).event, 'assignment_updated');
+});
+
+test('gera PDF A4 institucional no navegador apenas para a Coordenação', async t => {
+  const { units, users, call, json, login } = await fixture(t);
+  const [coord, safety, , external] = users;
+  await Promise.all([coord, safety, external].map(login));
+  const record = await json('POST', '/notifications', {
+    body: {
+      requestId: randomUUID(), kind: 'incident', occurredOn: '2026-11-12',
+      sector: 'Internação', period: 'Manhã', subject: 'Queda do paciente',
+      harm: 'Leve', description: 'Ocorrência fictícia para conferência do PDF.',
+      entries: [['Fatores contribuintes', 'Comunicação entre equipes']]
+    },
+    intake: units[0].intake, status: 201
+  });
+  const path = '/notifications/' + record.id + '/pdf';
+  await call('GET', path, { status: 401 });
+  await call('GET', path, { user: safety, status: 403 });
+  await call('GET', path, { user: external, status: 404 });
+  const response = await call('GET', path, { user: coord });
+  assert.equal(response.headers.get('content-type'), 'application/pdf');
+  assert.match(response.headers.get('content-disposition'), /^inline; filename="UHP-/);
+  assert.equal(response.headers.get('cache-control'), 'no-store');
+  assert.equal(response.headers.get('x-content-type-options'), 'nosniff');
+  const bytes = new Uint8Array(await response.arrayBuffer());
+  assert.equal(Buffer.from(bytes.subarray(0, 5)).toString(), '%PDF-');
+  const pdf = await PDFDocument.load(bytes);
+  assert.equal(pdf.getPageCount(), 1);
+  assert.deepEqual(pdf.getPage(0).getSize(), { width: 595.28, height: 841.89 });
+  assert(pdf.context.enumerateIndirectObjects().some(([, object]) => object?.dict?.get?.(PDFName.of('Subtype'))?.toString() === '/Image'));
 });
 
 test('anexa foto opcional nos dois tipos e restringe sua visualização', async t => {
