@@ -225,4 +225,4 @@ O avatar da barra lateral mostra a foto cadastrada para a conta autenticada de A
 
 A foto do perfil passou a ter 80 px no menu aberto do desktop e 48 px na navegação móvel. O menu recolhido no desktop usa o avatar compacto.
 
-A barra lateral oferece **Alterar senha** para a própria conta. A operação verifica a senha atual, exige pelo menos 15 caracteres na nova senha e encerra todas as sessões da conta após a troca. A API `POST /api/v1/session/password` limita as tentativas por conta.
+Na barra lateral, **Alterar senha** fica logo abaixo de **Bate-papo** e permite alterar a senha da própria conta. A operação verifica a senha atual, exige pelo menos 15 caracteres na nova senha e encerra todas as sessões da conta após a troca. A API `POST /api/v1/session/password` limita as tentativas por conta.
