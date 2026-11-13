@@ -227,7 +227,6 @@ body { line-height: 1.55; }
   border-radius: 16px;
   background: #fff;
 }
-#notifications-guide { margin-top: 12px; }
 .panel-content h2, #login h2 { color: var(--dark); font-weight: 700; }
 .panel-shell .card, #login {
   --bs-card-bg: #fff;
@@ -480,4 +479,24 @@ body:not(.panel-signed-in) #feedback:not(:empty) + #login { border-radius: 16px;
   .view-icon { width: 34px; height: 34px; }
   .view-icon img { width: 20px; height: 20px; }
   #password-form button { justify-self: stretch; }
+}
+
+
+#notifications-guide { margin-top: 5px; color: #e1f1ef; font-size: .95rem; }
+.notification-queue .panel-row { row-gap: 8px; }
+.notification-queue #queue-title { font-size: 1.12rem; }
+.notification-queue #refresh { min-height: 38px; }
+.case-overview .case-header {
+  margin: 0 0 14px;
+  padding: 14px;
+  border-radius: 12px;
+  background: #f1f7f6;
+}
+.case-overview .case-header > div { min-width: 0; }
+.case-overview .case-header h2 { font-size: clamp(1rem, 2vw, 1.35rem); }
+.case-overview #case-meta { margin-top: 5px; }
+#detail > .card > h2 { margin-bottom: 10px; }
+@media (max-width: 540px) {
+  #notifications-view .view-heading { align-items: flex-start; }
+  #notifications-guide { font-size: .9rem; }
 }

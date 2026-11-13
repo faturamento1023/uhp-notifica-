@@ -243,7 +243,7 @@
 </style>
 <link rel="stylesheet" href="bate-papo.css">
 <script src="bate-papo.js" defer></script>
-<link rel="stylesheet" href="painel-layout.css?v=14">
+<link rel="stylesheet" href="painel-layout.css?v=15">
 <script src="painel.js?v=9" defer></script>
 <script src="banners.js" defer></script>
 </head>
@@ -387,8 +387,12 @@
         </section>
       </section>
       <section id="notifications-view" aria-labelledby="notifications-title" hidden>
-        <div class="panel-heading dashboard-heading"><h1 id="notifications-title" tabindex="-1">Notificações</h1></div>
-        <p id="notifications-guide" class="muted"></p>
+        <div class="panel-heading dashboard-heading dashboard-hero">
+          <div class="view-heading">
+            <span class="view-icon" aria-hidden="true"><img src="icons/notificacoes.png" alt="" width="24" height="24"></span>
+            <div><h1 id="notifications-title" tabindex="-1">Notificações</h1><p id="notifications-guide"></p></div>
+          </div>
+        </div>
         <div class="layout">
     <section class="card notification-queue" aria-labelledby="queue-title">
       <div class="panel-row"><h2 id="queue-title"><img class="ui-icon" src="icons/notificacoes.png" alt="" width="22" height="22">Fila de notificações</h2><button type="button" id="refresh" class="btn btn-outline-primary secondary"><img class="ui-icon" src="icons/atualizar.png" alt="" width="20" height="20">Atualizar</button></div>
@@ -405,7 +409,7 @@
     </section>
     <div id="detail" class="stack" hidden>
       <section class="card case-overview">
-        <div class="panel-row"><div><h2><img class="ui-icon" src="icons/protocolo.png" alt="" width="22" height="22"><span id="case-title" tabindex="-1"></span></h2><p id="case-meta" class="muted small"></p></div><span id="case-state" class="pill"></span></div>
+        <div class="panel-row case-header"><div><h2><img class="ui-icon" src="icons/protocolo.png" alt="" width="22" height="22"><span id="case-title" tabindex="-1"></span></h2><p id="case-meta" class="muted small"></p></div><span id="case-state" class="pill"></span></div>
         <p id="case-summary" class="section-title"></p>
         <div class="actions"><a id="pdf-link" class="btn btn-outline-primary button-link" target="_blank" rel="noopener" hidden><img class="ui-icon" src="icons/pdf.png" alt="" width="20" height="20">Abrir PDF atualizado<img class="ui-icon" src="icons/abrir-nova-aba.png" alt="" width="20" height="20"></a></div>
         <p id="pdf-hint" class="small muted info-line" hidden><img class="ui-icon" src="icons/imprimir.png" alt="" width="18" height="18">Abre em uma nova aba para impressão.</p>

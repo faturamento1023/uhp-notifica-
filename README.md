@@ -236,3 +236,5 @@ O refinamento visual do painel acrescentou ícones aos indicadores do Dashboard,
 O Dashboard ganhou um cabeçalho verde-petróleo, indicadores com maior contraste e cartões de protocolo mais leves. Na tela de Notificações, os filtros e a próxima ação da tratativa têm áreas próprias para facilitar a leitura. A revisão usa o Bootstrap já presente no painel.
 
 O mesmo padrão visual foi aplicado às telas de login, Bate-papo, Relatórios, Alterar senha e Ajuda, com cabeçalhos verde-petróleo, histórico de mensagens, tabela, formulário e tutoriais estilizados para desktop e celular.
+
+A aba **Notificações** recebeu o cabeçalho verde-petróleo do painel, com o ícone e a orientação do perfil. A fila e o cabeçalho do protocolo receberam ajustes de espaçamento e contraste.
