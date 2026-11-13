@@ -142,4 +142,4 @@ O perfil Administrador (`administrator`) tem acesso à fila e às operações de
 
 ## Formulário e painel no Netlify
 
-A `main` abre o login do painel em `/`. O endereço `/painel.html` continua disponível para quem já usa o link anterior. O formulário fica em `/notificar.html`. O QR Code da unidade deve usar `/notificar.html#entrada=TOKEN_DA_UNIDADE`, com o token real distribuído pelos canais internos da unidade. A API continua no Supabase, acessada pelo proxy do Netlify.
+A `main` abre o login do painel em `/`. O endereço `/painel.html` continua disponível para quem já usa o link anterior. O formulário fica em `/notificar.html`. O formulário aceita envio direto pelo link `/notificar.html`, destinado à UHP – Posse/GO. O QR Code pode apontar para esse mesmo link. QR Codes anteriores com um token válido continuam funcionando. A abertura para envio direto não libera acesso ao painel ou a notificações existentes. A API continua no Supabase, acessada pelo proxy do Netlify.
