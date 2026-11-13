@@ -6,12 +6,11 @@ A imagem [logo-posse-saude.png](../assets/logo-posse-saude.png) foi fornecida pe
 
 | Uso sugerido | Cor |
 | --- | --- |
-| Principal, botões e navegação | `#008586` |
-| Fundo escuro do destaque | `#075459` |
-| Verde de apoio | `#5CBC73` |
-| Amarelo de atenção | `#FFCA05` |
-| Vermelho de alerta | `#BB1F25` |
+| Identidade principal, destaques e faixas | `#008586` |
+| Verde de apoio e conclusão | `#5CBC73` |
+| Amarelo de atenção e orientação | `#FFCA05` |
+| Vermelho de alerta e erro | `#BB1F25` |
 
-Os valores principais foram lidos da imagem fornecida. O azul petróleo escuro, a cor do texto e o fundo neutro são complementos de interface. As variáveis estão em [brand.css](../assets/brand.css). Priorize contraste legível, especialmente para alertas, textos e botões. A logo é um recurso visual; as permissões, o protocolo e o acesso a evidências dependem do backend.
+As quatro cores foram lidas da imagem fornecida. Para leitura, a interface usa o verde azulado escuro `#006B6C` em botões e links (contraste de 6,33:1 com branco), `#075459` no fundo escuro dos destaques e tons claros derivados como superfícies. O verde e o amarelo da logo devem aparecer com texto escuro. As variáveis estão em [brand.css](../assets/brand.css).
 
-A tela de entrada pelo QR Code mostra apenas os formulários. O painel autenticado usa a mesma identidade visual, mas tem endereço próprio. O frontend deve seguir [docs/API.md](API.md) na branch do backend e trabalhar com dados fictícios até a homologação.
+A tela de entrada pelo QR Code mostra apenas os formulários, com escolha, preenchimento e conferência. O painel autenticado usa a mesma identidade visual, apresenta estados da fila e indica a próxima ação por perfil e etapa. O frontend segue o contrato `docs/API.md` na branch do backend. As permissões, o protocolo e o acesso a evidências dependem do servidor.
