@@ -164,3 +164,7 @@ O botão do painel abre `/notificacao-pdf.html?id=...`. Essa página carrega o P
 ## Atualização publicada
 
 O Netlify serve a revisão do PR nº 3 com consulta pública de situação por protocolo, identificação opcional, comprovante em PDF, evolução por área e GIFs de carregamento. O Supabase roda a função `uhp-api` v4 e a migração de evolução `20261113152526` (arquivo de origem `20261113150000_uhp_progress.sql` no PR nº 1). O carrossel usa 14 artes. A arte 05 fica fora da rotação pública até correção da referência ao art. 32 da RDC nº 36/2013.
+
+### Exibição dos banners
+
+O carrossel no formulário e no painel exibe apenas a arte. A rotação é automática a cada oito segundos enquanto o banner estiver visível. Com movimento reduzido ativado, a imagem fica estática.
