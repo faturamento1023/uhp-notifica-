@@ -146,3 +146,46 @@ test('troca o responsável, limita o acesso da conta anterior e mantém o histó
   assert.equal(detail.assignments[0].assigneeId, replacement.id);
   assert.equal(detail.history.at(-1).event, 'assignment_updated');
 });
+
+test('anexa foto opcional nos dois tipos e restringe sua visualização', async t => {
+  const { units, users, call, json, login } = fixture(t);
+  const [coord, safety, ccih, external] = users;
+  await Promise.all([coord, safety, ccih, external].map(login));
+  const png = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jX9sAAAAASUVORK5CYII=';
+  const photo = { name: 'foto-ficticia.png', mime: 'image/png', contentBase64: png };
+  const common = { occurredOn: '2026-11-13', period: 'Tarde', sector: 'Teste', description: 'Ocorrência fictícia.' };
+  const intake = units[0].intake;
+  for (const data of [{ kind: 'nonconformity' }, { kind: 'incident', subject: 'Queda do paciente', harm: 'Nenhum (incidente sem dano)' }]) {
+    const body = { ...common, ...data, requestId: randomUUID(), photo };
+    const record = await json('POST', '/notifications', { body, intake, status: 201 });
+    assert.deepEqual(await json('POST', '/notifications', { body, intake }), record);
+    await call('POST', '/notifications', { body: { ...body, photo: { ...photo, name: 'outra.png' } }, intake, status: 409 });
+    const path = '/notifications/' + record.id;
+    const detail = await json('GET', path, { user: coord });
+    assert.deepEqual(detail.photo, { name: photo.name, mime: photo.mime, size: Buffer.from(png, 'base64').length });
+    assert.equal(detail.history[0].detail.photoAttached, true);
+    await call('GET', path + '/photo', { status: 401 });
+    await call('GET', path + '/photo', { user: external, status: 404 });
+    await call('GET', path + '/photo', { user: safety, status: 404 });
+    await call('POST', path + '/assignments', {
+      user: coord, body: { area: safety.role, assigneeId: safety.id, opinionDue: '2026-11-13', actionsDue: '2026-11-14' }, status: 201
+    });
+    const image = await call('GET', path + '/photo', { user: safety });
+    assert.equal(image.headers.get('content-type'), 'image/png');
+    assert.equal(image.headers.get('cache-control'), 'no-store');
+    assert.deepEqual(Buffer.from(await image.arrayBuffer()), Buffer.from(png, 'base64'));
+    await call('GET', path + '/photo', { user: ccih, status: 404 });
+  }
+  const plain = { ...common, kind: 'nonconformity', requestId: randomUUID() };
+  for (const bad of [null, { ...photo, mime: 'image/jpeg' }, { ...photo, mime: 'application/pdf' }]) {
+    await call('POST', '/notifications', { body: { ...plain, photo: bad }, intake, status: 400 });
+  }
+  const oversized = Buffer.alloc(2 * 1024 * 1024 + 1);
+  Buffer.from(png, 'base64').copy(oversized);
+  await call('POST', '/notifications', {
+    body: { ...plain, photo: { ...photo, contentBase64: oversized.toString('base64') } }, intake, status: 400
+  });
+  const record = await json('POST', '/notifications', { body: plain, intake, status: 201 });
+  assert.equal((await json('GET', '/notifications/' + record.id, { user: coord })).photo, null);
+  await call('GET', '/notifications/' + record.id + '/photo', { user: coord, status: 404 });
+});
