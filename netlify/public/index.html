@@ -197,6 +197,17 @@
     .filters,.form-grid { grid-template-columns:minmax(0,1fr); }
     .actions > button,.actions > .button-link { min-height:44px; }
   }
+
+  /* Cabeçalho em telas pequenas */
+  @media (max-width: 750px) {
+    header .top { display: grid; grid-template-columns: minmax(0, 1.65fr) minmax(0, 1fr); gap: 8px 14px; min-height: 0; padding-block: 12px; }
+    header .brand, header .institution { min-width: 0; }
+    header .institution { justify-self: end; }
+    header .brand img { width: min(100%, 212px); max-height: 58px; object-fit: contain; object-position: left center; }
+    header .institution img { width: min(100%, 132px); max-height: 58px; object-fit: contain; object-position: right center; }
+    header .account { grid-column: 1 / -1; justify-content: space-between; }
+    header .account:has(#identity:empty):has(#logout[hidden]) { display: none; }
+  }
 </style>
 <script src="painel.js" defer></script>
 <script src="banners.js" defer></script>

@@ -180,3 +180,5 @@ O painel mostra a evolução por área, da mais recente para a mais antiga, depo
 O CSS do login e do painel ajusta a hierarquia visual, os espaçamentos, os cartões, a fila, as tratativas, a evolução e o encerramento. A paleta atual foi mantida e o layout se adapta a telas pequenas. A alteração está restrita aos estilos das páginas.
 
 O painel ganhou um cabeçalho claro, fila com separadores e menos bordas internas nas tratativas. A revisão foi feita no CSS do login e do painel.
+
+Ajuste responsivo: as logos do UHP Notifica e da Secretaria ficam alinhadas no cabeçalho em telas pequenas. As opções de identificação do formulário têm rádios de tamanho normal e se empilham no celular. A alteração está restrita ao CSS.
