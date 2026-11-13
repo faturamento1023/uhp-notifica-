@@ -117,11 +117,13 @@ A API de homologação está hospedada no Supabase. O provisionamento das contas
 
 ### Homologação no Netlify
 
+O [endereço principal](https://uhp-notifica.netlify.app) já publica a página de homologação a partir da `main`. A página inicial e `/api/v1/health` retornaram `200` nesse endereço. A verificação da API mostrou conexão com o banco e que a primeira unidade ainda precisa ser provisionada.
+
 O Netlify publica a interface a partir do GitHub e encaminha `/api/v1/*` para a função `uhp-api` no Supabase. A função usa a conexão fornecida pelo Supabase e executa as consultas com o papel `uhp_notifica_app`. A variável `UHP_DATABASE_URL` deixou de ser necessária no Netlify. O [Deploy Preview nº 1](https://deploy-preview-1--uhp-notifica.netlify.app) está publicado e a [rota de verificação](https://deploy-preview-1--uhp-notifica.netlify.app/api/v1/health) retornou `200`. A verificação sem sessão retornou `401`. [Guia de homologação](https://github.com/faturamento1023/uhp-notifica-/blob/codex/backend-notificacoes/docs/NETLIFY.md)
 
 O teste HTTP de ponta a ponta passou pelo endereço do Netlify com as três contas fictícias. Foram verificados o envio com foto, a repetição com o mesmo protocolo, os pareceres de Segurança do Paciente e CCIH, o bloqueio de acesso às evidências de outra área e o encerramento. Os registros, as contas temporárias e as sessões de teste foram removidos. Na função hospedada, o limite por endereço usa um agrupamento compartilhado e precisa ser revisado antes do uso assistencial.
 
-O limite é de 4 MiB por arquivo de evidência e 2 MiB para a foto inicial. A interface integrada segue pendente. O [PR nº 2](https://github.com/faturamento1023/uhp-notifica-/pull/2) contém a identidade visual e o trabalho da outra IA no frontend está pausado.
+O limite é de 4 MiB por arquivo de evidência e 2 MiB para a foto inicial. O [PR nº 2](https://github.com/faturamento1023/uhp-notifica-/pull/2) contém a identidade visual. O [PR nº 3](https://github.com/faturamento1023/uhp-notifica-/pull/3) contém os formulários e o painel integrados em rascunho, aguardando revisão e homologação.
 
 ### Integração da foto no frontend
 
