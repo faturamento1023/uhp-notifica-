@@ -111,6 +111,8 @@ async function perform(operation) {
   }
 }
 function showLogin() {
+  document.body.classList.remove("panel-signed-in");
+  $("login-hero").after($("feedback"));
   groupChat.stop();
   $("login-hero").hidden=false;
   $("detail").hidden=true;
@@ -126,8 +128,14 @@ function showLogin() {
   $("login").hidden=false;$("workspace").hidden=true;$("logout").hidden=true;$("identity").textContent="";
 }
 function showWorkspace() {
+  document.body.classList.add("panel-signed-in");
+  $("home-view").before($("feedback"));
+  setSidebarExpanded(true);
   $("login").hidden=true;$("workspace").hidden=false;$("logout").hidden=false;
-  $("identity").textContent=account.name+" · "+(account.role==="administrator"?"Administrador":canCoordinate()?"Coordenação":areaName[account.role]);
+  $("identity").textContent=account.name;
+  $("profile-initials").textContent=account.name.trim().split(/\s+/).filter((_,index,names)=>index===0 || index===names.length-1)
+    .map(name=>Array.from(name)[0]).join("").toLocaleUpperCase("pt-BR");
+  $("profile-role").textContent=(account.role==="administrator"?"Administrador":canCoordinate()?"Coordenação":areaName[account.role]);
   $("login-hero").hidden=true;
   groupChat.start(api, formatTime, showLogin);
   showView(false);
@@ -135,6 +143,16 @@ function showWorkspace() {
     ?"Veja a fila, encaminhe às áreas e acompanhe as decisões até a finalização."
     :"Consulte as notificações atribuídas a você e registre sua tratativa.";
 }
+function setSidebarExpanded(expanded) {
+  document.body.classList.toggle("sidebar-collapsed",!expanded);
+  $("sidebar-toggle").setAttribute("aria-expanded",String(expanded));
+  $("sidebar-toggle").setAttribute("aria-label",expanded?"Recolher menu":"Expandir menu");
+}
+
+$("sidebar-toggle").addEventListener("click",()=>{
+  setSidebarExpanded($("sidebar-toggle").getAttribute("aria-expanded")!=="true");
+});
+
 let queueFilters={ query:"", status:"" };
 
 function showView(focus=true) {

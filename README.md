@@ -202,3 +202,5 @@ Depois do login, a tela **Início** mostra os totais de notificações recebidas
 Em **Notificações**, a busca por protocolo, setor, assunto ou tipo e o filtro por situação são aplicados na API antes da paginação. **Carregar mais** usa os filtros aplicados. A abertura da ocorrência leva às etapas de tratativa existentes. A API retorna os totais por situação na primeira página sem filtros, com as mesmas permissões da fila. O código da API está na branch `codex/backend-notificacoes`.
 
 Ajuste visual da tela **Início**. O menu e os totais ganharam destaque, o texto ficou maior e a orientação do dia passou a ficar logo abaixo das últimas notificações no desktop. No celular, as seções aparecem na ordem últimas notificações, bate-papo e orientação do dia.
+
+O painel autenticado ganhou uma barra lateral escura com os dados do perfil, atalhos para Dashboard e Notificações e o botão Sair. No desktop, o menu pode ser recolhido. Em telas menores, a navegação fica em uma faixa acima do conteúdo. O cabeçalho exibe as duas marcas institucionais.

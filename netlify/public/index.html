@@ -242,12 +242,12 @@
 </style>
 <link rel="stylesheet" href="bate-papo.css">
 <script src="bate-papo.js" defer></script>
-<link rel="stylesheet" href="painel-layout.css">
-<script src="painel.js" defer></script>
+<link rel="stylesheet" href="painel-layout.css?v=2">
+<script src="painel.js?v=2" defer></script>
 <script src="banners.js" defer></script>
 </head>
 <body>
-<header><div class="shell top"><div class="brand"><img src="uhp-notifica-login.png" width="240" height="80" alt="UHP Notifica — Sistema de Notificações"></div><div class="institution"><img src="logo-posse-saude.png" width="145" height="70" alt="Prefeitura Municipal de Posse e Secretaria da Saúde"></div><div class="account"><span id="identity" class="muted small"></span><button id="logout" type="button" class="secondary" hidden><img class="ui-icon" src="icons/sair.png" alt="" width="20" height="20">Sair</button></div></div></header>
+<header><div class="shell top"><div class="brand"><img src="uhp-notifica-login.png" width="240" height="80" alt="UHP Notifica — Sistema de Notificações"></div><div class="institution"><img src="logo-posse-saude.png" width="145" height="70" alt="Prefeitura Municipal de Posse e Secretaria da Saúde"></div></div></header>
 <div id="loading-overlay" class="loading-overlay" role="status" aria-live="polite" hidden><div class="loading-card"><img src="carregamento/01-logo-uhp-notifica-carregando-128px.gif" alt=""><span>Aguarde, processando sua solicitação...</span></div></div>
 <main class="shell">
   <div class="hero" id="login-hero"><h1><img class="ui-icon" src="icons/notificacoes.png" alt="" width="34" height="34">Painel de notificações</h1><p id="panel-guide">Acompanhe cada ocorrência da triagem ao encerramento.</p></div>
@@ -263,10 +263,20 @@
     </form>
   </section>
   <div id="workspace" class="panel-shell" hidden>
-    <nav class="panel-menu" aria-label="Menu do painel">
-      <a href="#inicio" id="nav-home"><img class="ui-icon" src="icons/protocolo.png" alt="" width="20" height="20">Início</a>
-      <a href="#notificacoes" id="nav-notifications"><img class="ui-icon" src="icons/notificacoes.png" alt="" width="20" height="20">Notificações</a>
-    </nav>
+    <aside class="panel-sidebar" aria-label="Menu do painel">
+      <button class="sidebar-toggle" id="sidebar-toggle" type="button" aria-expanded="true" aria-controls="sidebar-content" aria-label="Recolher menu"><span aria-hidden="true">‹</span></button>
+      <div id="sidebar-content">
+        <div class="sidebar-profile">
+          <span class="sidebar-avatar" id="profile-initials" aria-hidden="true"></span>
+          <div class="sidebar-profile-details"><strong id="identity"></strong><span id="profile-role"></span></div>
+        </div>
+        <nav class="panel-menu" aria-label="Navegação do painel">
+          <a href="#inicio" id="nav-home" aria-label="Dashboard" title="Dashboard"><img class="ui-icon" src="icons/protocolo.png" alt="" width="20" height="20"><span>Dashboard</span></a>
+          <a href="#notificacoes" id="nav-notifications" aria-label="Notificações" title="Notificações"><img class="ui-icon" src="icons/notificacoes.png" alt="" width="20" height="20"><span>Notificações</span></a>
+        </nav>
+        <button id="logout" type="button" aria-label="Sair" title="Sair" hidden><img class="ui-icon" src="icons/sair.png" alt="" width="20" height="20"><span>Sair</span></button>
+      </div>
+    </aside>
     <div class="panel-content">
       <section id="home-view" class="stack" aria-labelledby="home-title">
         <div class="panel-heading dashboard-heading">
