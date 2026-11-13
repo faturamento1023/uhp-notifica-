@@ -1,6 +1,6 @@
 # Contrato da API do UHP Notifica
 
-A versão inicial usa Node.js 24.14+ e SQLite em disco. O frontend e a API usam a mesma origem. As rotas da API começam com `/api/v1`. A documentação e os protótipos do repositório usam dados fictícios.
+O backend usa Node.js 24.14+ e PostgreSQL no Supabase. O frontend e a API usam a mesma origem. As rotas da API começam com `/api/v1`. A documentação e os protótipos do repositório usam dados fictícios.
 
 ## Entrada por QR Code
 
@@ -84,19 +84,22 @@ Formato `{ error: { code, message } }`. `400` indica campo inválido, `401` falt
 
 ## Execução em desenvolvimento
 
+Configure a conexão conforme [Instalação no Supabase](SUPABASE.md). Para rodar apenas os testes, basta Node.js e npm. A suíte usa PostgreSQL local em memória.
+
 ```bash
+npm ci
+npm test
 node backend/admin.mjs unit "Unidade de teste"
 node backend/admin.mjs user UUID_DA_UNIDADE coordenacao@example.test coordination "Coordenação"
 node backend/admin.mjs user UUID_DA_UNIDADE seguranca@example.test patient_safety "Segurança do Paciente"
 node backend/admin.mjs user UUID_DA_UNIDADE ccih@example.test ccih "CCIH"
-node --test backend/api.test.mjs
-node backend/server.mjs
+npm start
 ```
 
 Os comandos `user` leem a senha da entrada padrão, com mínimo de 14 caracteres. Em terminal interativo, forneça a senha pela entrada padrão sem eco e encerre a leitura com EOF. Guarde o token retornado por `unit` no ambiente da unidade. `rotate-intake UUID_DA_UNIDADE` troca o token e invalida o QR Code anterior. `disable-user UUID_DA_CONTA` bloqueia a conta e encerra as sessões.
 
-A aplicação escuta somente no loopback. Use `UHP_PORT` para alterar a porta, `UHP_DB` para o banco, `UHP_ORIGIN` para a origem e `UHP_FRONTEND_DIR` para a pasta de frontend compilado. Sirva somente o diretório de distribuição nessa opção. Scripts do frontend devem estar em arquivos próprios.
+A aplicação escuta somente no loopback. Use `UHP_PORT` para alterar a porta, `UHP_DATABASE_URL` para o banco, `UHP_ORIGIN` para a origem e `UHP_FRONTEND_DIR` para a pasta de frontend compilado. Sirva somente o diretório de distribuição nessa opção. Scripts do frontend devem estar em arquivos próprios.
 
 ## Antes do uso assistencial
 
-Instale um proxy HTTPS na mesma máquina e configure a origem institucional. Use volume persistente privado, backup criptografado com teste de restauração e restrinja o acesso operacional ao banco, que contém também as evidências. Defina retenção, acesso ao QR Code, controle de volume no proxy, tratamento de anexos no ambiente institucional e responsáveis pelo provisionamento de contas. Nesta versão, a limitação de tentativas usa o endereço da conexão direta, sem confiar em cabeçalhos enviados pelo cliente. Atrás de um único proxy, o limite por endereço é compartilhado. A integração das telas e a homologação com a unidade precedem o uso de dados reais.
+Instale um proxy HTTPS na mesma máquina e configure a origem institucional. Configure backup e teste a restauração do banco, que contém as fotos e evidências. Mantenha a conexão exclusiva do servidor e restrinja o acesso operacional ao banco. Defina retenção, acesso ao QR Code, controle de volume no proxy, tratamento de anexos no ambiente institucional e responsáveis pelo provisionamento de contas. Nesta versão, a limitação de tentativas usa o endereço da conexão direta, sem confiar em cabeçalhos enviados pelo cliente. Atrás de um único proxy, o limite por endereço é compartilhado. A integração das telas e a homologação com a unidade precedem o uso de dados reais.
