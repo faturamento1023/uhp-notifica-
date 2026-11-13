@@ -1,0 +1,15 @@
+[build]
+  publish = "netlify/public"
+
+[[redirects]]
+  from = "/api/v1/*"
+  to = "https://mtthtojrcpbdeocztrpx.supabase.co/functions/v1/uhp-api/api/v1/:splat"
+  status = 200
+  force = true
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "no-referrer"
