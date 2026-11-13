@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; form-action 'none'; base-uri 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:; form-action 'none'; base-uri 'none'">
 <title>Painel do Gerente | Portal de Notificações</title>
 <style>
   :root { color: #142f37; background: #f3f7f6; font: 16px/1.5 "DM Sans", "Segoe UI", system-ui, sans-serif; --teal: #00665d; --muted: #4b646a; --line: #d5e1df; }
@@ -48,6 +48,9 @@
   .status[data-state="new"] { background: #f7efd9; color: #624810; }
   .status[data-state="closed"] { background: #e7edf6; color: #35537c; }
   #empty { padding: 16px 0; color: var(--muted); }
+  .photo-preview { margin-top: 16px; }
+  .photo-preview img { display: block; width: auto; max-width: 100%; max-height: 360px; border-radius: 9px; margin-top: 8px; }
+  .photo-preview p { overflow-wrap: anywhere; }
   #details { margin-top: 16px; }
   .detail-head { display: flex; justify-content: space-between; gap: 10px; align-items: start; }
   #detail-meta { margin-top: 4px; overflow-wrap: anywhere; }
@@ -112,6 +115,11 @@
     </label>
     <p id="status-feedback" class="muted" role="status"></p>
     <dl id="entries"></dl>
+    <div class="photo-preview" id="detail-photo" hidden>
+      <h2>Foto da ocorrência</h2>
+      <p id="detail-photo-name"></p>
+      <img id="detail-photo-image" alt="Foto anexada pelo profissional">
+    </div>
   </section>
 </main>
 <script>
@@ -129,6 +137,22 @@
   let states = new Map();
   let selectedId = null;
 
+  const maxPhotoBytes = 2 * 1024 * 1024;
+  const maxPhotoBase64 = Math.ceil(maxPhotoBytes / 3) * 4;
+
+  function validPhoto(photo) {
+    if (photo === undefined) return true;
+    if (!photo || typeof photo.name !== "string" || !photo.name.length || photo.name.length > 180
+      || !["image/jpeg", "image/png"].includes(photo.mime)
+      || typeof photo.contentBase64 !== "string") return false;
+    const content = photo.contentBase64;
+    if (content.length > maxPhotoBase64 || content.length % 4
+      || !/^[A-Za-z0-9+/]+={0,2}$/.test(content)) return false;
+    const padding = content.endsWith("==") ? 2 : Number(content.endsWith("="));
+    if (content.length * 3 / 4 - padding > maxPhotoBytes) return false;
+    return photo.mime === "image/png" ? content.startsWith("iVBORw0KGgo") : content.startsWith("/9j/");
+  }
+
   function validRecord(record) {
     return record && record.version === 1
       && typeof record.id === "string" && /^[a-f0-9]{32}$/.test(record.id)
@@ -136,6 +160,7 @@
       && typeof record.createdAt === "string" && Number.isFinite(Date.parse(record.createdAt))
       && typeof record.occurredOn === "string" && /^\d{4,6}-\d{2}-\d{2}$/.test(record.occurredOn)
       && ["sector", "subject", "harm"].every(key => typeof record[key] === "string" && record[key].length <= 250)
+      && validPhoto(record.photo)
       && Array.isArray(record.entries) && record.entries.length > 0 && record.entries.length <= 40
       && record.entries.every(entry => Array.isArray(entry) && entry.length === 2
         && entry.every(value => typeof value === "string")
@@ -226,6 +251,12 @@
     get("details").hidden = !record;
     const entries = get("entries");
     entries.replaceChildren();
+    const photo = record?.photo;
+    get("detail-photo").hidden = !photo;
+    get("detail-photo-name").textContent = photo?.name ?? "";
+    const image = get("detail-photo-image");
+    if (photo) image.src = "data:" + photo.mime + ";base64," + photo.contentBase64;
+    else image.removeAttribute("src");
     if (!record) return;
     get("detail-title").textContent = kindLabels[record.kind];
     get("detail-meta").textContent = "Protocolo " + protocol(record) + " · Registrada em " + dateFormat.format(new Date(record.createdAt));
@@ -281,7 +312,7 @@
     for (const file of files) {
       let record;
       try {
-        if (file.size > 200000) throw new Error("Arquivo acima do limite");
+        if (file.size > maxPhotoBase64 + 200000) throw new Error("Arquivo acima do limite");
         record = JSON.parse(await file.text());
         if (!validRecord(record)) throw new Error("Formato inválido");
       } catch {
