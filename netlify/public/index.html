@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; form-action 'none'; base-uri 'none'">
+<link rel="icon" type="image/png" href="uhp-notifica-icone.png">
+<link rel="apple-touch-icon" href="uhp-notifica-icone.png">
 <title>Portal de Notificações</title>
 <style>
   :root {
@@ -29,9 +31,9 @@
   header::after { content: ""; display: block; height: 4px; background: linear-gradient(90deg, var(--green) 0 25%, var(--yellow) 25% 50%, var(--brand) 50% 75%, var(--red) 75%); }
   .shell { width: min(100% - 40px, 1000px); margin-inline: auto; }
   .top { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 76px; }
-  .brand { display: flex; align-items: center; gap: 11px; font-weight: 750; line-height: 1.2; }
-  .brand img { object-fit: contain; max-width: 150px; height: auto; }
-  .edition { color: var(--muted); font-size: .82rem; text-align: right; }
+  .brand { display: flex; align-items: center; min-width: 0; }
+  .brand img { display: block; width: min(250px, 100%); height: auto; }
+  .institution img { display: block; width: 155px; max-width: 100%; height: auto; }
   main { padding-block: 40px 64px; }
   h1, h2, p { margin: 0; }
   h1 { line-height: 1.08; letter-spacing: -.045em; }
@@ -102,7 +104,8 @@
     .review-list dt { padding-bottom: 0; border: 0; }
     .review-list dd { padding-top: 2px; }
     .buttons .button { flex: 1 1 auto; }
-    .brand img { max-width: 120px; }
+    .brand img { width: min(205px, 100%); }
+    .institution img { width: 118px; }
     .top { flex-wrap: wrap; padding-block: 7px; }
   }
 </style>
@@ -110,8 +113,8 @@
 <body>
 <header>
   <div class="shell top">
-    <div class="brand"><img src="logo-posse-saude.png" width="150" height="72" alt="Prefeitura Municipal de Posse e Secretaria da Saúde"><span>UHP Notifica</span></div>
-    <span class="edition">Portal de notificações</span>
+    <div class="brand"><img src="uhp-notifica-login.png" width="250" height="83" alt="UHP Notifica — Sistema de Notificações"></div>
+    <div class="institution"><img src="logo-posse-saude.png" width="155" height="75" alt="Prefeitura Municipal de Posse e Secretaria da Saúde"></div>
   </div>
 </header>
 <main class="shell">

@@ -4,6 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; form-action 'none'; base-uri 'none'">
+<link rel="icon" type="image/png" href="uhp-notifica-icone.png">
+<link rel="apple-touch-icon" href="uhp-notifica-icone.png">
 <title>UHP Notifica | Painel</title>
 <style>
   :root { font:16px/1.5 "Segoe UI",system-ui,sans-serif; color:#17343b; background:#f3f7f6; --brand:#008586; --teal:#006b6c; --dark:#075459; --green:#5cbc73; --yellow:#ffca05; --red:#bb1f25; --line:#d5e1df; --muted:#4b646a }
@@ -17,8 +19,10 @@
   header::after { content:""; display:block; height:4px; background:linear-gradient(90deg,var(--green) 0 25%,var(--yellow) 25% 50%,var(--brand) 50% 75%,var(--red) 75%) }
   .shell { width:min(1200px,calc(100% - 32px)); margin:auto }
   .top { min-height:86px; display:flex; align-items:center; justify-content:space-between; gap:15px }
-  .brand { display:flex; align-items:center; gap:14px; font-weight:800; font-size:1.15rem }
-  .brand img { width:150px; height:auto }
+  .brand img { display:block; width:240px; max-width:100%; height:auto }
+  .institution img { display:block; width:145px; max-width:100%; height:auto }
+  .account { display:flex; align-items:center; gap:10px; flex-wrap:wrap; justify-content:flex-end }
+  .login-mark { display:block; width:56px; height:auto; margin-bottom:12px }
   main { padding:28px 0 70px }
   h1,h2,h3,p { margin:0 }
   h1 { font-size:clamp(2rem,4vw,3rem); line-height:1.1; letter-spacing:-.04em }
@@ -74,16 +78,18 @@
   .login { max-width:450px; margin:22px auto }
   .login form { display:grid; gap:14px }
   @media(max-width:850px) { .layout { grid-template-columns:1fr } }
-  @media(max-width:540px) { .shell { width:min(100% - 24px,1200px) } .top { flex-wrap:wrap; padding:8px 0 } .brand img { width:120px } .hero,.card { padding:17px } .form-grid,.filters,.entry-list { grid-template-columns:1fr } .wide { grid-column:auto } dt { border:0; padding-bottom:0 } dd { padding-top:0 } }
+  @media(max-width:750px) { .top { flex-wrap:wrap; padding:9px 0 } .institution img { width:120px } .account { width:100%; justify-content:flex-start } }
+  @media(max-width:540px) { .shell { width:min(100% - 24px,1200px) } .brand img { width:200px } .institution img { width:105px } .hero,.card { padding:17px } .form-grid,.filters,.entry-list { grid-template-columns:1fr } .wide { grid-column:auto } dt { border:0; padding-bottom:0 } dd { padding-top:0 } }
 </style>
 <script src="painel.js" defer></script>
 </head>
 <body>
-<header><div class="shell top"><div class="brand"><img src="logo-posse-saude.png" width="150" height="72" alt="Prefeitura Municipal de Posse e Secretaria da Saúde"><span>UHP Notifica</span></div><div class="inline"><span id="identity" class="muted small"></span><button id="logout" type="button" class="secondary" hidden>Sair</button></div></div></header>
+<header><div class="shell top"><div class="brand"><img src="uhp-notifica-login.png" width="240" height="80" alt="UHP Notifica — Sistema de Notificações"></div><div class="institution"><img src="logo-posse-saude.png" width="145" height="70" alt="Prefeitura Municipal de Posse e Secretaria da Saúde"></div><div class="account"><span id="identity" class="muted small"></span><button id="logout" type="button" class="secondary" hidden>Sair</button></div></div></header>
 <main class="shell">
   <div class="hero"><h1>Painel de notificações</h1><p id="panel-guide">Acompanhe cada ocorrência da triagem ao encerramento.</p></div>
   <p id="feedback" class="notice" role="status" aria-live="polite"></p>
   <section id="login" class="card login">
+    <img class="login-mark" src="uhp-notifica-icone.png" width="56" height="57" alt="">
     <h2>Acessar painel</h2>
     <p class="muted section-title">Use a conta institucional fornecida para a sua área.</p>
     <form id="login-form">
