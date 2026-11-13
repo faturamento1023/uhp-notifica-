@@ -164,4 +164,4 @@ O botão do painel abre `notificacao-pdf.html` com o favicon do UHP Notifica e v
 
 ### Exibição dos banners
 
-O carrossel no formulário e no painel exibe apenas a arte. A rotação é automática a cada oito segundos enquanto o banner estiver visível. Com movimento reduzido ativado, a imagem fica estática.
+O formulário e o painel exibem a mesma arte durante todo o dia. O banner muda à meia-noite no horário de Brasília, seguindo a ordem das 14 artes da rotação pública.
