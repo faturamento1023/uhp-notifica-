@@ -10,6 +10,8 @@ const timeZone = 'America/Sao_Paulo';
 const dummyHash = passwordHash(token());
 const sessionSeconds = 8 * 60 * 60;
 const evidenceLimit = 5 * 1024 * 1024;
+const photoLimit = 2 * 1024 * 1024;
+const photoTypes = ['image/jpeg', 'image/png'];
 const evidenceTypes = {
   'application/pdf': bytes => bytes.subarray(0, 5).equals(Buffer.from('%PDF-')),
   'image/png': bytes => bytes.subarray(0, 8).equals(Buffer.from('89504e470d0a1a0a', 'hex')),
@@ -42,13 +44,14 @@ function notificationInput(body) {
   };
 }
 
-function decodeEvidence(body) {
-  const mime = oneOf(body.mime, Object.keys(evidenceTypes), 'mime');
+function decodeEvidence(body, allowedTypes = Object.keys(evidenceTypes), limit = evidenceLimit) {
+  if (!body || typeof body !== 'object' || Array.isArray(body)) invalid('photo');
+  const mime = oneOf(body.mime, allowedTypes, 'mime');
   const name = str(body.name, 'name', 180);
-  const base64 = str(body.contentBase64, 'contentBase64', Math.ceil(evidenceLimit / 3) * 4);
+  const base64 = str(body.contentBase64, 'contentBase64', Math.ceil(limit / 3) * 4);
   if (!/^[A-Za-z0-9+/]+={0,2}$/.test(base64) || base64.length % 4) invalid('contentBase64');
   const content = Buffer.from(base64, 'base64');
-  if (content.length > evidenceLimit || !evidenceTypes[mime](content)) invalid('contentBase64');
+  if (content.length > limit || !evidenceTypes[mime](content)) invalid('contentBase64');
   return { mime, name, content };
 }
 
@@ -147,6 +150,7 @@ export function createApi(db, { origin, clock = () => new Date() }) {
     return {
       id: row.id, protocol: row.protocol, status: row.status, createdAt: row.created_at, ...JSON.parse(row.payload),
       closure: row.closure, closedAt: row.closed_at, closedBy: row.closed_by,
+      photo: get('SELECT name,mime,length(content) AS size FROM notification_photos WHERE notification_id=?', row.id) ?? null,
       assignments: assignments.map(item => ({
         ...assignmentView(item),
         draft: item.assignee_id === user.id ? item.draft : null,
@@ -276,11 +280,12 @@ export function createApi(db, { origin, clock = () => new Date() }) {
         if (!intake || !/^[a-f0-9]{64}$/.test(intake)) forbidden();
         const unit = get('SELECT id FROM units WHERE intake_hash=?', digest(intake));
         if (!unit) forbidden();
-        const body = await readJson(request, 160000);
+        const body = await readJson(request, 160000 + Math.ceil(photoLimit / 3) * 4);
         const payload = notificationInput(body);
         const requestId = id(body.requestId, 'requestId');
         const encoded = JSON.stringify(payload);
-        const hash = digest(encoded);
+        const photo = body.photo === undefined ? null : decodeEvidence(body.photo, photoTypes, photoLimit);
+        const hash = digest(photo ? JSON.stringify([encoded, photo.name, photo.mime, digest(photo.content)]) : encoded);
         const previous = get('SELECT id,protocol,request_hash FROM notifications WHERE unit_id=? AND request_id=?', unit.id, requestId);
         if (!previous) throttle('intake:' + unit.id + ':' + clientAddress, 60, 900);
         return atomic(db, () => {
@@ -294,7 +299,11 @@ export function createApi(db, { origin, clock = () => new Date() }) {
           const protocol = 'UHP-' + today(clock()).slice(0, 4) + '-' + identifier.replaceAll('-', '').slice(0, 16).toUpperCase();
           run(`INSERT INTO notifications(id,unit_id,protocol,request_id,request_hash,kind,payload,status,created_at)
             VALUES (?,?,?,?,?,?,?,'received',?)`, identifier, unit.id, protocol, requestId, hash, payload.kind, encoded, clock().toISOString());
-          audit(identifier, null, null, 'notification_received');
+          if (photo) {
+            run('INSERT INTO notification_photos(notification_id,name,mime,content) VALUES (?,?,?,?)',
+              identifier, photo.name, photo.mime, photo.content);
+          }
+          audit(identifier, null, null, 'notification_received', photo ? { photoAttached: true } : null);
           return json({ id: identifier, protocol }, 201);
         });
       }
@@ -311,11 +320,20 @@ export function createApi(db, { origin, clock = () => new Date() }) {
         return json({ items: all("SELECT id,name,role FROM users WHERE unit_id=? AND active=1 AND role!='coordination' ORDER BY name", user.unitId) });
       }
 
-      let match = path.match(/^\/api\/v1\/notifications\/([^/]+)(?:\/(assignments|close))?$/);
+      let match = path.match(/^\/api\/v1\/notifications\/([^/]+)(?:\/(assignments|close|photo))?$/);
       if (match) {
         const notificationId = id(match[1]);
         const operation = match[2];
         if (method === 'GET' && !operation) return json(detail(user, notification(user, notificationId)));
+        if (method === 'GET' && operation === 'photo') {
+          notification(user, notificationId);
+          const photo = get('SELECT mime,content FROM notification_photos WHERE notification_id=?', notificationId);
+          if (!photo) unavailable();
+          return new Response(photo.content, { headers: {
+            'cache-control': 'no-store', 'content-type': photo.mime, 'x-content-type-options': 'nosniff'
+          } });
+        }
+        if (operation === 'photo') unavailable();
         if (method !== 'POST' || !operation) unavailable();
         coordinator(user);
         const body = await readJson(request);
