@@ -182,3 +182,7 @@ O CSS do login e do painel ajusta a hierarquia visual, os espaçamentos, os cart
 O painel ganhou um cabeçalho claro, fila com separadores e menos bordas internas nas tratativas. A revisão foi feita no CSS do login e do painel.
 
 Ajuste responsivo: as logos do UHP Notifica e da Secretaria ficam alinhadas no cabeçalho em telas pequenas. As opções de identificação do formulário têm rádios de tamanho normal e se empilham no celular. A alteração está restrita ao CSS.
+
+## Ícone de instalação do aplicativo
+
+O painel referencia `/manifest.webmanifest`, com nome UHP Notifica, início no login e ícones PNG de 192 e 512 px com o símbolo da prancheta e do sino. O manifesto define a aparência da instalação no navegador.
