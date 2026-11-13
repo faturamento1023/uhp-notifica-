@@ -52,18 +52,22 @@ A exigência de dois prazos por tratativa, a validação das evidências pela Co
 
 ## Divisão do trabalho entre as IAs
 
-| Ordem | Responsável | Atualizações previstas no repositório | Dependência |
-| --- | --- | --- | --- |
-| 1 | Codex | Adicionar o fluxograma, as regras e os protótipos de referência. | Fluxo informado pelo usuário. |
-| 2 | Codex | Implementar autenticação do painel, perfis, permissões, banco de dados, serviços de notificação e tratativa, histórico e armazenamento privado de evidências. Documentar o contrato de integração com exemplos fictícios. | Fluxo e regras deste README. |
-| 3 | Outra IA | Adaptar os dois HTMLs para o sistema. Implementar entrada por QR Code, formulário com confirmação de protocolo, fila de triagem da Coordenação, fila por área e telas de parecer, prazos, ações e evidências. Desenvolver com dados simulados enquanto a API estiver em construção. | Regras deste README e contrato publicado pelo Codex antes da integração. |
-| 4 | Codex e outra IA | Integrar o frontend com a API e verificar o fluxo completo. A outra IA corrige as telas e o Codex corrige o backend, as permissões e as regras de transição. | Pull requests de frontend e backend prontos para integração. |
+| Responsável | Já entregue | Próxima entrega |
+| --- | --- | --- |
+| **Codex — backend e verificação** | Fluxograma, protótipos de referência, contrato da API e backend no PR nº 1. A API cobre login, permissões, protocolo, foto da ocorrência, filas, prazos, pareceres, ações, evidências e encerramento. | Revisar o PR do frontend, testar o fluxo de ponta a ponta com dados fictícios e corrigir o backend ou o contrato se a integração apontar problemas. Registrar cada mudança neste README. |
+| **Outra IA — frontend e integração das telas** | Os dois HTMLs em `prototipos/` servem como referência dos campos e do comportamento. | Construir as telas para celular e computador, conectar à API publicada, testar os estados de tela e entregar um PR de frontend. |
 
-O Codex deve publicar o contrato antes de integrar as telas. O contrato deve cobrir criação de notificação e retorno do protocolo, filas por perfil, encaminhamento, parecer e aprovação, ações e evidências, histórico e encerramento. Para cada operação, documentar campos, permissões, estados e respostas de erro. Usar branches separadas para backend e frontend e registrar no pull request as operações alteradas, os cenários testados e as dependências pendentes.
+### Entrega da outra IA
 
-### Tarefa inicial para a outra IA
+1. **Entrada pelo QR Code.** Adaptar o portal para os dois formulários existentes, com foto opcional, prévia, troca ou remoção da imagem, revisão dos dados e confirmação do protocolo devolvido pela API.
+2. **Painel da Coordenação de Enfermagem.** Criar login, fila de notificações, detalhe com foto e histórico, encaminhamento para uma ou ambas as áreas, definição de responsável e prazos, aprovação ou devolução de parecer com justificativa, validação das ações e encerramento.
+3. **Painel de Segurança do Paciente e CCIH.** Mostrar as tratativas atribuídas à conta e seus prazos. Permitir salvar rascunho, solicitar aprovação, revisar parecer devolvido, registrar ações, anexar evidências e responder a pedidos de complemento.
+4. **Integração.** Usar o [contrato da API](https://github.com/faturamento1023/uhp-notifica-/blob/codex/backend-notificacoes/docs/API.md). A versão integrada deve usar a API para envio, consulta e atualização. Tratar carregamento, erro e ausência de registros. Usar dados fictícios nos testes.
+5. **Entrega no GitHub.** Trabalhar em uma branch própria e abrir um PR com as telas entregues, rotas integradas, testes executados e pendências. Registrar a entrega neste README. Se houver uma lacuna no contrato, descrever a operação e o comportamento esperado no PR para o Codex ajustar a API.
 
-> Leia este README e os arquivos em `prototipos/`. Trabalhe em uma branch de frontend. Reaproveite os campos e as opções dos dois formulários. Monte a tela de entrada do QR Code e as telas da Coordenação de Enfermagem, Segurança do Paciente e CCIH, com dados fictícios. Inclua triagem, prazo, parecer, solicitação de aprovação, retorno para correção, ações e evidências. Isole o acesso a dados para conectar as telas ao contrato que o Codex vai publicar. Abra um pull request descrevendo o que implementou e o que depende do backend.
+### Ordem de integração
+
+A outra IA já pode começar pelas telas e usar o [backend do PR nº 1](https://github.com/faturamento1023/uhp-notifica-/pull/1) para testar a integração. Quando o PR do frontend estiver disponível, o Codex verifica o percurso do QR Code ao encerramento, incluindo o acesso à foto e às evidências por perfil. A publicação institucional fica para depois dessa verificação.
 
 ## Critérios para considerar o fluxo pronto
 
