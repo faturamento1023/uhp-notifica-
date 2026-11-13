@@ -127,3 +127,7 @@ O [PR nº 2](https://github.com/faturamento1023/uhp-notifica-/pull/2) contém a 
 - Enviar a imagem junto com o registro no `POST /api/v1/notifications`, no campo `photo: { name, mime, contentBase64 }`. O Base64 deve vir sem o prefixo da URL de dados. O protocolo e a foto são gravados na mesma operação. Se a foto mudar após uma tentativa confirmada pelo servidor, o mesmo identificador de envio não pode ser reutilizado para outro conteúdo.
 - No painel integrado, ler `photo` no detalhe e carregar a imagem por `GET /api/v1/notifications/{id}/photo` com a sessão atual. A Coordenação da unidade e os responsáveis pelas tratativas atribuídas podem consultar a foto. O anexo inicial da ocorrência é independente das evidências das ações.
 - O Codex atualizou os protótipos, a API, o banco, o contrato e os testes de acesso à foto. A outra IA deve reaproveitar o comportamento na branch de frontend. O protótipo HTML segue destinado a dados fictícios e usa importação ou armazenamento local. A publicação institucional depende da integração com o backend do PR nº 1.
+
+## Ícones da interface
+
+O pacote de 50 PNGs individuais, recortados e transparentes, está em [netlify/public/icons](netlify/public/icons/README.md). As telas podem referenciar os arquivos por `/icons/nome.png`. O catálogo inclui formulário, QR Code, PDF, triagem, pareceres, evidências, estados e encerramento.
