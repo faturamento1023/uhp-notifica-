@@ -232,3 +232,5 @@ Na barra lateral, **Alterar senha** fica logo abaixo de **Bate-papo** e permite 
 As páginas internas `/` e `/painel.html` usam HTML5 e o CSS local do Bootstrap 5.3.8 para cartões, navegação, botões, formulários e tabela de relatórios, com o tema institucional do UHP Notifica. O painel mantém as rotas, os fluxos e os controles existentes. A página pública `/notificar.html` e seu formulário por QR Code continuam com os arquivos próprios.
 
 O refinamento visual do painel acrescentou ícones aos indicadores do Dashboard, cartões de protocolo com situação mais legível, estados vazios e um menu móvel em grade. A ordem dos atalhos e as ações do painel continuam as mesmas. As páginas públicas do QR Code seguem com seu próprio estilo.
+
+O Dashboard ganhou um cabeçalho verde-petróleo, indicadores com maior contraste e cartões de protocolo mais leves. Na tela de Notificações, os filtros e a próxima ação da tratativa têm áreas próprias para facilitar a leitura. A revisão usa o Bootstrap já presente no painel.

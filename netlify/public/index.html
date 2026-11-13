@@ -243,7 +243,7 @@
 </style>
 <link rel="stylesheet" href="bate-papo.css">
 <script src="bate-papo.js" defer></script>
-<link rel="stylesheet" href="painel-layout.css?v=12">
+<link rel="stylesheet" href="painel-layout.css?v=13">
 <script src="painel.js?v=9" defer></script>
 <script src="banners.js" defer></script>
 </head>
@@ -284,14 +284,14 @@
     </aside>
     <div class="panel-content">
       <section id="home-view" class="stack" aria-labelledby="home-title">
-        <div class="panel-heading dashboard-heading">
+        <div class="panel-heading dashboard-heading dashboard-hero">
           <h1 id="home-title" tabindex="-1">Visão geral</h1>
-          <button id="refresh-home" type="button" class="btn btn-outline-primary secondary">Atualizar</button>
+          <button id="refresh-home" type="button" class="btn btn-outline-primary secondary"><img class="ui-icon" src="icons/atualizar.png" alt="" width="20" height="20">Atualizar</button>
         </div>
         <dl class="dashboard-stats" aria-label="Resumo das notificações">
-          <div class="card dashboard-metric"><dt>Recebidas</dt><dd id="count-received">—</dd><span class="metric-icon" aria-hidden="true"><img src="icons/notificacoes.png" alt="" width="24" height="24"></span></div>
-          <div class="card dashboard-metric"><dt>Em tratativa</dt><dd id="count-in-progress">—</dd><span class="metric-icon" aria-hidden="true"><img src="icons/acoes.png" alt="" width="24" height="24"></span></div>
-          <div class="card dashboard-metric"><dt>Finalizadas</dt><dd id="count-closed">—</dd><span class="metric-icon" aria-hidden="true"><img src="icons/sucesso.png" alt="" width="24" height="24"></span></div>
+          <div class="card dashboard-metric"><dt>Recebidas<span class="metric-icon" aria-hidden="true"><img src="icons/notificacoes.png" alt="" width="24" height="24"></span></dt><dd id="count-received">—</dd></div>
+          <div class="card dashboard-metric"><dt>Em tratativa<span class="metric-icon" aria-hidden="true"><img src="icons/acoes.png" alt="" width="24" height="24"></span></dt><dd id="count-in-progress">—</dd></div>
+          <div class="card dashboard-metric"><dt>Finalizadas<span class="metric-icon" aria-hidden="true"><img src="icons/sucesso.png" alt="" width="24" height="24"></span></dt><dd id="count-closed">—</dd></div>
         </dl>
         <div class="dashboard-grid">
           <section class="card dashboard-recent" aria-labelledby="recent-title">
@@ -390,7 +390,7 @@
         <div class="panel-heading dashboard-heading"><h1 id="notifications-title" tabindex="-1">Notificações</h1></div>
         <p id="notifications-guide" class="muted"></p>
         <div class="layout">
-    <section class="card" aria-labelledby="queue-title">
+    <section class="card notification-queue" aria-labelledby="queue-title">
       <div class="panel-row"><h2 id="queue-title"><img class="ui-icon" src="icons/notificacoes.png" alt="" width="22" height="22">Fila de notificações</h2><button type="button" id="refresh" class="btn btn-outline-primary secondary"><img class="ui-icon" src="icons/atualizar.png" alt="" width="20" height="20">Atualizar</button></div>
       <p class="small muted section-title">Selecione um registro para acompanhar a tratativa.</p>
       <form id="notification-filters" class="filters section-title">
@@ -404,7 +404,7 @@
       <div class="actions"><button type="button" id="more" class="btn btn-outline-primary secondary" hidden><img class="ui-icon" src="icons/carregar-mais.png" alt="" width="20" height="20">Carregar mais</button></div>
     </section>
     <div id="detail" class="stack" hidden>
-      <section class="card">
+      <section class="card case-overview">
         <div class="panel-row"><div><h2><img class="ui-icon" src="icons/protocolo.png" alt="" width="22" height="22"><span id="case-title" tabindex="-1"></span></h2><p id="case-meta" class="muted small"></p></div><span id="case-state" class="pill"></span></div>
         <p id="case-summary" class="section-title"></p>
         <div class="actions"><a id="pdf-link" class="btn btn-outline-primary button-link" target="_blank" rel="noopener" hidden><img class="ui-icon" src="icons/pdf.png" alt="" width="20" height="20">Abrir PDF atualizado<img class="ui-icon" src="icons/abrir-nova-aba.png" alt="" width="20" height="20"></a></div>
