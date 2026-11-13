@@ -222,3 +222,5 @@ O Dashboard e a fila de Notificações consultam novidades automaticamente a cad
 A barra lateral do painel autenticado agora se estende até o fim do rodapé institucional no desktop, para posicionar o botão **Sair** na base. No celular, o botão permanece na faixa de navegação.
 
 O avatar da barra lateral mostra a foto cadastrada para a conta autenticada de Ana Clara, Walkiria ou Luciana. As fotos ficam no esquema privado do Supabase e a rota `GET /api/v1/session/avatar` retorna apenas a foto da sessão atual. O painel mostra as iniciais enquanto a foto carrega ou quando a conta ainda não tem uma imagem.
+
+A foto do perfil passou a ter 80 px no menu aberto do desktop e 48 px na navegação móvel. O menu recolhido no desktop usa o avatar compacto.
