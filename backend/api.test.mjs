@@ -12,12 +12,14 @@ const password = 'senha fictícia de teste';
 const encodedPassword = passwordHash(password);
 
 const migration = readFileSync(new URL('../supabase/migrations/20261113120820_uhp_notifica.sql', import.meta.url), 'utf8');
+const progressMigration = readFileSync(new URL('../supabase/migrations/20261113150000_uhp_progress.sql', import.meta.url), 'utf8');
 
 async function fixture(t) {
   const db = await PGlite.create();
   t.after(() => db.close());
   await db.exec('CREATE ROLE anon; CREATE ROLE authenticated; CREATE ROLE service_role; BEGIN;');
   await db.exec(migration);
+  await db.exec(progressMigration);
   await db.exec('COMMIT; SET search_path=uhp_notifica,pg_catalog; SET ROLE uhp_notifica_app;');
   const store = createStore(db, (work, readOnly) => db.transaction(async tx => {
     if (readOnly) await tx.exec('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ READ ONLY');
@@ -40,10 +42,11 @@ async function fixture(t) {
     users.push(user);
   }
   const api = createApi(store, { origin, clock: () => new Date('2026-11-13T15:00:00Z') });
-  async function call(method, path, { user, body, intake, status = 200, from = origin } = {}) {
+  async function call(method, path, { user, body, intake, receiptToken, status = 200, from = origin } = {}) {
     const headers = new Headers({ origin: from });
     if (user?.cookie) headers.set('cookie', user.cookie);
     if (intake) headers.set('x-intake-token', intake);
+    if (receiptToken) headers.set('x-receipt-token', receiptToken);
     if (body !== undefined) headers.set('content-type', 'application/json');
     const response = await api(new Request(origin + '/api/v1' + path, {
       method, headers, body: body === undefined ? undefined : JSON.stringify(body)
@@ -165,13 +168,14 @@ test('troca o responsável, limita o acesso da conta anterior e mantém o histó
   assert.equal(detail.history.at(-1).event, 'assignment_updated');
 });
 
-test('gera PDF A4 institucional no navegador apenas para a Coordenação', async t => {
+test('gera PDF A4 institucional para pessoas vinculadas e recibo privado do notificante', async t => {
   const { units, users, call, json, login } = await fixture(t);
   const [coord, safety, , external] = users;
   await Promise.all([coord, safety, external].map(login));
+  const requestId = randomUUID();
   const record = await json('POST', '/notifications', {
     body: {
-      requestId: randomUUID(), kind: 'incident', occurredOn: '2026-11-12',
+      requestId, kind: 'incident', occurredOn: '2026-11-12',
       sector: 'Internação', period: 'Manhã', subject: 'Queda do paciente',
       harm: 'Leve', description: 'Ocorrência fictícia para conferência do PDF.',
       entries: [['Fatores contribuintes', 'Comunicação entre equipes']],
@@ -182,8 +186,15 @@ test('gera PDF A4 institucional no navegador apenas para a Coordenação', async
   });
   const path = '/notifications/' + record.id + '/pdf';
   await call('GET', path, { status: 401 });
-  await call('GET', path, { user: safety, status: 403 });
+  await call('GET', path, { user: safety, status: 404 });
   await call('GET', path, { user: external, status: 404 });
+  await call('POST', '/notifications/' + record.id + '/receipt-pdf', { receiptToken: randomUUID(), status: 404 });
+  const receipt = await call('POST', '/notifications/' + record.id + '/receipt-pdf', { receiptToken: requestId });
+  assert.equal(receipt.headers.get('content-type'), 'application/pdf');
+  const assigned = await json('POST', '/notifications/' + record.id + '/assignments', { user: coord,
+    body: { area: 'patient_safety', assigneeId: safety.id, opinionDue: '2026-11-14', actionsDue: '2026-11-20' }, status: 201 });
+  await call('GET', path, { user: safety });
+  await call('POST', '/assignments/' + assigned.id + '/progress', { user: safety, body: { body: 'Avaliação inicial.' }, status: 201 });
   const response = await call('GET', path, { user: coord });
   assert.equal(response.headers.get('content-type'), 'application/pdf');
   assert.match(response.headers.get('content-disposition'), /^inline; filename="UHP-/);
@@ -192,9 +203,40 @@ test('gera PDF A4 institucional no navegador apenas para a Coordenação', async
   const bytes = new Uint8Array(await response.arrayBuffer());
   assert.equal(Buffer.from(bytes.subarray(0, 5)).toString(), '%PDF-');
   const pdf = await PDFDocument.load(bytes);
-  assert.equal(pdf.getPageCount(), 1);
+  assert(pdf.getPageCount() >= 1);
   assert.deepEqual(pdf.getPage(0).getSize(), { width: 595.28, height: 841.89 });
   assert(pdf.context.enumerateIndirectObjects().filter(([, object]) => object?.dict?.get?.(PDFName.of('Subtype'))?.toString() === '/Image').length >= 3);
+});
+
+test('evolução guarda imagem/PDF com limite e protege o anexo por área', async t => {
+  const { units, users, call, json, login } = await fixture(t);
+  const [coord, safety, ccih, external] = users;
+  await Promise.all(users.map(login));
+  const record = await json('POST', '/notifications', { intake: units[0].intake, status: 201,
+    body: { requestId: randomUUID(), kind: 'nonconformity', occurredOn: '2026-11-13',
+      sector: 'Teste', period: 'Manhã', description: 'Relato fictício.' } });
+  const path = '/notifications/' + record.id;
+  const assignment = await json('POST', path + '/assignments', { user: coord, status: 201,
+    body: { area: 'patient_safety', assigneeId: safety.id, opinionDue: '2026-11-14', actionsDue: '2026-11-20' } });
+  const endpoint = '/assignments/' + assignment.id + '/progress';
+  await call('POST', endpoint, { user: coord, body: { body: 'Coordenação não edita a evolução.' }, status: 403 });
+  await call('POST', endpoint, { user: ccih, body: { body: 'Outra área.' }, status: 404 });
+  await call('POST', endpoint, { user: safety, body: { body: ' ' }, status: 400 });
+  const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jX9sAAAAASUVORK5CYII=', 'base64');
+  const attachment = { name: 'exemplo.png', mime: 'image/png', contentBase64: png.toString('base64') };
+  await call('POST', endpoint, { user: safety, body: { body: 'Formato inválido', attachment: { ...attachment, mime: 'application/pdf' } }, status: 400 });
+  const progress = await json('POST', endpoint, { user: safety, body: { body: 'Avaliação registrada.', attachment }, status: 201 });
+  const filePath = '/progress/' + progress.id + '/attachment';
+  await call('GET', filePath, { user: ccih, status: 404 });
+  await call('GET', filePath, { user: external, status: 404 });
+  const view = await call('GET', filePath, { user: coord });
+  assert.equal(view.headers.get('content-type'), 'image/png');
+  assert.match(view.headers.get('content-disposition'), /^inline/);
+  assert.deepEqual(Buffer.from(await view.arrayBuffer()), png);
+  const detail = await json('GET', path, { user: coord });
+  assert.equal(detail.assignments[0].progress[0].body, 'Avaliação registrada.');
+  assert.equal(detail.assignments[0].progress[0].fileSize, png.length);
+  assert.equal(JSON.stringify(detail).includes('contentBase64'), false);
 });
 
 test('anexa foto opcional nos dois tipos e restringe sua visualização', async t => {
@@ -251,6 +293,6 @@ test('bloqueia acesso direto aos dados assistenciais pelos papéis da Data API',
   }
   const tables = await db.query(`SELECT relname, relrowsecurity FROM pg_class c
     JOIN pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname='uhp_notifica' AND c.relkind='r'`);
-  assert.equal(tables.rows.length, 11);
+  assert.equal(tables.rows.length, 12);
   assert(tables.rows.every(row => row.relrowsecurity));
 });
