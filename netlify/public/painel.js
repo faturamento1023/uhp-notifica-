@@ -20,6 +20,9 @@ const formatDate = value => value ? value.split("-").reverse().join("/") : "—"
 const formatTime = value => value ? new Intl.DateTimeFormat("pt-BR", {
   dateStyle:"short",timeStyle:"short",timeZone:"America/Sao_Paulo"
 }).format(new Date(value)) : "—";
+const localToday = () => new Intl.DateTimeFormat("en-CA", {
+  timeZone:"America/Sao_Paulo",year:"numeric",month:"2-digit",day:"2-digit"
+}).format(new Date());
 const normalize = value => String(value || "").toLowerCase().normalize("NFD").replace(/\p{Diacritic}/gu,"");
 let account = null, assignees = [], items = [], nextOffset = null, selected = null, current = null, busy = false;
 
@@ -251,7 +254,8 @@ function renderAssignment(assignment) {
   }
   if(owner && ["actions","complement"].includes(assignment.status)) {
     const description=inputField("Ação realizada","","textarea");
-    const performed=inputField("Data da execução","","date");
+    const performed=inputField("Data da execução",localToday(),"date");
+    performed.input.max=localToday();
     description.input.maxLength=5000;
     const form=el("div","","form-grid");
     form.append(description.wrap,performed.wrap);
