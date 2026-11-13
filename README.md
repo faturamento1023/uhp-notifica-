@@ -174,3 +174,7 @@ O login, o painel e o formulário público exibem no rodapé os direitos reserva
 ## Organização das tratativas
 
 O painel mostra a evolução por área, da mais recente para a mais antiga, depois das ações da etapa atual. Imagens de evidências e de evolução aparecem no próprio painel e PDFs mantêm link. A seção Encerramento mostra o que cada área precisa concluir e libera a conclusão quando todas as tratativas forem validadas.
+
+## Refinamento visual do painel
+
+O CSS do login e do painel ajusta a hierarquia visual, os espaçamentos, os cartões, a fila, as tratativas, a evolução e o encerramento. A paleta atual foi mantida e o layout se adapta a telas pequenas. A alteração está restrita aos estilos das páginas.

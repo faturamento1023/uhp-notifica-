@@ -122,6 +122,85 @@
   #closure-checklist { margin:10px 0 16px; padding-left:22px; }
   #closure-checklist li { margin-bottom:6px; }
   #go-closure { margin-top:10px; }
+
+  /* Refinamento visual do painel */
+  :root { font: 15px/1.58 "Inter", "Segoe UI", system-ui, sans-serif; }
+  body { min-height:100vh; display:flex; flex-direction:column; }
+  main.shell { flex:1; padding-block:clamp(24px,4vw,44px) 56px; }
+  .shell { width:min(1280px, calc(100% - 56px)); }
+  .top { min-height:84px; gap:24px; }
+  .account { gap:12px; }
+  .hero {
+    padding:clamp(24px,4.5vw,46px);
+    border-radius:22px;
+    box-shadow:0 12px 28px #07545918;
+    background:radial-gradient(ellipse at 100% 0%, #5cbc7340, transparent 50%),
+      linear-gradient(115deg,var(--dark),var(--brand));
+  }
+  .hero h1 { gap:14px; font-size:clamp(1.85rem,4vw,2.85rem); line-height:1.14; }
+  .hero p { max-width:64ch; margin-top:10px; }
+  h2 { font-size:1.22rem; line-height:1.28; letter-spacing:-.022em; }
+  h3 { font-size:1.06rem; line-height:1.35; }
+  .layout { grid-template-columns:minmax(290px,350px) minmax(0,1fr); gap:22px; margin-top:24px; }
+  .stack { gap:20px; min-width:0; }
+  .card {
+    padding:clamp(18px,2.25vw,28px);
+    border-radius:18px;
+    box-shadow:0 2px 5px #17343b05, 0 8px 24px #17343b08;
+  }
+  .card > h2 { border-left:3px solid var(--green); padding-left:11px; }
+  .card > h2 + p { margin-top:8px; }
+  .section-title { margin:16px 0; }
+  #case-meta { margin-top:6px; overflow-wrap:anywhere; }
+  .login { max-width:470px; margin:clamp(22px,4vw,44px) auto 0; padding:clamp(22px,4vw,36px); }
+  .login-mark { margin-bottom:16px; }
+  .login form { gap:16px; }
+  .login form button { width:100%; margin-top:4px; }
+  label { gap:7px; min-width:0; }
+  input,select,textarea { border-radius:10px; padding:10px 12px; min-width:0; }
+  input:not([type="checkbox"]),select { min-height:45px; }
+  button,.button-link { border-radius:10px; padding:9px 14px; line-height:1.3; }
+  .actions { gap:10px; margin-top:14px; }
+  .filters { grid-template-columns:minmax(0,1.15fr) minmax(0,1fr); gap:10px; align-items:end; }
+  .filters .label-heading { font-size:.88rem; gap:6px; }
+  .filters .label-heading .ui-icon { width:17px; height:17px; }
+  .queue { gap:10px; margin-top:18px; }
+  .queue button { padding:13px 14px; border-radius:12px; }
+  .queue button[aria-current="true"] { box-shadow:inset 3px 0 var(--brand); }
+  .pill { padding:4px 9px; max-width:100%; line-height:1.3; }
+  .next-step { margin:20px 0 14px; padding:15px 17px; border-radius:10px; }
+  .area { padding:clamp(14px,2vw,20px); margin-top:16px; gap:12px; border-radius:13px; background:#f8fbfa; }
+  .area .area { margin-top:2px; background:#fff; }
+  #detail .card > details { margin:12px 0; padding:11px 13px; border:1px solid var(--line); border-radius:10px; }
+  #detail summary { cursor:pointer; font-weight:700; }
+  #detail details[open] > summary { margin-bottom:10px; }
+  .progress-entry { padding:14px 16px; background:#fff; border:1px solid var(--line); }
+  .progress-entry strong { color:var(--dark); }
+  .progress-body { margin-top:5px; }
+  .progress-composer { padding:0 12px; border:1px solid var(--line); border-radius:10px; background:#fff; }
+  .progress-composer[open] { padding-bottom:14px; }
+  .progress-composer label + label { margin:10px 0; }
+  .attachment-preview img { margin-bottom:6px; background:#fff; }
+  #closure { scroll-margin-top:22px; }
+  #closure-checklist li { padding:4px 0; }
+  .history li + li { border-top:1px solid var(--line); }
+  .history li { padding-block:9px; }
+  .banner-carousel { margin-top:20px; padding:8px; border-radius:14px; }
+  .institutional-footer { padding-block:22px; }
+  @media(max-width:900px) {
+    .layout { grid-template-columns:1fr; gap:16px; }
+    .stack { gap:16px; }
+  }
+  @media(max-width:540px) {
+    .shell { width:calc(100% - 24px); }
+    .top { gap:12px; }
+    .brand img { width:clamp(142px,44vw,200px); }
+    .institution img { width:clamp(86px,26vw,105px); }
+    .filters,.form-grid { grid-template-columns:minmax(0,1fr); }
+    .hero { border-radius:16px; }
+    .card { border-radius:14px; }
+    .actions > button,.actions > .button-link { min-height:44px; }
+  }
 </style>
 <script src="painel.js" defer></script>
 <script src="banners.js" defer></script>
