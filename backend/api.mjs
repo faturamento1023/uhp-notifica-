@@ -406,6 +406,14 @@ export function createApi(db, { origin, clock = () => new Date(), evidenceLimit 
       const authenticated = async () => {
         const user = await actor(request);
         if (path === '/api/v1/session' && method === 'GET') return json(user);
+        if (path === '/api/v1/session/avatar' && method === 'GET') {
+          const avatar = await get('SELECT content FROM profile_avatars WHERE user_id=?', user.id);
+          if (!avatar) unavailable();
+          return new Response(avatar.content, { headers: {
+            'cache-control': 'private, no-store', 'content-type': 'image/jpeg',
+            'x-content-type-options': 'nosniff'
+          } });
+        }
         if (path === '/api/v1/session' && method === 'DELETE') {
           await run('DELETE FROM sessions WHERE hash=?', sessionKey(request));
           return new Response(null, { status: 204, headers: { 'set-cookie': cookie('', 0), 'cache-control': 'no-store' } });
