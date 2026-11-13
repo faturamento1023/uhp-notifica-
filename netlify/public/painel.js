@@ -37,7 +37,6 @@ const formatTime = value => value ? new Intl.DateTimeFormat("pt-BR", {
 const localToday = () => new Intl.DateTimeFormat("en-CA", {
   timeZone:"America/Sao_Paulo",year:"numeric",month:"2-digit",day:"2-digit"
 }).format(new Date());
-const normalize = value => String(value || "").toLowerCase().normalize("NFD").replace(/\p{Diacritic}/gu,"");
 let account = null, assignees = [], items = [], nextOffset = null, selected = null, current = null, busy = false, photoUrl = null;
 
 function el(tag,text="",className="") {
@@ -113,49 +112,100 @@ async function perform(operation) {
 }
 function showLogin() {
   groupChat.stop();
+  $("login-hero").hidden=false;
+  $("detail").hidden=true;
+  $("welcome").hidden=false;
+  $("notification-filters").reset();
+  queueFilters={ query:"", status:"" };
+  $("queue").replaceChildren();
+  $("recent-notifications").replaceChildren();
+  $("recent-empty").hidden=false;
+  $("recent-empty").textContent="Carregando notificações…";
+  for(const name of ["received","in-progress","closed"]) $("count-"+name).textContent="—";
   account=null; current=null;selected=null;items=[];nextOffset=null;
   $("login").hidden=false;$("workspace").hidden=true;$("logout").hidden=true;$("identity").textContent="";
 }
 function showWorkspace() {
   $("login").hidden=true;$("workspace").hidden=false;$("logout").hidden=false;
   $("identity").textContent=account.name+" · "+(account.role==="administrator"?"Administrador":canCoordinate()?"Coordenação":areaName[account.role]);
+  $("login-hero").hidden=true;
   groupChat.start(api, formatTime, showLogin);
-  $("panel-guide").textContent=canCoordinate()
+  showView(false);
+  $("notifications-guide").textContent=canCoordinate()
     ?"Veja a fila, encaminhe às áreas e acompanhe as decisões até a finalização."
     :"Consulte as notificações atribuídas a você e registre sua tratativa.";
 }
-async function loadQueue(reset=true) {
+let queueFilters={ query:"", status:"" };
+
+function showView(focus=true) {
+  const notifications=location.hash==="#notificacoes";
+  $("home-view").hidden=notifications;
+  $("notifications-view").hidden=!notifications;
+  const active=$(notifications?"nav-notifications":"nav-home");
+  $(notifications?"nav-home":"nav-notifications").removeAttribute("aria-current");
+  active.setAttribute("aria-current","page");
+  if(focus) $(notifications?"notifications-title":"home-title").focus();
+}
+
+function renderDashboard(data) {
+  const counts=Object.fromEntries((data.summary || []).map(row=>[row.status,row.total]));
+  for(const name of ["received","in_progress","closed"]) {
+    $("count-"+name.replace("_","-")).textContent=data.summary?counts[name] ?? 0:"—";
+  }
+  const recent=$("recent-notifications");
+  recent.replaceChildren(...data.items.slice(0,3).map(item=>notificationEntry(item,()=>{
+    history.pushState(null,"","#notificacoes");
+    showView(false);
+    return openCase(item.id,true);
+  })));
+  $("recent-empty").hidden=data.items.length>0;
+  $("recent-empty").textContent="Nenhuma notificação disponível para o seu perfil.";
+}
+
+async function loadDashboard() {
+  renderDashboard(await api("/notifications"));
+}
+
+async function loadQueue(reset=true,filters=queueFilters) {
   const offset=reset?0:nextOffset;
   if(offset===null) return;
-  const data=await api("/notifications?offset="+offset);
+  const params=new URLSearchParams({offset});
+  if(filters.query) params.set("q",filters.query);
+  if(filters.status) params.set("status",filters.status);
+  const data=await api("/notifications?"+params);
+  queueFilters=filters;
   items=reset?data.items:[...items,...data.items];
   nextOffset=data.nextOffset;
   $("more").hidden=nextOffset===null;
   renderQueue();
+  if(offset===0 && !filters.query && !filters.status) renderDashboard(data);
 }
+
 function renderQueue() {
-  const list=$("queue");list.replaceChildren();
-  const q=normalize($("query").value);
-  const filter=$("status-filter").value;
-  const visible=items.filter(item=>(!filter || item.status===filter)
-    && (!q || normalize([item.protocol,item.sector,item.subject,item.kind].join(" ")).includes(q)));
-  $("queue-empty").hidden=visible.length>0;
-  $("queue-empty").textContent=items.length?"Nenhum registro corresponde aos filtros nesta página.":"Nenhuma notificação atribuída.";
-  for(const item of visible) {
-    const li=document.createElement("li");
-    const trigger=el("button");
-    trigger.type="button";
-    trigger.setAttribute("aria-current",String(selected===item.id));
-    const title=el("span","","case-heading");
-    title.append(icon(item.kind==="incident"?"evento-adverso":"nao-conformidade"),
-      el("strong",item.subject || (item.kind==="incident"?"Incidente ou evento adverso":"Não conformidade")));
-    trigger.append(title);
-    trigger.append(el("small",item.protocol+" · "+(item.sector||"Setor não informado")));
-    trigger.append(labeled("span",caseState[item.status],"pill"+(item.status==="closed"?" done":item.status==="received"?" received":""),statusIcon[item.status]));
-    if(item.assignments?.some(a=>a.overdue?.opinion || a.overdue?.actions)) trigger.append(labeled("span","Prazo vencido","pill late","atrasado"));
-    trigger.addEventListener("click",()=>perform(()=>openCase(item.id,true)));
-    li.append(trigger);list.append(li);
+  const list=$("queue");
+  list.replaceChildren(...items.map(item=>notificationEntry(item,()=>openCase(item.id,true))));
+  $("queue-empty").hidden=items.length>0;
+  $("queue-empty").textContent=queueFilters.query || queueFilters.status
+    ?"Nenhuma notificação corresponde aos filtros.":"Nenhuma notificação disponível para o seu perfil.";
+}
+
+function notificationEntry(item,open) {
+  const li=document.createElement("li");
+  const trigger=el("button");
+  trigger.type="button";
+  if(selected===item.id) trigger.setAttribute("aria-current","true");
+  const title=el("span","","case-heading");
+  title.append(icon(item.kind==="incident"?"evento-adverso":"nao-conformidade"),
+    el("strong",item.subject || (item.kind==="incident"?"Incidente ou evento adverso":"Não conformidade")));
+  trigger.append(title);
+  trigger.append(el("small",item.protocol+" · "+(item.sector||"Setor não informado")));
+  trigger.append(labeled("span",caseState[item.status],"pill"+(item.status==="closed"?" done":item.status==="received"?" received":""),statusIcon[item.status]));
+  if(item.assignments?.some(a=>a.overdue?.opinion || a.overdue?.actions)) {
+    trigger.append(labeled("span","Prazo vencido","pill late","atrasado"));
   }
+  trigger.addEventListener("click",()=>perform(open));
+  li.append(trigger);
+  return li;
 }
 function nextAction(record) {
   if(record.status==="closed") return "Caso finalizado. Consulte o histórico para ver as decisões.";
@@ -499,8 +549,23 @@ $("refresh").addEventListener("click",()=>perform(async()=>{
   await Promise.all([loadQueue(),selected?openCase(selected):Promise.resolve()]);message("Painel atualizado.");
 }));
 $("more").addEventListener("click",()=>perform(()=>loadQueue(false)));
-$("query").addEventListener("input",renderQueue);
-$("status-filter").addEventListener("change",renderQueue);
+window.addEventListener("hashchange",()=>{
+  if(!account) return;
+  showView();
+  if(!$("home-view").hidden) perform(loadDashboard);
+});
+$("refresh-home").addEventListener("click",()=>perform(async()=>{
+  await loadDashboard();
+  message("Visão geral atualizada.");
+}));
+$("notification-filters").addEventListener("submit",event=>{
+  event.preventDefault();
+  perform(()=>loadQueue(true,{query:$("query").value.trim(),status:$("status-filter").value}));
+});
+$("clear-filters").addEventListener("click",()=>perform(async()=>{
+  await loadQueue(true,{query:"",status:""});
+  $("notification-filters").reset();
+}));
 $("area-choice").addEventListener("change",updateAssigneeSelect);
 $("photo-wrap").addEventListener("toggle",()=>{if($( "photo-wrap").open && current) loadPhoto(current).catch(()=>message("Não foi possível carregar a foto.",true));});
 $("assign").addEventListener("click",()=>perform(async()=>{

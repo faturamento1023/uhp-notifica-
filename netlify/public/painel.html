@@ -242,6 +242,7 @@
 </style>
 <link rel="stylesheet" href="bate-papo.css">
 <script src="bate-papo.js" defer></script>
+<link rel="stylesheet" href="painel-layout.css">
 <script src="painel.js" defer></script>
 <script src="banners.js" defer></script>
 </head>
@@ -249,7 +250,7 @@
 <header><div class="shell top"><div class="brand"><img src="uhp-notifica-login.png" width="240" height="80" alt="UHP Notifica — Sistema de Notificações"></div><div class="institution"><img src="logo-posse-saude.png" width="145" height="70" alt="Prefeitura Municipal de Posse e Secretaria da Saúde"></div><div class="account"><span id="identity" class="muted small"></span><button id="logout" type="button" class="secondary" hidden><img class="ui-icon" src="icons/sair.png" alt="" width="20" height="20">Sair</button></div></div></header>
 <div id="loading-overlay" class="loading-overlay" role="status" aria-live="polite" hidden><div class="loading-card"><img src="carregamento/01-logo-uhp-notifica-carregando-128px.gif" alt=""><span>Aguarde, processando sua solicitação...</span></div></div>
 <main class="shell">
-  <div class="hero"><h1><img class="ui-icon" src="icons/notificacoes.png" alt="" width="34" height="34">Painel de notificações</h1><p id="panel-guide">Acompanhe cada ocorrência da triagem ao encerramento.</p></div>
+  <div class="hero" id="login-hero"><h1><img class="ui-icon" src="icons/notificacoes.png" alt="" width="34" height="34">Painel de notificações</h1><p id="panel-guide">Acompanhe cada ocorrência da triagem ao encerramento.</p></div>
   <p id="feedback" class="notice" role="status" aria-live="polite"></p>
   <section id="login" class="card login">
     <img class="login-mark" src="uhp-notifica-icone.png" width="56" height="57" alt="">
@@ -261,19 +262,28 @@
       <button type="submit"><img class="ui-icon" src="icons/entrar.png" alt="" width="20" height="20">Entrar</button>
     </form>
   </section>
-  <div id="workspace" class="layout" hidden>
-    <div class="stack panel-sidebar">
-    <section class="card" aria-labelledby="queue-title">
-      <div class="row"><h2 id="queue-title"><img class="ui-icon" src="icons/notificacoes.png" alt="" width="22" height="22">Fila de notificações</h2><button type="button" id="refresh" class="secondary"><img class="ui-icon" src="icons/atualizar.png" alt="" width="20" height="20">Atualizar</button></div>
-      <p class="small muted section-title">Selecione um registro para acompanhar a tratativa.</p>
-      <div class="filters section-title">
-        <label><span class="label-heading"><img class="ui-icon" src="icons/buscar.png" alt="" width="22" height="22">Buscar nesta página</span><input id="query" type="search" placeholder="Protocolo ou setor"></label>
-        <label><span class="label-heading"><img class="ui-icon" src="icons/filtros.png" alt="" width="22" height="22">Situação</span><select id="status-filter"><option value="">Todas</option><option value="received">Recebidas</option><option value="in_progress">Em tratativa</option><option value="closed">Finalizadas</option></select></label>
-      </div>
-      <p id="queue-empty" class="muted section-title">Nenhuma notificação nesta página.</p>
-      <ul id="queue" class="queue"></ul>
-      <div class="actions"><button type="button" id="more" class="secondary" hidden><img class="ui-icon" src="icons/carregar-mais.png" alt="" width="20" height="20">Carregar mais</button></div>
-    </section>
+  <div id="workspace" class="panel-shell" hidden>
+    <nav class="panel-menu" aria-label="Menu do painel">
+      <a href="#inicio" id="nav-home"><img class="ui-icon" src="icons/protocolo.png" alt="" width="20" height="20">Início</a>
+      <a href="#notificacoes" id="nav-notifications"><img class="ui-icon" src="icons/notificacoes.png" alt="" width="20" height="20">Notificações</a>
+    </nav>
+    <div class="panel-content">
+      <section id="home-view" class="stack" aria-labelledby="home-title">
+        <div class="panel-heading">
+          <h1 id="home-title" tabindex="-1">Visão geral</h1>
+          <button id="refresh-home" type="button" class="secondary">Atualizar</button>
+        </div>
+        <dl class="dashboard-stats" aria-label="Resumo das notificações">
+          <div class="card"><dt>Recebidas</dt><dd id="count-received">—</dd></div>
+          <div class="card"><dt>Em tratativa</dt><dd id="count-in-progress">—</dd></div>
+          <div class="card"><dt>Finalizadas</dt><dd id="count-closed">—</dd></div>
+        </dl>
+        <div class="dashboard-grid">
+          <section class="card" aria-labelledby="recent-title">
+            <div class="panel-heading"><h2 id="recent-title">Últimas notificações</h2><a href="#notificacoes" class="button-link">Ver todas</a></div>
+            <p id="recent-empty" class="small muted">Carregando notificações…</p>
+            <ul id="recent-notifications" class="queue"></ul>
+          </section>
       <section class="card group-chat" aria-labelledby="group-chat-title">
         <h2 id="group-chat-title">Bate-papo da equipe</h2>
         <p class="small muted">Todos os usuários do painel podem ler. Evite compartilhar dados de pacientes.</p>
@@ -289,7 +299,29 @@
         </form>
         <p id="chat-status" class="small muted" role="status"></p>
       </section>
-    </div>
+        </div>
+        <section class="card dashboard-banner" aria-labelledby="banner-title">
+          <h2 id="banner-title">Orientação do dia</h2>
+          <div class="banner-carousel" data-banner-carousel aria-label="Orientações educativas sobre notificações e segurança do paciente"></div>
+        </section>
+      </section>
+      <section id="notifications-view" aria-labelledby="notifications-title" hidden>
+        <div class="panel-heading"><h1 id="notifications-title" tabindex="-1">Notificações</h1></div>
+        <p id="notifications-guide" class="muted"></p>
+        <div class="layout">
+    <section class="card" aria-labelledby="queue-title">
+      <div class="row"><h2 id="queue-title"><img class="ui-icon" src="icons/notificacoes.png" alt="" width="22" height="22">Fila de notificações</h2><button type="button" id="refresh" class="secondary"><img class="ui-icon" src="icons/atualizar.png" alt="" width="20" height="20">Atualizar</button></div>
+      <p class="small muted section-title">Selecione um registro para acompanhar a tratativa.</p>
+      <form id="notification-filters" class="filters section-title">
+        <label><span class="label-heading"><img class="ui-icon" src="icons/buscar.png" alt="" width="22" height="22">Buscar notificações</span><input id="query" type="search" maxlength="120" placeholder="Protocolo ou setor"></label>
+        <label><span class="label-heading"><img class="ui-icon" src="icons/filtros.png" alt="" width="22" height="22">Situação</span><select id="status-filter"><option value="">Todas</option><option value="received">Recebidas</option><option value="in_progress">Em tratativa</option><option value="closed">Finalizadas</option></select></label>
+        <button type="submit" class="secondary">Aplicar filtros</button>
+        <button type="button" class="secondary" id="clear-filters">Limpar filtros</button>
+      </form>
+      <p id="queue-empty" class="muted section-title">Nenhuma notificação nesta página.</p>
+      <ul id="queue" class="queue"></ul>
+      <div class="actions"><button type="button" id="more" class="secondary" hidden><img class="ui-icon" src="icons/carregar-mais.png" alt="" width="20" height="20">Carregar mais</button></div>
+    </section>
     <div id="detail" class="stack" hidden>
       <section class="card">
         <div class="row"><div><h2><img class="ui-icon" src="icons/protocolo.png" alt="" width="22" height="22"><span id="case-title" tabindex="-1"></span></h2><p id="case-meta" class="muted small"></p></div><span id="case-state" class="pill"></span></div>
@@ -314,7 +346,10 @@
       <section id="closure" class="card" hidden><h2><img class="ui-icon" src="icons/encerrar.png" alt="" width="22" height="22">Encerramento</h2><p id="close-hint" class="muted small section-title"></p><ul id="closure-checklist"></ul><label>Conclusão do caso<textarea id="conclusion" maxlength="5000"></textarea></label><div class="actions"><button id="close-case" type="button"><img class="ui-icon" src="icons/encerrar.png" alt="" width="20" height="20">Finalizar notificação</button></div></section>
       <section class="card"><h2><img class="ui-icon" src="icons/historico.png" alt="" width="22" height="22">Histórico</h2><ol id="history" class="history"></ol></section>
     </div>
-    <section id="welcome" class="card"><h2><img class="ui-icon" src="icons/protocolo.png" alt="" width="22" height="22">Selecione um protocolo</h2><p class="muted">Acompanhe os pareceres, prazos, ações e decisões.</p><div class="banner-carousel" data-banner-carousel aria-label="Orientações educativas sobre notificações e segurança do paciente"></div></section>
+    <section id="welcome" class="card"><h2><img class="ui-icon" src="icons/protocolo.png" alt="" width="22" height="22">Selecione um protocolo</h2><p class="muted">Acompanhe os pareceres, prazos, ações e decisões.</p></section>
+        </div>
+      </section>
+    </div>
   </div>
 </main>
 <footer class="institutional-footer">

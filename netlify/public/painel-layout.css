@@ -1,0 +1,67 @@
+.panel-shell {
+  display: grid;
+  grid-template-columns: 165px minmax(0, 1fr);
+  gap: 24px;
+  margin-top: 24px;
+  align-items: start;
+}
+.panel-menu {
+  display: grid;
+  gap: 5px;
+  padding: 7px;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+.panel-menu a {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 8px 10px;
+  color: var(--brand);
+  text-decoration: none;
+  border-radius: 7px;
+  font-weight: 650;
+}
+.panel-menu a:hover, .panel-menu a[aria-current="page"] { background: #e7f2f1; }
+.panel-content { min-width: 0; }
+.panel-heading {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 8px 12px;
+}
+.panel-heading h1, .panel-heading h2 { margin: 0; }
+.dashboard-stats, .dashboard-grid { display: grid; gap: 14px; margin: 0; }
+.dashboard-stats { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.dashboard-grid { grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); align-items: start; }
+.dashboard-stats dt { padding: 0; border: 0; color: var(--muted); }
+.dashboard-stats dd {
+  margin: 4px 0 0;
+  padding: 0;
+  border: 0;
+  color: var(--brand);
+  font-size: 1.75rem;
+  font-weight: 750;
+}
+.dashboard-grid .queue { margin-top: 10px; }
+.dashboard-grid .queue:empty { display: none; }
+.dashboard-banner { max-width: 680px; }
+.dashboard-banner .banner-carousel { margin-top: 12px; }
+#notifications-view .layout { grid-template-columns: minmax(250px, 300px) minmax(0, 1fr); }
+#notification-filters { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+#notification-filters label { grid-column: 1 / -1; }
+@media (max-width: 950px) {
+  .panel-shell { grid-template-columns: minmax(0, 1fr); gap: 14px; }
+  .panel-menu { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .panel-menu a { justify-content: center; }
+}
+@media (max-width: 700px) {
+  .dashboard-grid, #notifications-view .layout { grid-template-columns: minmax(0, 1fr); }
+  .dashboard-stats { gap: 6px; }
+  .dashboard-stats .card { padding: 9px 7px; }
+  .dashboard-stats dt { font-size: .77rem; }
+  .dashboard-stats dd { font-size: 1.4rem; }
+}

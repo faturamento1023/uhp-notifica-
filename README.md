@@ -194,3 +194,9 @@ No cabeçalho do login e do painel, as marcas do UHP Notifica e da Secretaria fi
 O painel oferece uma sala em grupo abaixo da fila de notificações, também no celular. Todos os perfis ativos com acesso ao painel podem ler e enviar mensagens de texto de até 1.000 caracteres. Cada mensagem registra o nome do autor e o horário. A conversa se atualiza a cada 10 segundos com a aba visível e permite consultar mensagens anteriores. Use a sala para comunicação da equipe e mantenha os dados de pacientes nas notificações com acesso restrito.
 
 O frontend usa `GET /api/v1/chat/messages` e `POST /api/v1/chat/messages` com a sessão do painel. A função `uhp-api` identifica o autor pela sessão e grava as mensagens no esquema privado do Supabase. A implementação e a migração estão na branch [codex/backend-notificacoes](https://github.com/faturamento1023/uhp-notifica-/tree/codex/backend-notificacoes).
+
+## Navegação do painel
+
+Depois do login, a tela **Início** mostra os totais de notificações recebidas, em tratativa e finalizadas que o perfil pode consultar. Exibe as três notificações mais recentes, com acesso direto à ocorrência, o botão **Ver todas**, o bate-papo da equipe e a orientação do dia. O menu lateral abre **Início** e **Notificações** e aparece acima do conteúdo em telas menores.
+
+Em **Notificações**, a busca por protocolo, setor, assunto ou tipo e o filtro por situação são aplicados na API antes da paginação. **Carregar mais** usa os filtros aplicados. A abertura da ocorrência leva às etapas de tratativa existentes. A API retorna os totais por situação na primeira página sem filtros, com as mesmas permissões da fila. O código da API está na branch `codex/backend-notificacoes`.
