@@ -10,7 +10,7 @@ const origin = 'https://notifica.example.test';
 const password = 'senha fictícia de teste';
 const encodedPassword = passwordHash(password);
 
-const migration = readFileSync(new URL('../supabase/migrations/20261113120150_uhp_notifica.sql', import.meta.url), 'utf8');
+const migration = readFileSync(new URL('../supabase/migrations/20261113120820_uhp_notifica.sql', import.meta.url), 'utf8');
 
 async function fixture(t) {
   const db = await PGlite.create();
