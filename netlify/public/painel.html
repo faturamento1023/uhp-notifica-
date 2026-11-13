@@ -6,7 +6,7 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; form-action 'none'; base-uri 'none'">
 <title>UHP Notifica | Painel</title>
 <style>
-  :root { font:16px/1.5 "Segoe UI",system-ui,sans-serif; color:#17343b; background:#f3f7f6; --teal:#008586; --dark:#075459; --line:#d5e1df; --muted:#4b646a }
+  :root { font:16px/1.5 "Segoe UI",system-ui,sans-serif; color:#17343b; background:#f3f7f6; --brand:#008586; --teal:#006b6c; --dark:#075459; --green:#5cbc73; --yellow:#ffca05; --red:#bb1f25; --line:#d5e1df; --muted:#4b646a }
   * { box-sizing:border-box }
   [hidden] { display:none !important }
   body { margin:0 }
@@ -14,6 +14,7 @@
   button { cursor:pointer }
   button:disabled { cursor:not-allowed; opacity:.55 }
   header { background:#fff; border-bottom:1px solid var(--line) }
+  header::after { content:""; display:block; height:4px; background:linear-gradient(90deg,var(--green) 0 25%,var(--yellow) 25% 50%,var(--brand) 50% 75%,var(--red) 75%) }
   .shell { width:min(1200px,calc(100% - 32px)); margin:auto }
   .top { min-height:86px; display:flex; align-items:center; justify-content:space-between; gap:15px }
   .brand { display:flex; align-items:center; gap:14px; font-weight:800; font-size:1.15rem }
@@ -23,7 +24,7 @@
   h1 { font-size:clamp(2rem,4vw,3rem); line-height:1.1; letter-spacing:-.04em }
   h2 { font-size:1.3rem }
   h3 { font-size:1.08rem }
-  .hero { background:linear-gradient(120deg,var(--dark),var(--teal)); color:#fff; border-radius:20px; padding:28px }
+  .hero { background:linear-gradient(120deg,var(--dark),var(--brand)); color:#fff; border-radius:20px; padding:28px }
   .hero p { color:#d8efea; margin-top:7px }
   .layout { display:grid; grid-template-columns:minmax(280px,350px) minmax(0,1fr); gap:16px; align-items:start; margin-top:18px }
   .card { background:#fff; border:1px solid var(--line); border-radius:15px; padding:20px; min-width:0 }
@@ -31,8 +32,10 @@
   .row { display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap }
   .muted { color:var(--muted) }
   .small { font-size:.88rem }
-  .notice { margin:16px 0; padding:12px 15px; border-left:3px solid #5cbc73; background:#e7f0ee; border-radius:0 9px 9px 0 }
-  .notice.error { border-color:#bb1f25; background:#fff2ef; color:#842c2c }
+  .notice { margin:16px 0; padding:12px 15px; border-left:3px solid var(--brand); background:#e7f2f1; border-radius:0 9px 9px 0 }
+  .notice.error { border-color:var(--red); background:#fff2ef; color:#842c2c }
+  .next-step { margin-top:16px; padding:14px 16px; border-left:4px solid var(--yellow); border-radius:0 10px 10px 0; background:#fff9e6; color:#4c420c }
+  .next-step strong { display:block; margin-bottom:3px }
   #feedback:empty { display:none }
   label { display:grid; gap:5px; font-weight:650 }
   input,select,textarea { width:100%; min-height:43px; border:1px solid #aabebc; border-radius:8px; padding:8px 10px; background:#fff; color:#17343b }
@@ -40,19 +43,24 @@
   button { min-height:42px; border:1px solid var(--teal); border-radius:8px; padding:7px 13px; background:var(--teal); color:#fff; font-weight:700 }
   button.secondary { background:#fff; color:var(--teal) }
   button:hover:not(:disabled) { filter:brightness(.94) }
-  :focus-visible { outline:3px solid #218bba; outline-offset:3px }
+  :focus-visible { outline:3px solid var(--brand); outline-offset:3px }
   .form-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px }
+  .filters { display:grid; grid-template-columns:1fr 1fr; gap:10px }
   .wide { grid-column:1/-1 }
   .actions { display:flex; flex-wrap:wrap; gap:9px; margin-top:12px }
   .queue { list-style:none; margin:14px 0 0; padding:0; display:grid; gap:8px }
   .queue button { display:block; width:100%; text-align:left; background:#fff; color:#17343b; border-color:var(--line); padding:12px }
-  .queue button[aria-current="true"] { border-color:var(--teal); background:#e9f5f1 }
+  .queue button[aria-current="true"] { border-color:var(--brand); background:#e7f2f1 }
+  .queue button:hover { border-color:var(--brand) }
+  .queue .pill { margin:8px 7px 0 0 }
   .queue strong,.queue small { display:block; overflow-wrap:anywhere }
   .queue small { color:var(--muted); margin-top:3px }
-  .pill { display:inline-block; border-radius:999px; padding:3px 9px; background:#e4f3ee; color:#24554d; font-size:.83rem; font-weight:700 }
-  .pill.late { background:#fff1d7; color:#714506 }
-  .pill.done { background:#e7edf6; color:#35537c }
+  .pill { display:inline-block; width:max-content; border-radius:999px; padding:3px 9px; background:#e7f2f1; color:var(--dark); font-size:.83rem; font-weight:700 }
+  .pill.received { background:#fff4c8; color:#604709 }
+  .pill.late { background:#fff1ef; color:#8e2026 }
+  .pill.done { background:#e8f6eb; color:#245a34 }
   .area { border:1px solid var(--line); border-radius:11px; padding:16px; margin-top:12px; display:grid; gap:10px }
+  .card > h2 { padding-left:10px; border-left:4px solid var(--green) }
   .section-title { margin:12px 0 }
   .entry-list { display:grid; grid-template-columns:minmax(120px,1fr) 2fr; gap:0 14px; margin:10px 0 }
   dt,dd { margin:0; padding:7px 0; border-bottom:1px solid var(--line); overflow-wrap:anywhere; white-space:pre-wrap }
@@ -65,14 +73,14 @@
   .login { max-width:450px; margin:22px auto }
   .login form { display:grid; gap:14px }
   @media(max-width:850px) { .layout { grid-template-columns:1fr } }
-  @media(max-width:540px) { .shell { width:min(100% - 24px,1200px) } .top { flex-wrap:wrap; padding:8px 0 } .brand img { width:120px } .hero,.card { padding:17px } .form-grid,.entry-list { grid-template-columns:1fr } .wide { grid-column:auto } dt { border:0; padding-bottom:0 } dd { padding-top:0 } }
+  @media(max-width:540px) { .shell { width:min(100% - 24px,1200px) } .top { flex-wrap:wrap; padding:8px 0 } .brand img { width:120px } .hero,.card { padding:17px } .form-grid,.filters,.entry-list { grid-template-columns:1fr } .wide { grid-column:auto } dt { border:0; padding-bottom:0 } dd { padding-top:0 } }
 </style>
 <script src="painel.js" defer></script>
 </head>
 <body>
 <header><div class="shell top"><div class="brand"><img src="logo-posse-saude.png" width="150" height="72" alt="Prefeitura Municipal de Posse e Secretaria da Saúde"><span>UHP Notifica</span></div><div class="inline"><span id="identity" class="muted small"></span><button id="logout" type="button" class="secondary" hidden>Sair</button></div></div></header>
 <main class="shell">
-  <div class="hero"><h1>Painel de tratativas</h1><p>Coordenação de Enfermagem, Segurança do Paciente e CCIH.</p></div>
+  <div class="hero"><h1>Painel de notificações</h1><p id="panel-guide">Acompanhe cada ocorrência da triagem ao encerramento.</p></div>
   <p id="feedback" class="notice" role="status" aria-live="polite"></p>
   <section id="login" class="card login">
     <h2>Acessar painel</h2>
@@ -85,8 +93,12 @@
   </section>
   <div id="workspace" class="layout" hidden>
     <section class="card" aria-labelledby="queue-title">
-      <div class="row"><h2 id="queue-title">Notificações</h2><button type="button" id="refresh" class="secondary">Atualizar</button></div>
-      <label class="section-title">Buscar na página<input id="query" type="search" placeholder="Protocolo, setor ou tipo"></label>
+      <div class="row"><h2 id="queue-title">Fila de notificações</h2><button type="button" id="refresh" class="secondary">Atualizar</button></div>
+      <p class="small muted section-title">Selecione um registro para acompanhar a tratativa.</p>
+      <div class="filters section-title">
+        <label>Buscar nesta página<input id="query" type="search" placeholder="Protocolo ou setor"></label>
+        <label>Situação<select id="status-filter"><option value="">Todas</option><option value="received">Recebidas</option><option value="in_progress">Em tratativa</option><option value="closed">Finalizadas</option></select></label>
+      </div>
       <p id="queue-empty" class="muted section-title">Nenhuma notificação nesta página.</p>
       <ul id="queue" class="queue"></ul>
       <div class="actions"><button type="button" id="more" class="secondary" hidden>Carregar mais</button></div>
@@ -95,6 +107,7 @@
       <section class="card">
         <div class="row"><div><h2 id="case-title" tabindex="-1"></h2><p id="case-meta" class="muted small"></p></div><span id="case-state" class="pill"></span></div>
         <p id="case-summary" class="section-title"></p>
+        <div class="next-step" aria-live="polite"><strong>Próxima ação</strong><span id="next-step"></span></div>
         <details><summary>Dados da notificação</summary><dl id="case-fields" class="entry-list"></dl></details>
         <div id="photo-wrap" hidden><h3 class="section-title">Foto da ocorrência</h3><img id="case-photo" class="photo" alt="Foto anexada à ocorrência"></div>
         <div id="triage" class="area" hidden>
@@ -105,7 +118,7 @@
             <label>Prazo do parecer<input id="opinion-due" type="date"></label>
             <label>Prazo das ações<input id="actions-due" type="date"></label>
           </div>
-          <button type="button" id="assign">Encaminhar</button>
+          <button type="button" id="assign">Encaminhar à área</button>
         </div>
       </section>
       <section class="card"><h2>Tratativas por área</h2><div id="areas"></div></section>

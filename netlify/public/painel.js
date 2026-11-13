@@ -81,6 +81,9 @@ function showLogin() {
 function showWorkspace() {
   $("login").hidden=true;$("workspace").hidden=false;$("logout").hidden=false;
   $("identity").textContent=account.name+" · "+(account.role==="coordination"?"Coordenação":areaName[account.role]);
+  $("panel-guide").textContent=account.role==="coordination"
+    ?"Veja a fila, encaminhe às áreas e acompanhe as decisões até a finalização."
+    :"Consulte as notificações atribuídas a você e registre sua tratativa.";
 }
 async function loadQueue(reset=true) {
   const offset=reset?0:nextOffset;
@@ -94,19 +97,40 @@ async function loadQueue(reset=true) {
 function renderQueue() {
   const list=$("queue");list.replaceChildren();
   const q=normalize($("query").value);
-  const visible=items.filter(item=>!q || normalize([item.protocol,item.sector,item.subject,item.kind].join(" ")).includes(q));
+  const filter=$("status-filter").value;
+  const visible=items.filter(item=>(!filter || item.status===filter)
+    && (!q || normalize([item.protocol,item.sector,item.subject,item.kind].join(" ")).includes(q)));
   $("queue-empty").hidden=visible.length>0;
-  $("queue-empty").textContent=items.length?"Nenhum registro corresponde à busca nesta página.":"Nenhuma notificação atribuída.";
+  $("queue-empty").textContent=items.length?"Nenhum registro corresponde aos filtros nesta página.":"Nenhuma notificação atribuída.";
   for(const item of visible) {
     const li=document.createElement("li");
     const trigger=el("button");
     trigger.type="button";
     trigger.setAttribute("aria-current",String(selected===item.id));
     trigger.append(el("strong",item.subject || (item.kind==="incident"?"Incidente ou evento adverso":"Não conformidade")));
-    trigger.append(el("small",item.protocol+" · "+(item.sector||"Setor não informado")+" · "+caseState[item.status]));
+    trigger.append(el("small",item.protocol+" · "+(item.sector||"Setor não informado")));
+    trigger.append(el("span",caseState[item.status],"pill"+(item.status==="closed"?" done":item.status==="received"?" received":"")));
+    if(item.assignments?.some(a=>a.overdue?.opinion || a.overdue?.actions)) trigger.append(el("span","Prazo vencido","pill late"));
     trigger.addEventListener("click",()=>perform(()=>openCase(item.id,true)));
     li.append(trigger);list.append(li);
   }
+}
+function nextAction(record) {
+  if(record.status==="closed") return "Caso finalizado. Consulte o histórico para ver as decisões.";
+  if(account.role==="coordination") {
+    if(record.assignments.some(a=>a.status==="pending_approval")) return "Leia o parecer e aprove ou devolva com justificativa.";
+    if(record.assignments.some(a=>a.status==="pending_validation")) return "Confira as ações e evidências; valide ou peça complemento.";
+    if(!record.assignments.length) return "Encaminhe a notificação à Segurança do Paciente e/ou CCIH.";
+    if(record.assignments.every(a=>a.status==="validated")) return "Todas as áreas foram validadas. Registre a conclusão e finalize.";
+    return "Acompanhe os prazos e as tratativas das áreas encaminhadas.";
+  }
+  const assignment=record.assignments[0];
+  if(!assignment) return "Aguarde o encaminhamento da Coordenação.";
+  if(["draft","revision"].includes(assignment.status)) return "Elabore o parecer e envie para aprovação.";
+  if(["actions","complement"].includes(assignment.status)) return "Registre as ações, anexe evidência em cada uma e envie para validação.";
+  if(assignment.status==="pending_approval") return "Parecer enviado. Aguarde a decisão da Coordenação.";
+  if(assignment.status==="pending_validation") return "Ações enviadas. Aguarde a validação da Coordenação.";
+  return "Tratativa validada. A Coordenação poderá finalizar o caso.";
 }
 async function openCase(id,focus=false) {
   current=await api("/notifications/"+encodeURIComponent(id));
@@ -315,8 +339,9 @@ function renderDetail() {
   $("case-title").textContent=record.protocol;
   $("case-meta").textContent=(record.kind==="incident"?"Incidente ou evento adverso":"Não conformidade")+" · "+formatDate(record.occurredOn)+" · "+(record.sector||"Setor não informado");
   $("case-state").textContent=caseState[record.status];
-  $("case-state").className="pill"+(record.status==="closed"?" done":"");
+  $("case-state").className="pill"+(record.status==="closed"?" done":record.status==="received"?" received":"");
   $("case-summary").textContent=record.description || record.subject;
+  $("next-step").textContent=nextAction(record);
   renderDetailsList(record);
   loadPhoto(record).catch(()=>{});
   renderTriage(record);
@@ -358,6 +383,7 @@ $("refresh").addEventListener("click",()=>perform(async()=>{
 }));
 $("more").addEventListener("click",()=>perform(()=>loadQueue(false)));
 $("query").addEventListener("input",renderQueue);
+$("status-filter").addEventListener("change",renderQueue);
 $("area-choice").addEventListener("change",updateAssigneeSelect);
 $("assign").addEventListener("click",()=>perform(async()=>{
   if(!current || account.role!=="coordination") return;
