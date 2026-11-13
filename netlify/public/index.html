@@ -48,12 +48,29 @@
   .choice:hover { border-color: var(--brand); background: #fcfffe; transform: translateY(-2px); }
   .icon { width: 47px; height: 47px; display: grid; place-items: center; border-radius: 13px; background: #e8f6eb; color: var(--dark); font-size: 25px; font-weight: 700; border-bottom: 3px solid var(--green); }
   .choice:nth-child(2) .icon { background: #fff0ef; color: var(--red); border-bottom-color: var(--red); }
+  .icon img { width: 31px; height: 31px; object-fit: contain; }
+  .ui-icon { width: 22px; height: 22px; object-fit: contain; flex: none; vertical-align: middle; }
+  .back, .button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+  .back .ui-icon, .button .ui-icon { width: 20px; height: 20px; }
+  .button:not(.secondary) .ui-icon { filter: brightness(0) invert(1); }
+  .choice .action .ui-icon { width: 17px; height: 17px; }
+  .panel h2, .photo-preview h2 { display: flex; align-items: center; gap: 9px; }
+  .title-icon { width: 34px; height: 34px; object-fit: contain; vertical-align: -.12em; margin-right: 7px; }
+  .receipt-row { display: flex; align-items: center; gap: 9px; }
+  .receipt-row .ui-icon { width: 24px; height: 24px; }
+  .receipt-row .intro { margin: 0; }
+  .busy-icon { animation: icon-spin 1s linear infinite; }
+  @keyframes icon-spin { to { transform: rotate(360deg); } }
+  @media (prefers-reduced-motion: reduce) { .busy-icon { animation: none; } }
   .choice strong { font-size: clamp(1.22rem, 2.7vw, 1.55rem); line-height: 1.2; letter-spacing: -.025em; }
   .choice .copy { color: var(--muted); }
   .choice .action { padding-top: 5px; margin-top: auto; font-weight: 750; color: var(--teal); }
   .notice { margin-top: 22px; padding: 15px 18px; border-left: 3px solid var(--brand); border-radius: 0 10px 10px 0; background: #e7f2f1; color: #254b4d; font-size: .92rem; }
   #entry-notice { border-left-color: var(--yellow); background: #fff9e6; color: #55440c; }
   .notice.error, #register-error { border-left-color: var(--red); background: #fff1ef; color: #842c2c; }
+  #entry-notice, #register-error { background-repeat: no-repeat; background-position: 16px center; background-size: 20px; padding-left: 47px; }
+  #entry-notice { background-image: url('icons/qr-code.png'); }
+  #register-error { background-image: url('icons/erro.png'); }
   .step-label { display: inline-block; margin: 0 0 13px; padding: 5px 11px; border-radius: 999px; background: #e7f2f1; color: var(--teal); font-size: .85rem; font-weight: 750; }
   .hero .step-label { background: #ffffffed; color: var(--dark); }
   .steps { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 12px; list-style: none; padding: 0; margin: 22px 0 0; }
@@ -128,16 +145,16 @@
     <p class="notice" id="entry-notice" hidden></p>
     <div class="choices">
       <button class="choice" type="button" data-view="nonconformity">
-        <span class="icon" aria-hidden="true">☷</span>
+        <span class="icon" aria-hidden="true"><img src="icons/nao-conformidade.png" alt="" width="31" height="31"></span>
         <strong>Não conformidade</strong>
         <span class="copy">Registre um desvio de rotina, protocolo ou condição de trabalho.</span>
-        <span class="action">Abrir formulário <span aria-hidden="true">→</span></span>
+        <span class="action">Abrir formulário <img class="ui-icon" src="icons/avancar.png" alt="" width="20" height="20"></span>
       </button>
       <button class="choice" type="button" data-view="incident">
-        <span class="icon" aria-hidden="true">!</span>
+        <span class="icon" aria-hidden="true"><img src="icons/evento-adverso.png" alt="" width="31" height="31"></span>
         <strong>Incidente ou evento adverso</strong>
         <span class="copy">Relate uma ocorrência relacionada à assistência, com ou sem dano ao paciente.</span>
-        <span class="action">Abrir formulário <span aria-hidden="true">→</span></span>
+        <span class="action">Abrir formulário <img class="ui-icon" src="icons/avancar.png" alt="" width="20" height="20"></span>
       </button>
     </div>
     <ol class="steps" aria-label="Etapas do registro">
@@ -148,13 +165,13 @@
   </section>
 
   <section id="nonconformity" class="form-view" hidden aria-labelledby="nonconformity-title">
-    <button type="button" class="back" data-view="home">← Escolher outro formulário</button>
+    <button type="button" class="back" data-view="home"><img class="ui-icon" src="icons/voltar.png" alt="" width="20" height="20">Escolher outro formulário</button>
     <span class="step-label">2 de 3 · Preencha</span>
     <h1 id="nonconformity-title" tabindex="-1">Notificar não conformidade</h1>
     <p class="intro">Os campos com * são obrigatórios. Selecione as categorias que se aplicam e descreva o ocorrido.</p>
     <form autocomplete="off">
       <div class="panel">
-        <h2>Dados da ocorrência</h2>
+        <h2><img class="ui-icon" src="icons/dados-ocorrencia.png" alt="" width="22" height="22">Dados da ocorrência</h2>
         <div class="grid">
           <div class="field"><label for="nc-date">Data da ocorrência *</label><input id="nc-date" name="date" type="date" required></div>
           <div class="field"><label for="nc-sector">Setor *</label><input id="nc-sector" name="sector" required maxlength="120" placeholder="Ex. Pronto Socorro"></div>
@@ -162,7 +179,7 @@
         </div>
       </div>
       <div class="panel">
-        <h2>Tipos de não conformidade</h2>
+        <h2><img class="ui-icon" src="icons/nao-conformidade.png" alt="" width="22" height="22">Tipos de não conformidade</h2>
         <p class="hint">Cada categoria tem uma lista suspensa. Você pode selecionar um item por categoria e detalhar outros no relato.</p>
         <div class="grid" id="nc-categories"></div>
       </div>
@@ -171,24 +188,24 @@
         <textarea id="nc-description" name="description" required maxlength="5000" placeholder="Descreva o ocorrido e inclua situações que não aparecem nas listas."></textarea>
       </div>
       <div class="panel field">
-        <label for="nc-photo">Foto da ocorrência (opcional)</label>
+        <label for="nc-photo"><img class="ui-icon" src="icons/foto.png" alt="" width="22" height="22"> Foto da ocorrência (opcional)</label>
         <input type="file" id="nc-photo" data-photo accept="image/jpeg,image/png" aria-describedby="nc-photo-hint nc-photo-error">
         <p id="nc-photo-hint" class="hint" style="margin:0">Escolha uma foto JPEG ou PNG de até 2 MB.</p>
         <p id="nc-photo-error" class="photo-error" data-photo-error role="alert" hidden></p>
-        <button class="button secondary" type="button" data-remove-photo hidden>Remover foto</button>
+        <button class="button secondary" type="button" data-remove-photo hidden><img class="ui-icon" src="icons/remover.png" alt="" width="20" height="20">Remover foto</button>
       </div>
-      <div class="buttons"><button class="button" type="submit">Revisar notificação</button></div>
+      <div class="buttons"><button class="button" type="submit"><img class="ui-icon" src="icons/revisar.png" alt="" width="20" height="20">Revisar notificação</button></div>
     </form>
   </section>
 
   <section id="incident" class="form-view" hidden aria-labelledby="incident-title">
-    <button type="button" class="back" data-view="home">← Escolher outro formulário</button>
+    <button type="button" class="back" data-view="home"><img class="ui-icon" src="icons/voltar.png" alt="" width="20" height="20">Escolher outro formulário</button>
     <span class="step-label">2 de 3 · Preencha</span>
     <h1 id="incident-title" tabindex="-1">Notificar incidente ou evento adverso</h1>
     <p class="intro">Os campos com * são obrigatórios. Pode deixar em branco os dados que não souber.</p>
     <form autocomplete="off">
       <div class="panel">
-        <h2>Dados da ocorrência</h2>
+        <h2><img class="ui-icon" src="icons/dados-ocorrencia.png" alt="" width="22" height="22">Dados da ocorrência</h2>
         <div class="grid">
           <div class="field wide"><label for="event-type">Tipo de incidente ou evento adverso *</label><select id="event-type" name="type" required></select></div>
           <div class="field"><label for="event-harm">Grau do dano *</label><select id="event-harm" name="harm" required></select></div>
@@ -200,7 +217,7 @@
         </div>
       </div>
       <div class="panel">
-        <h2>Dados do paciente e do atendimento</h2>
+        <h2><img class="ui-icon" src="icons/paciente.png" alt="" width="22" height="22">Dados do paciente e do atendimento</h2>
         <div class="grid">
           <div class="field"><label for="event-sex">Sexo</label><select id="event-sex" name="sex"></select></div>
           <div class="field"><label for="event-race">Raça/cor</label><select id="event-race" name="race"></select></div>
@@ -211,7 +228,7 @@
         </div>
       </div>
       <div class="panel">
-        <h2>Fatores contribuintes e detecção</h2>
+        <h2><img class="ui-icon" src="icons/fatores-contribuintes.png" alt="" width="22" height="22">Fatores contribuintes e detecção</h2>
         <div class="grid">
           <fieldset class="checklist wide">
             <legend>Quais fatores contribuíram para a ocorrência?</legend>
@@ -222,25 +239,25 @@
         </div>
       </div>
       <div class="panel field">
-        <label for="event-photo">Foto da ocorrência (opcional)</label>
+        <label for="event-photo"><img class="ui-icon" src="icons/foto.png" alt="" width="22" height="22"> Foto da ocorrência (opcional)</label>
         <input type="file" id="event-photo" data-photo accept="image/jpeg,image/png" aria-describedby="event-photo-hint event-photo-error">
         <p id="event-photo-hint" class="hint" style="margin:0">Escolha uma foto JPEG ou PNG de até 2 MB.</p>
         <p id="event-photo-error" class="photo-error" data-photo-error role="alert" hidden></p>
-        <button class="button secondary" type="button" data-remove-photo hidden>Remover foto</button>
+        <button class="button secondary" type="button" data-remove-photo hidden><img class="ui-icon" src="icons/remover.png" alt="" width="20" height="20">Remover foto</button>
       </div>
-      <div class="buttons"><button class="button" type="submit">Revisar notificação</button></div>
+      <div class="buttons"><button class="button" type="submit"><img class="ui-icon" src="icons/revisar.png" alt="" width="20" height="20">Revisar notificação</button></div>
     </form>
   </section>
 
   <section id="review" hidden aria-labelledby="review-title">
-    <button type="button" class="back" data-edit>← Voltar ao formulário</button>
+    <button type="button" class="back" data-edit><img class="ui-icon" src="icons/voltar.png" alt="" width="20" height="20">Voltar ao formulário</button>
     <span class="step-label">3 de 3 · Confira e envie</span>
     <h1 id="review-title" tabindex="-1">Revisar notificação</h1>
     <p class="intro" id="review-type"></p>
     <div class="panel">
       <dl class="review-list" id="review-list"></dl>
       <div class="photo-preview" id="review-photo" hidden>
-        <h2>Foto da ocorrência</h2>
+        <h2><img class="ui-icon" src="icons/foto.png" alt="" width="22" height="22">Foto da ocorrência</h2>
         <p id="review-photo-name"></p>
         <img id="review-photo-image" alt="Foto anexada à notificação">
       </div>
@@ -248,19 +265,20 @@
     <p class="notice">Confira os dados antes de enviar. O protocolo será emitido após a confirmação do servidor.</p>
     <p class="notice" id="register-error" role="alert" hidden></p>
     <div class="buttons">
-      <button class="button secondary" type="button" data-edit>Editar dados</button>
-      <button class="button" type="button" id="register">Enviar notificação</button>
+      <button class="button secondary" type="button" data-edit><img class="ui-icon" src="icons/editar.png" alt="" width="20" height="20">Editar dados</button>
+      <button class="button" type="button" id="register"><img class="ui-icon" src="icons/enviar.png" alt="" width="20" height="20">Enviar notificação</button>
     </div>
   </section>
 
   <section id="done" hidden aria-labelledby="done-title">
     <div class="panel">
       <span class="step-label">Registro concluído</span>
-      <h1 id="done-title" tabindex="-1">Notificação registrada</h1>
-      <p class="intro" id="receipt"></p>
+      <h1 id="done-title" tabindex="-1"><img class="title-icon" src="icons/sucesso.png" alt="" width="34" height="34">Notificação registrada</h1>
+      <div class="receipt-row"><img class="ui-icon" src="icons/protocolo.png" alt="" width="24" height="24"><p class="intro" id="receipt"></p></div>
       <p class="notice" id="receipt-note"></p>
       <div class="buttons">
-        <button type="button" class="button secondary" data-view="home">Registrar outra notificação</button>
+        <button type="button" class="button secondary" id="copy-protocol"><img class="ui-icon" src="icons/copiar.png" alt="" width="20" height="20">Copiar protocolo</button>
+        <button type="button" class="button secondary" data-view="home"><img class="ui-icon" src="icons/nova-notificacao.png" alt="" width="20" height="20">Registrar outra notificação</button>
       </div>
     </div>
   </section>

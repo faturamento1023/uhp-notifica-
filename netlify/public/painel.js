@@ -16,6 +16,20 @@ const eventName = {
   actions_submitted:"Ações enviadas para validação", actions_validated:"Ações validadas",
   actions_complement_requested:"Complemento solicitado", notification_closed:"Notificação finalizada"
 };
+const actionIcon = {
+  "Enviar evidência":"anexar", "Salvar rascunho":"rascunho", "Enviar parecer":"enviar",
+  "Aprovar parecer":"aprovar", "Devolver para ajuste":"devolver", "Registrar ação":"acoes",
+  "Enviar ações para validação":"enviar", "Validar ações":"validar",
+  "Pedir complemento":"complemento", "Salvar alteração":"rascunho"
+};
+const eventIcon = {
+  notification_received:"notificacoes", assignment_created:"encaminhar",
+  assignment_updated:"editar", opinion_submitted:"parecer", opinion_approved:"aprovar",
+  opinion_rejected:"devolver", action_registered:"acoes", evidence_added:"evidencia",
+  actions_submitted:"enviar", actions_validated:"validar",
+  actions_complement_requested:"complemento", notification_closed:"encerrar"
+};
+const statusIcon = { received:"pendente", in_progress:"acoes", closed:"sucesso" };
 const formatDate = value => value ? value.split("-").reverse().join("/") : "—";
 const formatTime = value => value ? new Intl.DateTimeFormat("pt-BR", {
   dateStyle:"short",timeStyle:"short",timeZone:"America/Sao_Paulo"
@@ -32,8 +46,24 @@ function el(tag,text="",className="") {
   if(className) node.className=className;
   return node;
 }
+function icon(name) {
+  const image=document.createElement("img");
+  image.className="ui-icon";
+  image.src="icons/"+name+".png";
+  image.alt="";
+  image.width=20;image.height=20;
+  return image;
+}
+function labeled(tag,text,className,name) {
+  const node=el(tag,"",className);
+  node.append(icon(name),document.createTextNode(text));
+  return node;
+}
 function button(text,action,secondary=false) {
-  const node=el("button",text,secondary?"secondary":"");
+  const node=el("button","",secondary?"secondary":"");
+  const name=actionIcon[text];
+  if(name) node.append(icon(name));
+  node.append(document.createTextNode(text));
   node.type="button";
   node.addEventListener("click",()=>perform(action));
   return node;
@@ -46,7 +76,7 @@ function inputField(label,value="",type="text") {
   return {wrap,input};
 }
 function message(text,error=false) {
-  $("feedback").textContent=text;
+  $("feedback").replaceChildren(icon(error?"erro":"sucesso"),document.createTextNode(text));
   $("feedback").className=error?"notice error":"notice";
   if(error) $("feedback").scrollIntoView({block:"nearest"});
 }
@@ -107,10 +137,13 @@ function renderQueue() {
     const trigger=el("button");
     trigger.type="button";
     trigger.setAttribute("aria-current",String(selected===item.id));
-    trigger.append(el("strong",item.subject || (item.kind==="incident"?"Incidente ou evento adverso":"Não conformidade")));
+    const title=el("span","","case-heading");
+    title.append(icon(item.kind==="incident"?"evento-adverso":"nao-conformidade"),
+      el("strong",item.subject || (item.kind==="incident"?"Incidente ou evento adverso":"Não conformidade")));
+    trigger.append(title);
     trigger.append(el("small",item.protocol+" · "+(item.sector||"Setor não informado")));
-    trigger.append(el("span",caseState[item.status],"pill"+(item.status==="closed"?" done":item.status==="received"?" received":"")));
-    if(item.assignments?.some(a=>a.overdue?.opinion || a.overdue?.actions)) trigger.append(el("span","Prazo vencido","pill late"));
+    trigger.append(labeled("span",caseState[item.status],"pill"+(item.status==="closed"?" done":item.status==="received"?" received":""),statusIcon[item.status]));
+    if(item.assignments?.some(a=>a.overdue?.opinion || a.overdue?.actions)) trigger.append(labeled("span","Prazo vencido","pill late","atrasado"));
     trigger.addEventListener("click",()=>perform(()=>openCase(item.id,true)));
     li.append(trigger);list.append(li);
   }
@@ -185,11 +218,13 @@ function renderTriage(record) {
 }
 function renderAction(action,assignment,areaOwner) {
   const container=el("div","","area");
-  container.append(el("p",formatDate(action.performedOn)+" · "+action.description));
+  container.append(labeled("p",formatDate(action.performedOn)+" · "+action.description,"info-line","acoes"));
   for(const evidence of action.evidence) {
     const link=el("a",evidence.name+" ("+Math.ceil(evidence.size/1024)+" KB)");
     link.href=API+"/evidence/"+encodeURIComponent(evidence.id);
     link.download=evidence.name;
+    link.className="evidence-link";
+    link.prepend(icon("baixar"));
     container.append(link);
   }
   if(areaOwner && ["actions","complement"].includes(assignment.status)) {
@@ -227,15 +262,15 @@ function renderAssignment(assignment) {
   const coord=canCoordinate();
   const box=el("article","","area");
   const head=el("div","","row");
-  head.append(el("h3",areaName[assignment.area]));
-  head.append(el("span",stepName[assignment.status] || assignment.status,"pill"+(assignment.status==="validated"?" done":"")));
-  box.append(head,el("p","Parecer até "+formatDate(assignment.opinionDue)+" · Ações até "+formatDate(assignment.actionsDue),"small muted"));
-  if(assignment.overdue?.opinion || assignment.overdue?.actions) box.append(el("span","Prazo vencido","pill late"));
+  head.append(labeled("h3",areaName[assignment.area],"",assignment.area==="ccih"?"ccih":"seguranca-paciente"));
+  head.append(labeled("span",stepName[assignment.status] || assignment.status,"pill"+(assignment.status==="validated"?" done":""),assignment.status==="validated"?"validar":"pendente"));
+  box.append(head,labeled("p","Parecer até "+formatDate(assignment.opinionDue)+" · Ações até "+formatDate(assignment.actionsDue),"small muted info-line","prazo"));
+  if(assignment.overdue?.opinion || assignment.overdue?.actions) box.append(labeled("span","Prazo vencido","pill late","atrasado"));
   const person=assignees.find(item=>item.id===assignment.assigneeId);
-  if(person) box.append(el("p","Responsável: "+person.name,"small muted"));
+  if(person) box.append(labeled("p","Responsável: "+person.name,"small muted info-line","responsavel"));
   for(const opinion of assignment.opinions) {
     const op=el("div","","area");
-    op.append(el("strong","Parecer v"+opinion.version+" · "+(opinion.decision || "Aguardando decisão")));
+    op.append(labeled("strong","Parecer v"+opinion.version+" · "+(opinion.decision || "Aguardando decisão"),"with-icon","parecer"));
     op.append(el("p",opinion.body));
     if(opinion.reason) op.append(el("p","Justificativa: "+opinion.reason,"small muted"));
     box.append(op);
@@ -273,7 +308,7 @@ function renderAssignment(assignment) {
     box.append(actions);
   }
   if(assignment.actions.length) {
-    box.append(el("h3","Ações e evidências"));
+    box.append(labeled("h3","Ações e evidências","","evidencia"));
     for(const action of assignment.actions) box.append(renderAction(action,assignment,owner));
   }
   if(owner && ["actions","complement"].includes(assignment.status)) {
@@ -314,7 +349,7 @@ function renderAssignment(assignment) {
   }
   if(coord && assignment.status!=="validated" && current.status!=="closed") {
     const change=document.createElement("details");
-    change.append(el("summary","Alterar responsável ou prazos"));
+    change.append(labeled("summary"," Alterar responsável ou prazos","","editar"));
     const user=makeSelect("Novo responsável",[{value:"",label:"Selecione"},...assigneeOptions(assignment.area)],assignment.assigneeId);
     const opinion=inputField("Prazo do parecer",assignment.opinionDue,"date");
     const due=inputField("Prazo das ações",assignment.actionsDue,"date");
@@ -338,11 +373,12 @@ function renderDetail() {
   $("detail").hidden=false;$("welcome").hidden=true;
   $("case-title").textContent=record.protocol;
   $("case-meta").textContent=(record.kind==="incident"?"Incidente ou evento adverso":"Não conformidade")+" · "+formatDate(record.occurredOn)+" · "+(record.sector||"Setor não informado");
-  $("case-state").textContent=caseState[record.status];
+  $("case-state").replaceChildren(icon(statusIcon[record.status]),document.createTextNode(caseState[record.status]));
   $("case-state").className="pill"+(record.status==="closed"?" done":record.status==="received"?" received":"");
   $("case-summary").textContent=record.description || record.subject;
   const pdfLink=$("pdf-link");
   pdfLink.hidden=!canCoordinate();
+  $("pdf-hint").hidden=pdfLink.hidden;
   pdfLink.href=API+"/notifications/"+encodeURIComponent(record.id)+"/pdf";
   $("next-step").textContent=nextAction(record);
   renderDetailsList(record);
@@ -362,8 +398,8 @@ function renderDetail() {
   $("conclusion").parentElement.hidden=record.status==="closed";
   const history=$("history");history.replaceChildren();
   for(const entry of record.history) {
-    history.append(el("li",formatTime(entry.createdAt)+" · "+(eventName[entry.event] || entry.event)+
-      (entry.detail?.reason?" · "+entry.detail.reason:"")));
+    history.append(labeled("li",formatTime(entry.createdAt)+" · "+(eventName[entry.event] || entry.event)+
+      (entry.detail?.reason?" · "+entry.detail.reason:""),"",eventIcon[entry.event] || "historico"));
   }
 }
 $("login-form").addEventListener("submit",event=>{

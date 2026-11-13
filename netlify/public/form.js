@@ -98,6 +98,16 @@
   let activeForm = null;
   const photoLimit = 2 * 1024 * 1024;
   const photos = new WeakMap();
+  let lastProtocol = "";
+
+  get("copy-protocol").addEventListener("click", async () => {
+    try {
+      await navigator.clipboard.writeText(lastProtocol);
+      get("receipt-note").textContent = "Protocolo copiado. A Coordenação de Enfermagem recebeu a notificação.";
+    } catch {
+      get("receipt-note").textContent = "Não foi possível copiar automaticamente. Selecione o protocolo acima para copiar.";
+    }
+  });
 
   function readPhoto(file) {
     return new Promise((resolve, reject) => {
@@ -319,6 +329,9 @@
     }
     const button = get("register");
     button.disabled = true;
+    const buttonIcon = button.querySelector("img");
+    buttonIcon.src = "icons/carregando.png";
+    buttonIcon.classList.add("busy-icon");
     get("register-error").hidden = true;
     try {
       const response = await fetch("/api/v1/notifications", {
@@ -328,6 +341,7 @@
       });
       const result = await response.json();
       if (!response.ok) throw new Error(result.error?.message || "Não foi possível registrar. Tente novamente.");
+      lastProtocol = result.protocol;
       get("receipt").textContent = "Protocolo " + result.protocol;
       get("receipt-note").textContent = "Guarde este protocolo. A Coordenação de Enfermagem recebeu a notificação.";
       form.reset();
@@ -344,6 +358,8 @@
       notice.hidden = false;
     } finally {
       button.disabled = false;
+      buttonIcon.src = "icons/enviar.png";
+      buttonIcon.classList.remove("busy-icon");
     }
   });
 
