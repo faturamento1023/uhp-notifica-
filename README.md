@@ -200,3 +200,5 @@ O frontend usa `GET /api/v1/chat/messages` e `POST /api/v1/chat/messages` com a 
 Depois do login, a tela **Início** mostra os totais de notificações recebidas, em tratativa e finalizadas que o perfil pode consultar. Exibe as três notificações mais recentes, com acesso direto à ocorrência, o botão **Ver todas**, o bate-papo da equipe e a orientação do dia. O menu lateral abre **Início** e **Notificações** e aparece acima do conteúdo em telas menores.
 
 Em **Notificações**, a busca por protocolo, setor, assunto ou tipo e o filtro por situação são aplicados na API antes da paginação. **Carregar mais** usa os filtros aplicados. A abertura da ocorrência leva às etapas de tratativa existentes. A API retorna os totais por situação na primeira página sem filtros, com as mesmas permissões da fila. O código da API está na branch `codex/backend-notificacoes`.
+
+Ajuste visual da tela **Início**. O menu e os totais ganharam destaque, o texto ficou maior e a orientação do dia passou a ficar logo abaixo das últimas notificações no desktop. No celular, as seções aparecem na ordem últimas notificações, bate-papo e orientação do dia.

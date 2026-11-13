@@ -269,7 +269,7 @@
     </nav>
     <div class="panel-content">
       <section id="home-view" class="stack" aria-labelledby="home-title">
-        <div class="panel-heading">
+        <div class="panel-heading dashboard-heading">
           <h1 id="home-title" tabindex="-1">Visão geral</h1>
           <button id="refresh-home" type="button" class="secondary">Atualizar</button>
         </div>
@@ -279,31 +279,31 @@
           <div class="card"><dt>Finalizadas</dt><dd id="count-closed">—</dd></div>
         </dl>
         <div class="dashboard-grid">
-          <section class="card" aria-labelledby="recent-title">
-            <div class="panel-heading"><h2 id="recent-title">Últimas notificações</h2><a href="#notificacoes" class="button-link">Ver todas</a></div>
-            <p id="recent-empty" class="small muted">Carregando notificações…</p>
+          <section class="card dashboard-recent" aria-labelledby="recent-title">
+            <div class="panel-heading"><h2 id="recent-title">Últimas notificações</h2><a href="#notificacoes" class="button-link">Ver todas <span aria-hidden="true">→</span></a></div>
+            <p id="recent-empty" class="muted">Carregando notificações…</p>
             <ul id="recent-notifications" class="queue"></ul>
           </section>
-      <section class="card group-chat" aria-labelledby="group-chat-title">
-        <h2 id="group-chat-title">Bate-papo da equipe</h2>
-        <p class="small muted">Todos os usuários do painel podem ler. Evite compartilhar dados de pacientes.</p>
-        <button id="chat-older" class="secondary" type="button" hidden>Ver mensagens anteriores</button>
-        <div id="chat-log" class="chat-log" role="region" aria-label="Histórico do bate-papo" tabindex="0">
-          <p id="chat-empty" class="small muted">Carregando mensagens…</p>
-          <ol id="chat-messages" aria-label="Mensagens"></ol>
-        </div>
-        <form id="chat-form">
-          <label for="chat-input">Mensagem</label>
-          <textarea id="chat-input" maxlength="1000" rows="2" required></textarea>
-          <button id="chat-send" type="submit">Enviar</button>
-        </form>
-        <p id="chat-status" class="small muted" role="status"></p>
-      </section>
-        </div>
-        <section class="card dashboard-banner" aria-labelledby="banner-title">
-          <h2 id="banner-title">Orientação do dia</h2>
-          <div class="banner-carousel" data-banner-carousel aria-label="Orientações educativas sobre notificações e segurança do paciente"></div>
+        <section class="card group-chat" aria-labelledby="group-chat-title">
+          <h2 id="group-chat-title">Bate-papo da equipe</h2>
+          <p class="small muted">Todos os usuários do painel podem ler. Evite compartilhar dados de pacientes.</p>
+          <button id="chat-older" class="secondary" type="button" hidden>Ver mensagens anteriores</button>
+          <div id="chat-log" class="chat-log" role="region" aria-label="Histórico do bate-papo" tabindex="0">
+            <p id="chat-empty" class="small muted">Carregando mensagens…</p>
+            <ol id="chat-messages" aria-label="Mensagens"></ol>
+          </div>
+          <form id="chat-form">
+            <label for="chat-input">Mensagem</label>
+            <textarea id="chat-input" maxlength="1000" rows="2" required></textarea>
+            <button id="chat-send" type="submit">Enviar</button>
+          </form>
+          <p id="chat-status" class="small muted" role="status"></p>
         </section>
+          <section class="card dashboard-banner" aria-labelledby="banner-title">
+            <h2 id="banner-title">Orientação do dia</h2>
+            <div class="banner-carousel" data-banner-carousel aria-label="Orientações educativas sobre notificações e segurança do paciente"></div>
+          </section>
+        </div>
       </section>
       <section id="notifications-view" aria-labelledby="notifications-title" hidden>
         <div class="panel-heading"><h1 id="notifications-title" tabindex="-1">Notificações</h1></div>
