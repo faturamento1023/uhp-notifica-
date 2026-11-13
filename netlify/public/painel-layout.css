@@ -24,7 +24,7 @@ body.panel-signed-in.sidebar-collapsed { --sidebar-width: 68px; }
   position: relative;
   background: var(--sidebar-bg);
   color: #f4f8fb;
-  padding: 22px 12px;
+  padding: 22px 12px 8px;
 }
 #sidebar-content {
   display: flex;
@@ -88,11 +88,12 @@ body.panel-signed-in.sidebar-collapsed { --sidebar-width: 68px; }
 .panel-menu a[aria-current="page"] { background: #3e5668; box-shadow: inset 3px 0 #75c8bf; }
 .panel-sidebar #logout {
   position: sticky;
-  bottom: 12px;
+  bottom: 8px;
   margin-top: auto;
-  background: var(--sidebar-bg);
+  background: #304655;
+  border: 1px solid #506674;
 }
-.panel-sidebar #logout:hover { background: #344c5d; }
+.panel-sidebar #logout:hover { background: #3b5364; }
 .sidebar-collapsed .sidebar-profile-details,
 .sidebar-collapsed .panel-menu a span,
 .sidebar-collapsed #logout span { display: none; }
@@ -177,7 +178,7 @@ body.panel-signed-in.sidebar-collapsed { --sidebar-width: 68px; }
   .sidebar-avatar { flex: none; width: 36px; height: 36px; font-size: .8rem; }
   .panel-menu { display: flex; margin: 0; gap: 3px; }
   .panel-menu a, .panel-sidebar #logout { width: auto; font-size: .88rem; }
-  .panel-sidebar #logout { position: static; margin: 0; background: transparent; }
+  .panel-sidebar #logout { position: static; margin: 0; }
   .sidebar-collapsed .sidebar-profile-details, .sidebar-collapsed .panel-menu a span, .sidebar-collapsed #logout span { display: initial; }
   .sidebar-collapsed .panel-menu a, .sidebar-collapsed #logout { padding-inline: 10px; }
   .panel-content { padding: 20px 12px 32px; }

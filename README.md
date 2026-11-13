@@ -208,3 +208,5 @@ O painel autenticado ganhou uma barra lateral escura com os dados do perfil, ata
 O painel passou a usar toda a largura disponível ao lado do menu. Em monitores largos, as duas colunas do dashboard têm a mesma largura e o histórico do bate-papo tem mais espaço vertical.
 
 No desktop, o botão **Sair** fica na base do menu lateral, com acesso durante a rolagem. Em telas menores, ele fica na faixa de navegação.
+
+O botão **Sair** ficou mais próximo da borda inferior no desktop e recebeu fundo e contorno discretos na barra de navegação.
