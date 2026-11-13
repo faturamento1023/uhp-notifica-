@@ -294,7 +294,8 @@
         preview.src = data;
         await preview.decode();
         if (photoInput.files[0] !== file) return;
-        photos.set(form, { name: file.name.slice(0, 180), mime: file.type, contentBase64: data.split(",")[1] });
+        photos.set(form, { name: file.type === "image/png" ? "foto-ocorrencia.png" : "foto-ocorrencia.jpg",
+          mime: file.type, contentBase64: data.split(",")[1] });
       } catch (error) {
         if (photoInput.files[0] !== file) return;
         photoInput.value = "";
