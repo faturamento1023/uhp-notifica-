@@ -117,7 +117,7 @@ Falta configurar o usuário técnico e a conexão TLS no ambiente em que a API N
 
 ### Homologação no Netlify
 
-O PR nº 1 inclui `netlify.toml`, uma Netlify Function para `/api/v1/*` e a rota `/api/v1/health` para verificar a conexão com o Supabase. Os quatro testes locais passaram. Falta configurar a credencial do usuário técnico no Netlify, confirmar o Deploy Preview e cadastrar as contas fictícias. O limite de evidência no Netlify é de 4 MiB por arquivo, e a foto inicial continua com limite de 2 MiB. [Instruções para o Deploy Preview](https://github.com/faturamento1023/uhp-notifica-/blob/codex/backend-notificacoes/docs/NETLIFY.md)
+O PR nº 1 inclui `netlify.toml`, uma Netlify Function para `/api/v1/*` e a rota `/api/v1/health` para verificar a conexão com o Supabase. Os quatro testes locais passaram. O GitHub confirmou a publicação do [Deploy Preview](https://deploy-preview-1--uhp-notifica.netlify.app). Falta configurar a credencial do usuário técnico, validar `/api/v1/health` no endereço publicado e cadastrar as contas fictícias. O limite de evidência no Netlify é de 4 MiB por arquivo, e a foto inicial continua com limite de 2 MiB. [Instruções para o Deploy Preview](https://github.com/faturamento1023/uhp-notifica-/blob/codex/backend-notificacoes/docs/NETLIFY.md)
 
 O [PR nº 2](https://github.com/faturamento1023/uhp-notifica-/pull/2) contém a identidade visual. Na última consulta, ainda não havia PR com os formulários e painéis integrados.
 
