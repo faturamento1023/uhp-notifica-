@@ -5,7 +5,6 @@ const bannerFiles = [
   "02-nsp-transforma-notificacao-em-acao.webp",
   "03-notificacao-tem-prazo.webp",
   "04-protocolos-salvam-vidas.webp",
-  "05-seguranca-se-constroi-com-aprendizado.webp",
   "06-incentivo-a-notificacao.webp",
   "07-praticas-de-seguranca-do-paciente.webp",
   "08-rdc-e-normas-sanitarias.webp",
@@ -21,43 +20,41 @@ const bannerFiles = [
 const bannerTitles = [
   "Notificar também é cuidar", "O NSP transforma notificação em ação",
   "Notificação tem prazo", "Protocolos salvam vidas",
-  "Segurança se constrói com aprendizado", "Incentivo à notificação",
+  "Incentivo à notificação",
   "Práticas de segurança do paciente", "RDC e normas sanitárias",
   "Melhoria contínua", "Direitos do paciente",
   "Identificação correta do paciente", "Segurança no uso de medicamentos",
   "Prevenção de quedas", "Higiene das mãos", "Comunicação segura"
 ];
 
+const bannerDate = new Intl.DateTimeFormat("en-GB", {
+  timeZone: "America/Sao_Paulo",
+  year: "numeric",
+  month: "numeric",
+  day: "numeric"
+});
+
 for (const root of document.querySelectorAll("[data-banner-carousel]")) {
-  let index = 0;
-  const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
-  let visible = false;
-  let timer;
   const image = document.createElement("img");
   image.className = "banner-image";
   image.loading = "lazy";
   image.decoding = "async";
+  root.append(image);
+
+  let previousDay;
   function render() {
+    const date = Object.fromEntries(bannerDate.formatToParts(new Date()).map(part => [part.type, part.value]));
+    const day = Date.UTC(Number(date.year), Number(date.month) - 1, Number(date.day)) / 86400000;
+    if (day === previousDay) return;
+    previousDay = day;
+    const index = day % bannerFiles.length;
     image.src = "banners/" + bannerFiles[index];
     image.alt = "Orientação: " + bannerTitles[index];
   }
-  function schedule() {
-    clearTimeout(timer);
-    if (!reducedMotion.matches && visible && !document.hidden) {
-      timer = setTimeout(() => {
-        index = (index + 1) % bannerFiles.length;
-        render();
-        schedule();
-      }, 8000);
-    }
-  }
-  document.addEventListener("visibilitychange", schedule);
-  reducedMotion.addEventListener('change', schedule);
-  root.append(image);
-  render();
-  const observer = new IntersectionObserver(entries => {
-    visible = entries[0].isIntersecting;
-    schedule();
+
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden) render();
   });
-  observer.observe(root);
+  setInterval(render, 1000);
+  render();
 }
