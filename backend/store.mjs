@@ -1,3 +1,4 @@
+import { Buffer } from 'node:buffer';
 import { AsyncLocalStorage } from 'node:async_hooks';
 import { createHash, randomBytes, scryptSync, timingSafeEqual } from 'node:crypto';
 import { readFileSync } from 'node:fs';
@@ -34,15 +35,16 @@ export function createStore(connection, transaction) {
   };
 }
 
-export function openStore(env = process.env, { maxConnections = 8 } = {}) {
+export function openStore(env = process.env, { maxConnections = 8, restrictedRole = false } = {}) {
   if (!env.UHP_DATABASE_URL) throw new Error('Configure UHP_DATABASE_URL no servidor.');
   const endpoint = new URL(env.UHP_DATABASE_URL);
-  if (!['postgres:', 'postgresql:'].includes(endpoint.protocol) || endpoint.search) {
+  if (!['postgres:', 'postgresql:'].includes(endpoint.protocol) || (!restrictedRole && endpoint.search)) {
     throw new Error('Use uma URL PostgreSQL sem parâmetros. Configure o certificado em UHP_DB_CA_FILE.');
   }
+  endpoint.search = '';
   const ca = env.UHP_DB_CA_FILE ? readFileSync(env.UHP_DB_CA_FILE, 'utf8') : env.UHP_DB_CA_PEM;
   const pool = new pg.Pool({
-    connectionString: env.UHP_DATABASE_URL,
+    connectionString: endpoint.href,
     ssl: { rejectUnauthorized: true, ca },
     max: maxConnections,
     connectionTimeoutMillis: 5000,
@@ -51,11 +53,15 @@ export function openStore(env = process.env, { maxConnections = 8 } = {}) {
   });
   pool.on('error', error => console.error('Falha em conexão ociosa do PostgreSQL', error.code ?? 'unknown'));
 
-  const store = createStore(pool, async (work, readOnly) => {
+  async function transaction(work, readOnly = false) {
     const client = await pool.connect();
     let broken;
     try {
       await client.query(readOnly ? 'BEGIN ISOLATION LEVEL REPEATABLE READ READ ONLY' : 'BEGIN');
+      if (restrictedRole) {
+        await client.query('SET LOCAL ROLE uhp_notifica_app');
+        await client.query('SET LOCAL search_path = uhp_notifica, pg_catalog');
+      }
       const result = await work(client);
       await client.query('COMMIT');
       return result;
@@ -69,6 +75,8 @@ export function openStore(env = process.env, { maxConnections = 8 } = {}) {
     } finally {
       client.release(broken);
     }
-  });
+  }
+  const connection = restrictedRole ? { query: (...args) => transaction(client => client.query(...args)) } : pool;
+  const store = createStore(connection, transaction);
   return { ...store, close: () => pool.end() };
 }
