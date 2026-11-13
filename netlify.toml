@@ -1,12 +1,11 @@
 [build]
   publish = "netlify/public"
-  functions = "netlify/functions"
 
-[build.environment]
-  NODE_VERSION = "24"
-
-[functions]
-  node_bundler = "esbuild"
+[[redirects]]
+  from = "/api/v1/*"
+  to = "https://mtthtojrcpbdeocztrpx.supabase.co/functions/v1/uhp-api/api/v1/:splat"
+  status = 200
+  force = true
 
 [[headers]]
   for = "/*"
