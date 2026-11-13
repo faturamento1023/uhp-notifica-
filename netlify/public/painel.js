@@ -80,8 +80,8 @@ function showLogin() {
 }
 function showWorkspace() {
   $("login").hidden=true;$("workspace").hidden=false;$("logout").hidden=false;
-  $("identity").textContent=account.name+" · "+(account.role==="coordination"?"Coordenação":areaName[account.role]);
-  $("panel-guide").textContent=account.role==="coordination"
+  $("identity").textContent=account.name+" · "+(account.role==="administrator"?"Administrador":canCoordinate()?"Coordenação":areaName[account.role]);
+  $("panel-guide").textContent=canCoordinate()
     ?"Veja a fila, encaminhe às áreas e acompanhe as decisões até a finalização."
     :"Consulte as notificações atribuídas a você e registre sua tratativa.";
 }
@@ -117,7 +117,7 @@ function renderQueue() {
 }
 function nextAction(record) {
   if(record.status==="closed") return "Caso finalizado. Consulte o histórico para ver as decisões.";
-  if(account.role==="coordination") {
+  if(canCoordinate()) {
     if(record.assignments.some(a=>a.status==="pending_approval")) return "Leia o parecer e aprove ou devolva com justificativa.";
     if(record.assignments.some(a=>a.status==="pending_validation")) return "Confira as ações e evidências; valide ou peça complemento.";
     if(!record.assignments.length) return "Encaminhe a notificação à Segurança do Paciente e/ou CCIH.";
@@ -175,7 +175,7 @@ function updateAssigneeSelect() {
 }
 function renderTriage(record) {
   const box=$("triage");
-  box.hidden=account.role!=="coordination" || record.status==="closed" || record.assignments.length===2;
+  box.hidden=!canCoordinate() || record.status==="closed" || record.assignments.length===2;
   if(box.hidden) return;
   for(const option of $("area-choice").options) option.disabled=record.assignments.some(a=>a.area===option.value);
   if($("area-choice").selectedOptions[0]?.disabled) {
@@ -224,7 +224,7 @@ async function refreshCase(text) {
 }
 function renderAssignment(assignment) {
   const owner=account.id===assignment.assigneeId && account.role===assignment.area;
-  const coord=account.role==="coordination";
+  const coord=canCoordinate();
   const box=el("article","","area");
   const head=el("div","","row");
   head.append(el("h3",areaName[assignment.area]));
@@ -342,7 +342,7 @@ function renderDetail() {
   $("case-state").className="pill"+(record.status==="closed"?" done":record.status==="received"?" received":"");
   $("case-summary").textContent=record.description || record.subject;
   const pdfLink=$("pdf-link");
-  pdfLink.hidden=account.role!=="coordination";
+  pdfLink.hidden=!canCoordinate();
   pdfLink.href=API+"/notifications/"+encodeURIComponent(record.id)+"/pdf";
   $("next-step").textContent=nextAction(record);
   renderDetailsList(record);
@@ -352,7 +352,7 @@ function renderDetail() {
   if(!record.assignments.length) areas.append(el("p","Aguardando encaminhamento da Coordenação.","muted section-title"));
   for(const assignment of record.assignments) areas.append(renderAssignment(assignment));
   const closure=$("closure");
-  closure.hidden=account.role!=="coordination";
+  closure.hidden=!canCoordinate();
   const ready=record.assignments.length>0 && record.assignments.every(item=>item.status==="validated");
   $("close-case").disabled=!ready || record.status==="closed";
   $("close-hint").textContent=record.status==="closed"
@@ -373,7 +373,7 @@ $("login-form").addEventListener("submit",event=>{
     account=await api("/session","POST",{email,password});
     $("password").value="";
     showWorkspace();
-    if(account.role==="coordination") assignees=(await api("/assignees")).items;
+    if(canCoordinate()) assignees=(await api("/assignees")).items;
     await loadQueue();
     message("Sessão iniciada.");
   });
@@ -389,7 +389,7 @@ $("query").addEventListener("input",renderQueue);
 $("status-filter").addEventListener("change",renderQueue);
 $("area-choice").addEventListener("change",updateAssigneeSelect);
 $("assign").addEventListener("click",()=>perform(async()=>{
-  if(!current || account.role!=="coordination") return;
+  if(!current || !canCoordinate()) return;
   const area=$("area-choice").value,assigneeId=$("assignee").value;
   const opinionDue=$("opinion-due").value,actionsDue=$("actions-due").value;
   if(!assigneeId || !opinionDue || !actionsDue) throw Error("Preencha responsável e os dois prazos.");
@@ -408,10 +408,12 @@ perform(async()=>{
   try {
     account=await api("/session");
     showWorkspace();
-    if(account.role==="coordination") assignees=(await api("/assignees")).items;
+    if(canCoordinate()) assignees=(await api("/assignees")).items;
     await loadQueue();
   } catch(error) {
     if(error.status!==401) message(error.message,true);
     showLogin();
   }
 });
+
+function canCoordinate() { return account?.role === 'coordination' || account?.role === 'administrator'; }
