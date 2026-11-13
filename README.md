@@ -131,3 +131,7 @@ O limite é de 4 MiB por arquivo de evidência e 2 MiB para a foto inicial. O [P
 - Enviar a imagem junto com o registro no `POST /api/v1/notifications`, no campo `photo: { name, mime, contentBase64 }`. O Base64 deve vir sem o prefixo da URL de dados. O protocolo e a foto são gravados na mesma operação. Se a foto mudar após uma tentativa confirmada pelo servidor, o mesmo identificador de envio não pode ser reutilizado para outro conteúdo.
 - No painel integrado, ler `photo` no detalhe e carregar a imagem por `GET /api/v1/notifications/{id}/photo` com a sessão atual. A Coordenação da unidade e os responsáveis pelas tratativas atribuídas podem consultar a foto. O anexo inicial da ocorrência é independente das evidências das ações.
 - O Codex atualizou os protótipos, a API, o banco, o contrato e os testes de acesso à foto. A outra IA deve reaproveitar o comportamento na branch de frontend. O protótipo HTML segue destinado a dados fictícios e usa importação ou armazenamento local. A publicação institucional depende da integração com o backend do PR nº 1.
+
+## Provisionamento da unidade
+
+A unidade UHP – Posse/GO foi cadastrada no Supabase, com contas ativas para Coordenação de Enfermagem, Segurança do Paciente e CCIH. O perfil Administrador depende de definição e implementação de permissões próprias. As credenciais ficam fora do repositório. A distribuição do QR Code e a validação do acesso pelo painel publicado seguem pendentes.
