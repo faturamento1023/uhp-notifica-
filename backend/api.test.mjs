@@ -1,30 +1,44 @@
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import { test } from 'node:test';
+import { readFileSync } from 'node:fs';
+import { PGlite } from '@electric-sql/pglite';
 import { createApi } from './api.mjs';
-import { digest, openStore, passwordHash, token } from './store.mjs';
+import { createStore, digest, passwordHash, token } from './store.mjs';
 
 const origin = 'https://notifica.example.test';
 const password = 'senha fictícia de teste';
 const encodedPassword = passwordHash(password);
 
-function fixture(t) {
-  const db = openStore(':memory:');
+const migration = readFileSync(new URL('../supabase/migrations/20261113120150_uhp_notifica.sql', import.meta.url), 'utf8');
+
+async function fixture(t) {
+  const db = await PGlite.create();
   t.after(() => db.close());
-  const units = [token(), token()].map(intake => {
+  await db.exec('CREATE ROLE anon; CREATE ROLE authenticated; CREATE ROLE service_role; BEGIN;');
+  await db.exec(migration);
+  await db.exec('COMMIT; SET search_path=uhp_notifica,pg_catalog; SET ROLE uhp_notifica_app;');
+  const store = createStore(db, (work, readOnly) => db.transaction(async tx => {
+    if (readOnly) await tx.exec('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ READ ONLY');
+    return work(tx);
+  }));
+  const units = [];
+  for (const intake of [token(), token()]) {
     const id = randomUUID();
-    db.prepare('INSERT INTO units VALUES (?,?,?)').run(id, 'Unidade de teste', digest(intake));
-    return { id, intake };
-  });
-  const users = [
+    await store.run('INSERT INTO units VALUES (?,?,?)', id, 'Unidade de teste', digest(intake));
+    units.push({ id, intake });
+  }
+  const users = [];
+  const profiles = [
     ['coordination', 0], ['patient_safety', 0], ['ccih', 0], ['coordination', 1], ['patient_safety', 0]
-  ].map(([role, unit], index) => {
+  ];
+  for (const [index, [role, unit]] of profiles.entries()) {
     const user = { id: randomUUID(), email: 'teste' + index + '@example.test', role };
-    db.prepare('INSERT INTO users(id,unit_id,email,name,role,password) VALUES (?,?,?,?,?,?)')
-      .run(user.id, units[unit].id, user.email, 'Conta de teste ' + index, role, encodedPassword);
-    return user;
-  });
-  const api = createApi(db, { origin, clock: () => new Date('2026-11-13T15:00:00Z') });
+    await store.run('INSERT INTO users(id,unit_id,email,name,role,password) VALUES (?,?,?,?,?,?)',
+      user.id, units[unit].id, user.email, 'Conta de teste ' + index, role, encodedPassword);
+    users.push(user);
+  }
+  const api = createApi(store, { origin, clock: () => new Date('2026-11-13T15:00:00Z') });
   async function call(method, path, { user, body, intake, status = 200, from = origin } = {}) {
     const headers = new Headers({ origin: from });
     if (user?.cookie) headers.set('cookie', user.cookie);
@@ -33,7 +47,8 @@ function fixture(t) {
     const response = await api(new Request(origin + '/api/v1' + path, {
       method, headers, body: body === undefined ? undefined : JSON.stringify(body)
     }));
-    assert.equal(response.status, status, method + ' ' + path + (response.status === status ? '' : ' ' + await response.clone().text()));
+    const expected = Array.isArray(status) ? status : [status];
+    assert(expected.includes(response.status), method + ' ' + path + (expected.includes(response.status) ? '' : ' ' + await response.clone().text()));
     return response;
   }
   async function login(user) {
@@ -42,11 +57,11 @@ function fixture(t) {
     user.cookie = response.headers.get('set-cookie').split(';')[0];
   }
   const json = async (...args) => (await call(...args)).json();
-  return { units, users, call, json, login };
+  return { units, users, call, json, login, db };
 }
 
 test('recebe, encaminha, aprova e encerra caso com duas tratativas independentes', async t => {
-  const { units, users, call, json, login } = fixture(t);
+  const { units, users, call, json, login } = await fixture(t);
   const [coord, safety, ccih, external, otherSafety] = users;
   await Promise.all(users.map(login));
   const draft = {
@@ -57,8 +72,10 @@ test('recebe, encaminha, aprova e encerra caso com duas tratativas independentes
   await call('POST', '/notifications', { body: draft, status: 403 });
   await call('POST', '/notifications', { body: draft, intake: units[0].intake, from: 'https://other.example.test', status: 403 });
   const intake = units[0].intake;
-  const notification = await json('POST', '/notifications', { body: draft, intake, status: 201 });
-  assert.deepEqual(await json('POST', '/notifications', { body: draft, intake }), notification);
+  const first = await Promise.all([0, 1].map(() => call('POST', '/notifications', { body: draft, intake, status: [200, 201] })));
+  assert.deepEqual(first.map(response => response.status).sort(), [200, 201]);
+  const [notification, duplicate] = await Promise.all(first.map(response => response.json()));
+  assert.deepEqual(duplicate, notification);
   await call('POST', '/notifications', { body: { ...draft, sector: 'Outro setor' }, intake, status: 409 });
   await call('POST', '/notifications', { body: { ...draft, occurredOn: '2026-02-31' }, intake, status: 400 });
   const nc = { requestId: randomUUID(), kind: 'nonconformity', occurredOn: '2026-11-13', sector: 'Setor fictício', period: 'Tarde', description: 'Relato fictício.' };
@@ -127,7 +144,7 @@ test('recebe, encaminha, aprova e encerra caso com duas tratativas independentes
 });
 
 test('troca o responsável, limita o acesso da conta anterior e mantém o histórico', async t => {
-  const { units, users, call, json, login } = fixture(t);
+  const { units, users, call, json, login } = await fixture(t);
   const [coord, safety, , , replacement] = users;
   await Promise.all([coord, safety, replacement].map(login));
   const { id } = await json('POST', '/notifications', {
@@ -148,7 +165,7 @@ test('troca o responsável, limita o acesso da conta anterior e mantém o histó
 });
 
 test('anexa foto opcional nos dois tipos e restringe sua visualização', async t => {
-  const { units, users, call, json, login } = fixture(t);
+  const { units, users, call, json, login } = await fixture(t);
   const [coord, safety, ccih, external] = users;
   await Promise.all([coord, safety, ccih, external].map(login));
   const png = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jX9sAAAAASUVORK5CYII=';
@@ -188,4 +205,19 @@ test('anexa foto opcional nos dois tipos e restringe sua visualização', async 
   const record = await json('POST', '/notifications', { body: plain, intake, status: 201 });
   assert.equal((await json('GET', '/notifications/' + record.id, { user: coord })).photo, null);
   await call('GET', '/notifications/' + record.id + '/photo', { user: coord, status: 404 });
+});
+
+
+test('bloqueia acesso direto aos dados assistenciais pelos papéis da Data API', async t => {
+  const { db } = await fixture(t);
+  await db.exec('RESET ROLE');
+  for (const role of ['anon', 'authenticated', 'service_role']) {
+    const privileges = await db.query(
+      "SELECT has_schema_privilege($1, 'uhp_notifica', 'USAGE') AS schema_access, has_table_privilege($1, 'uhp_notifica.notifications', 'SELECT') AS table_access", [role]);
+    assert.deepEqual(privileges.rows[0], { schema_access: false, table_access: false });
+  }
+  const tables = await db.query(`SELECT relname, relrowsecurity FROM pg_class c
+    JOIN pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname='uhp_notifica' AND c.relkind='r'`);
+  assert.equal(tables.rows.length, 11);
+  assert(tables.rows.every(row => row.relrowsecurity));
 });
