@@ -141,3 +141,7 @@ O pacote de 50 PNGs individuais, recortados e transparentes, está em [netlify/p
 | `logo-posse-saude.png` | Logo institucional da Secretaria de Saúde, exibida junto à marca do UHP Notifica. |
 
 Os arquivos estão em `netlify/public/`. No HTML, referencie o favicon com `<link rel="icon" type="image/png" href="/uhp-notifica-icone.png">`.
+
+## Perfil Administrador
+
+O perfil Administrador (`administrator`) tem acesso à fila e às operações de gestão da própria unidade, com as mesmas permissões operacionais da Coordenação. O perfil aparece separado no login e não pode ser indicado como responsável de Segurança do Paciente ou CCIH. A conta inicial de administração foi provisionada no Supabase. As credenciais ficam fora do GitHub.
