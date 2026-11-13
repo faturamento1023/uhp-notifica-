@@ -1,3 +1,4 @@
+import { Buffer } from 'node:buffer';
 export class HttpError extends Error {
   constructor(status, code, message) {
     super(message);
