@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; form-action 'none'; base-uri 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; img-src data:; form-action 'none'; base-uri 'none'">
 <title>Portal de Notificações</title>
 <style>
   :root {
@@ -68,6 +68,10 @@
   .button.secondary { color: var(--teal); background: #fff; }
   .button.secondary:hover { background: #e7f0ee; }
   :focus-visible { outline: 3px solid #218bba; outline-offset: 3px; }
+  .photo-preview { margin-top: 16px; }
+  .photo-preview img { display: block; width: auto; max-width: 100%; max-height: 360px; border-radius: 9px; margin-top: 8px; }
+  .photo-preview p { overflow-wrap: anywhere; }
+  .photo-error { color: #912c27; }
   .review-list { margin: 0; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: 0 14px; }
   .review-list dt, .review-list dd { margin: 0; padding: 9px 0; border-bottom: 1px solid var(--line); overflow-wrap: anywhere; }
   .review-list dt { font-weight: 700; }
@@ -141,6 +145,13 @@
         <label for="nc-description">Relato do ocorrido *</label>
         <textarea id="nc-description" name="description" required maxlength="5000" placeholder="Descreva o ocorrido e inclua situações que não aparecem nas listas."></textarea>
       </div>
+      <div class="panel field">
+        <label for="nc-photo">Foto da ocorrência (opcional)</label>
+        <input type="file" id="nc-photo" data-photo accept="image/jpeg,image/png" aria-describedby="nc-photo-hint nc-photo-error">
+        <p id="nc-photo-hint" class="hint" style="margin:0">Escolha uma foto JPEG ou PNG de até 2 MB. Use uma imagem fictícia para testar.</p>
+        <p id="nc-photo-error" class="photo-error" data-photo-error role="alert" hidden></p>
+        <button class="button secondary" type="button" data-remove-photo hidden>Remover foto</button>
+      </div>
       <div class="buttons"><button class="button" type="submit">Revisar notificação</button></div>
     </form>
   </section>
@@ -184,6 +195,13 @@
           <div class="field wide"><label for="event-suggestion">Sugestão de ações para reduzir o risco</label><textarea id="event-suggestion" name="suggestion" maxlength="5000"></textarea></div>
         </div>
       </div>
+      <div class="panel field">
+        <label for="event-photo">Foto da ocorrência (opcional)</label>
+        <input type="file" id="event-photo" data-photo accept="image/jpeg,image/png" aria-describedby="event-photo-hint event-photo-error">
+        <p id="event-photo-hint" class="hint" style="margin:0">Escolha uma foto JPEG ou PNG de até 2 MB. Use uma imagem fictícia para testar.</p>
+        <p id="event-photo-error" class="photo-error" data-photo-error role="alert" hidden></p>
+        <button class="button secondary" type="button" data-remove-photo hidden>Remover foto</button>
+      </div>
       <div class="buttons"><button class="button" type="submit">Revisar notificação</button></div>
     </form>
   </section>
@@ -192,7 +210,14 @@
     <button type="button" class="back" data-edit>← Voltar ao formulário</button>
     <h1 id="review-title" tabindex="-1">Revisar notificação</h1>
     <p class="intro" id="review-type"></p>
-    <div class="panel"><dl class="review-list" id="review-list"></dl></div>
+    <div class="panel">
+      <dl class="review-list" id="review-list"></dl>
+      <div class="photo-preview" id="review-photo" hidden>
+        <h2>Foto da ocorrência</h2>
+        <p id="review-photo-name"></p>
+        <img id="review-photo-image" alt="Foto anexada à notificação">
+      </div>
+    </div>
     <p class="notice">Ao confirmar, você poderá baixar um arquivo de teste para importar no painel do gerente.</p>
     <p class="notice" id="register-error" role="alert" hidden></p>
     <div class="buttons">
@@ -314,6 +339,25 @@
   const recordPrefix = "portal-notificacoes:teste:registro:";
   let activeForm = null;
   let latestRecord = null;
+  const photoLimit = 2 * 1024 * 1024;
+  const photos = new WeakMap();
+
+  function readPhoto(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onerror = reject;
+      reader.onload = () => resolve(reader.result);
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function showReviewPhoto(photo) {
+    get("review-photo").hidden = !photo;
+    get("review-photo-name").textContent = photo?.name ?? "";
+    const image = get("review-photo-image");
+    if (photo) image.src = "data:" + photo.mime + ";base64," + photo.contentBase64;
+    else image.removeAttribute("src");
+  }
 
   function fillSelect(select, values, placeholder = "Selecione") {
     select.add(new Option(placeholder, ""));
@@ -405,10 +449,60 @@
   }
 
   for (const form of document.querySelectorAll("form")) {
+    const photoInput = form.querySelector("[data-photo]");
+    const photoError = form.querySelector("[data-photo-error]");
+    const removePhoto = form.querySelector("[data-remove-photo]");
+    const reviewButton = form.querySelector('button[type="submit"]');
+
+    function clearPhoto() {
+      photos.delete(form);
+      photoInput.value = "";
+      photoError.hidden = true;
+      removePhoto.hidden = true;
+      reviewButton.disabled = false;
+    }
+
+    form.addEventListener("reset", clearPhoto);
+    removePhoto.addEventListener("click", () => {
+      clearPhoto();
+      photoInput.focus();
+    });
+    photoInput.addEventListener("change", async () => {
+      const file = photoInput.files[0];
+      photos.delete(form);
+      photoError.hidden = true;
+      removePhoto.hidden = !file;
+      if (!file) {
+        reviewButton.disabled = false;
+        return;
+      }
+      reviewButton.disabled = true;
+      try {
+        if (!["image/jpeg", "image/png"].includes(file.type) || file.size > photoLimit || !file.size) {
+          throw new Error("Selecione uma foto JPEG ou PNG de até 2 MB.");
+        }
+        const data = await readPhoto(file);
+        const preview = new Image();
+        preview.src = data;
+        await preview.decode();
+        if (photoInput.files[0] !== file) return;
+        photos.set(form, { name: file.name.slice(0, 180), mime: file.type, contentBase64: data.split(",")[1] });
+      } catch (error) {
+        if (photoInput.files[0] !== file) return;
+        photoInput.value = "";
+        removePhoto.hidden = true;
+        photoError.textContent = error instanceof Error && error.message.startsWith("Selecione")
+          ? error.message : "Não foi possível abrir esta imagem. Escolha outra foto.";
+        photoError.hidden = false;
+      }
+      reviewButton.disabled = false;
+    });
+
     const requiredText = form.querySelectorAll("input:not([type]), textarea[required]");
     requiredText.forEach(field => field.addEventListener("input", () => field.setCustomValidity("")));
     form.addEventListener("submit", event => {
       event.preventDefault();
+      if (reviewButton.disabled) return;
       const blank = Array.from(requiredText).find(field => field.required && !field.value.trim());
       if (blank) {
         blank.setCustomValidity("Preencha este campo.");
@@ -427,6 +521,7 @@
         list.append(title, detail);
       }
       get("review-type").textContent = form.closest("section").querySelector("h1").textContent;
+      showReviewPhoto(photos.get(form));
       show("review");
     });
   }
@@ -449,6 +544,8 @@
         harm: data.get("harm") || "",
         entries: reviewEntries(form)
       };
+      const photo = photos.get(form);
+      if (photo) latestRecord.photo = photo;
     } catch {
       const error = get("register-error");
       error.textContent = "O navegador não conseguiu gerar o registro. Seus dados continuam no formulário.";
@@ -469,6 +566,7 @@
     form.reset();
     if (form === incidentForm) updateIncidentFields();
     activeForm = null;
+    showReviewPhoto();
     get("review-list").replaceChildren();
     get("review-type").textContent = "";
     show("done");
