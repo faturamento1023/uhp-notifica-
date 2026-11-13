@@ -240,6 +240,8 @@
     header #identity { flex: 1; }
   }
 </style>
+<link rel="stylesheet" href="bate-papo.css">
+<script src="bate-papo.js" defer></script>
 <script src="painel.js" defer></script>
 <script src="banners.js" defer></script>
 </head>
@@ -260,6 +262,7 @@
     </form>
   </section>
   <div id="workspace" class="layout" hidden>
+    <div class="stack panel-sidebar">
     <section class="card" aria-labelledby="queue-title">
       <div class="row"><h2 id="queue-title"><img class="ui-icon" src="icons/notificacoes.png" alt="" width="22" height="22">Fila de notificações</h2><button type="button" id="refresh" class="secondary"><img class="ui-icon" src="icons/atualizar.png" alt="" width="20" height="20">Atualizar</button></div>
       <p class="small muted section-title">Selecione um registro para acompanhar a tratativa.</p>
@@ -271,6 +274,22 @@
       <ul id="queue" class="queue"></ul>
       <div class="actions"><button type="button" id="more" class="secondary" hidden><img class="ui-icon" src="icons/carregar-mais.png" alt="" width="20" height="20">Carregar mais</button></div>
     </section>
+      <section class="card group-chat" aria-labelledby="group-chat-title">
+        <h2 id="group-chat-title">Bate-papo da equipe</h2>
+        <p class="small muted">Todos os usuários do painel podem ler. Evite compartilhar dados de pacientes.</p>
+        <button id="chat-older" class="secondary" type="button" hidden>Ver mensagens anteriores</button>
+        <div id="chat-log" class="chat-log" role="region" aria-label="Histórico do bate-papo" tabindex="0">
+          <p id="chat-empty" class="small muted">Carregando mensagens…</p>
+          <ol id="chat-messages" aria-label="Mensagens"></ol>
+        </div>
+        <form id="chat-form">
+          <label for="chat-input">Mensagem</label>
+          <textarea id="chat-input" maxlength="1000" rows="2" required></textarea>
+          <button id="chat-send" type="submit">Enviar</button>
+        </form>
+        <p id="chat-status" class="small muted" role="status"></p>
+      </section>
+    </div>
     <div id="detail" class="stack" hidden>
       <section class="card">
         <div class="row"><div><h2><img class="ui-icon" src="icons/protocolo.png" alt="" width="22" height="22"><span id="case-title" tabindex="-1"></span></h2><p id="case-meta" class="muted small"></p></div><span id="case-state" class="pill"></span></div>

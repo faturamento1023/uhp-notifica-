@@ -188,3 +188,9 @@ Ajuste responsivo: as logos do UHP Notifica e da Secretaria ficam alinhadas no c
 O painel referencia `/manifest.webmanifest`, com nome UHP Notifica, início no login e ícones PNG de 192 e 512 px com o símbolo da prancheta e do sino. O manifesto define a aparência da instalação no navegador.
 
 No cabeçalho do login e do painel, as marcas do UHP Notifica e da Secretaria ficam agrupadas à esquerda. A conta e o botão Sair ficam à direita no desktop e em uma linha abaixo das marcas no celular.
+
+## Bate-papo da equipe
+
+O painel oferece uma sala em grupo abaixo da fila de notificações, também no celular. Todos os perfis ativos com acesso ao painel podem ler e enviar mensagens de texto de até 1.000 caracteres. Cada mensagem registra o nome do autor e o horário. A conversa se atualiza a cada 10 segundos com a aba visível e permite consultar mensagens anteriores. Use a sala para comunicação da equipe e mantenha os dados de pacientes nas notificações com acesso restrito.
+
+O frontend usa `GET /api/v1/chat/messages` e `POST /api/v1/chat/messages` com a sessão do painel. A função `uhp-api` identifica o autor pela sessão e grava as mensagens no esquema privado do Supabase. A implementação e a migração estão na branch [codex/backend-notificacoes](https://github.com/faturamento1023/uhp-notifica-/tree/codex/backend-notificacoes).

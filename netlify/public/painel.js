@@ -112,12 +112,14 @@ async function perform(operation) {
   }
 }
 function showLogin() {
+  groupChat.stop();
   account=null; current=null;selected=null;items=[];nextOffset=null;
   $("login").hidden=false;$("workspace").hidden=true;$("logout").hidden=true;$("identity").textContent="";
 }
 function showWorkspace() {
   $("login").hidden=true;$("workspace").hidden=false;$("logout").hidden=false;
   $("identity").textContent=account.name+" · "+(account.role==="administrator"?"Administrador":canCoordinate()?"Coordenação":areaName[account.role]);
+  groupChat.start(api, formatTime, showLogin);
   $("panel-guide").textContent=canCoordinate()
     ?"Veja a fila, encaminhe às áreas e acompanhe as decisões até a finalização."
     :"Consulte as notificações atribuídas a você e registre sua tratativa.";
