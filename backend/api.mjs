@@ -4,7 +4,8 @@ import { digest, passwordHash, passwordMatches, roles, token } from './store.mjs
 import { notificationPdf } from './notification-pdf.mjs';
 import { conflict, day, fail, forbidden, HttpError, id, invalid, oneOf, readJson, str, unavailable } from './validation.mjs';
 
-const areas = roles.slice(1);
+const areas = roles.filter(role => ['patient_safety', 'ccih'].includes(role));
+const canCoordinate = user => user.role === 'coordination' || user.role === 'administrator';
 const kinds = ['nonconformity', 'incident'];
 const harmLevels = ['Nenhum (incidente sem dano)', 'Leve', 'Moderado', 'Grave', 'Óbito em decorrência do evento adverso'];
 const periods = ['Manhã', 'Tarde', 'Noite', 'Madrugada'];
@@ -83,7 +84,7 @@ export function createApi(db, { origin, clock = () => new Date(), evidenceLimit 
   }
 
   function coordinator(user) {
-    if (user.role !== 'coordination') forbidden();
+    if (!canCoordinate(user)) forbidden();
   }
 
   async function throttle(key, count, seconds) {
@@ -100,7 +101,7 @@ export function createApi(db, { origin, clock = () => new Date(), evidenceLimit 
   async function notification(user, notificationId, lock = false) {
     const record = await get('SELECT * FROM notifications WHERE id=? AND unit_id=?' + (lock ? ' FOR UPDATE' : ''), notificationId, user.unitId);
     if (!record) unavailable();
-    if (user.role !== 'coordination' && !await get('SELECT id FROM assignments WHERE notification_id=? AND assignee_id=? AND area=?', notificationId, user.id, user.role)) unavailable();
+    if (!canCoordinate(user) && !await get('SELECT id FROM assignments WHERE notification_id=? AND assignee_id=? AND area=?', notificationId, user.id, user.role)) unavailable();
     return record;
   }
 
@@ -112,7 +113,7 @@ export function createApi(db, { origin, clock = () => new Date(), evidenceLimit 
     }
     const row = await get(`SELECT a.*, n.status AS notification_status FROM assignments a
       JOIN notifications n ON n.id=a.notification_id WHERE a.id=? AND n.unit_id=?`, assignmentId, user.unitId);
-    if (!row || (user.role !== 'coordination' && (row.assignee_id !== user.id || row.area !== user.role))) unavailable();
+    if (!row || (!canCoordinate(user) && (row.assignee_id !== user.id || row.area !== user.role))) unavailable();
     return row;
   }
 
@@ -123,7 +124,7 @@ export function createApi(db, { origin, clock = () => new Date(), evidenceLimit 
   }
 
   function areaOwner(user) {
-    if (user.role === 'coordination') forbidden();
+    if (canCoordinate(user)) forbidden();
   }
 
   async function audit(notificationId, assignmentId, actorId, event, detail = null) {
@@ -143,10 +144,10 @@ export function createApi(db, { origin, clock = () => new Date(), evidenceLimit 
   }
 
   async function detail(user, row) {
-    const assignments = user.role === 'coordination'
+    const assignments = canCoordinate(user)
       ? await all('SELECT * FROM assignments WHERE notification_id=? ORDER BY area', row.id)
       : await all('SELECT * FROM assignments WHERE notification_id=? AND assignee_id=? AND area=?', row.id, user.id, user.role);
-    const events = user.role === 'coordination'
+    const events = canCoordinate(user)
       ? await all('SELECT * FROM history WHERE notification_id=? ORDER BY id', row.id)
       : await all(`SELECT h.* FROM history h JOIN assignments a ON a.id=h.assignment_id
         WHERE h.notification_id=? AND a.assignee_id=? AND a.area=? ORDER BY h.id`, row.id, user.id, user.role);
@@ -184,14 +185,14 @@ export function createApi(db, { origin, clock = () => new Date(), evidenceLimit 
     const offset = Number(url.searchParams.get('offset') ?? 0);
     if (!Number.isSafeInteger(offset) || offset < 0) invalid('offset');
     const limit = 30;
-    const found = user.role === 'coordination'
+    const found = canCoordinate(user)
       ? await all('SELECT * FROM notifications WHERE unit_id=? ORDER BY created_at DESC,id DESC LIMIT ? OFFSET ?', user.unitId, limit + 1, offset)
       : await all(`SELECT n.* FROM notifications n JOIN assignments a ON a.notification_id=n.id
         WHERE n.unit_id=? AND a.assignee_id=? AND a.area=? ORDER BY n.created_at DESC,n.id DESC LIMIT ? OFFSET ?`,
         user.unitId, user.id, user.role, limit + 1, offset);
     const page = found.slice(0, limit);
     const ids = page.map(row => row.id);
-    const scoped = user.role === 'coordination'
+    const scoped = canCoordinate(user)
       ? await all('SELECT * FROM assignments WHERE notification_id=ANY(?::text[]) ORDER BY area', ids)
       : await all('SELECT * FROM assignments WHERE notification_id=ANY(?::text[]) AND assignee_id=? AND area=?', ids, user.id, user.role);
     const byNotification = new Map(ids.map(notificationId => [notificationId, []]));
@@ -331,7 +332,7 @@ export function createApi(db, { origin, clock = () => new Date(), evidenceLimit 
         if (method === 'GET' && path === '/api/v1/notifications') return json(await queue(user, url));
         if (method === 'GET' && path === '/api/v1/assignees') {
           coordinator(user);
-          return json({ items: await all("SELECT id,name,role FROM users WHERE unit_id=? AND active=1 AND role!='coordination' ORDER BY name", user.unitId) });
+          return json({ items: await all("SELECT id,name,role FROM users WHERE unit_id=? AND active=1 AND role IN ('patient_safety','ccih') ORDER BY name", user.unitId) });
         }
 
         let match = path.match(/^\/api\/v1\/notifications\/([^/]+)(?:\/(assignments|close|photo|pdf))?$/);
