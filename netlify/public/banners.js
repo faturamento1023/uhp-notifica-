@@ -30,36 +30,20 @@ const bannerTitles = [
 
 for (const root of document.querySelectorAll("[data-banner-carousel]")) {
   let index = 0;
-  let paused = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
   let visible = false;
   let timer;
   const image = document.createElement("img");
   image.className = "banner-image";
   image.loading = "lazy";
   image.decoding = "async";
-  const controls = document.createElement("div");
-  controls.className = "banner-controls";
-  const previous = document.createElement("button");
-  previous.type = "button";
-  previous.textContent = "Anterior";
-  const count = document.createElement("span");
-  count.className = "banner-count";
-  count.setAttribute("aria-live", "polite");
-  const next = document.createElement("button");
-  next.type = "button";
-  next.textContent = "Próximo";
-  const pause = document.createElement("button");
-  pause.type = "button";
   function render() {
     image.src = "banners/" + bannerFiles[index];
     image.alt = "Orientação: " + bannerTitles[index];
-    count.textContent = (index + 1) + " de " + bannerFiles.length;
-    pause.textContent = paused ? "Reproduzir" : "Pausar";
-    pause.setAttribute("aria-label", paused ? "Reproduzir banners" : "Pausar banners");
   }
   function schedule() {
     clearTimeout(timer);
-    if (!paused && visible && !document.hidden) {
+    if (!reducedMotion.matches && visible && !document.hidden) {
       timer = setTimeout(() => {
         index = (index + 1) % bannerFiles.length;
         render();
@@ -67,12 +51,9 @@ for (const root of document.querySelectorAll("[data-banner-carousel]")) {
       }, 8000);
     }
   }
-  previous.addEventListener("click", () => { index = (index + bannerFiles.length - 1) % bannerFiles.length; render(); schedule(); });
-  next.addEventListener("click", () => { index = (index + 1) % bannerFiles.length; render(); schedule(); });
-  pause.addEventListener("click", () => { paused = !paused; render(); schedule(); });
   document.addEventListener("visibilitychange", schedule);
-  controls.append(previous, count, next, pause);
-  root.append(image, controls);
+  reducedMotion.addEventListener('change', schedule);
+  root.append(image);
   render();
   const observer = new IntersectionObserver(entries => {
     visible = entries[0].isIntersecting;
