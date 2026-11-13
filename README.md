@@ -134,4 +134,8 @@ O limite é de 4 MiB por arquivo de evidência e 2 MiB para a foto inicial. O [P
 
 ## Provisionamento da unidade
 
-A unidade UHP – Posse/GO foi cadastrada no Supabase, com contas ativas para Coordenação de Enfermagem, Segurança do Paciente e CCIH. O perfil Administrador depende de definição e implementação de permissões próprias. As credenciais ficam fora do repositório. A distribuição do QR Code e a validação do acesso pelo painel publicado seguem pendentes.
+A unidade UHP – Posse/GO foi cadastrada no Supabase, com contas ativas para Coordenação de Enfermagem, Segurança do Paciente e CCIH. O perfil Administrador já está ativo. As credenciais ficam fora do repositório. A distribuição do QR Code e a validação do acesso pelo painel publicado seguem pendentes.
+
+## Perfil Administrador
+
+O perfil Administrador (`administrator`) tem acesso à fila e às operações de gestão da própria unidade, com as mesmas permissões operacionais da Coordenação. O perfil aparece separado no login e não pode ser indicado como responsável de Segurança do Paciente ou CCIH. A conta inicial de administração foi provisionada no Supabase. As credenciais ficam fora do GitHub.
