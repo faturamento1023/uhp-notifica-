@@ -139,3 +139,7 @@ A unidade UHP – Posse/GO foi cadastrada no Supabase, com contas ativas para Co
 ## Perfil Administrador
 
 O perfil Administrador (`administrator`) tem acesso à fila e às operações de gestão da própria unidade, com as mesmas permissões operacionais da Coordenação. O perfil aparece separado no login e não pode ser indicado como responsável de Segurança do Paciente ou CCIH. A conta inicial de administração foi provisionada no Supabase. As credenciais ficam fora do GitHub.
+
+## Formulário e painel no Netlify
+
+A `main` publica o formulário em `/` e o painel em `/painel.html`, com os ícones e logos do PR nº 3. A API continua no Supabase, acessada pelo proxy do Netlify. O link de entrada para envio usa o QR Code da unidade. O painel usa as contas cadastradas.
