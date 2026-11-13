@@ -102,7 +102,10 @@ Os protótipos atuais usam armazenamento local do navegador e importação de ar
 | Etapa | Alterações registradas | Onde consultar |
 | --- | --- | --- |
 | Backend inicial | Login, permissões por unidade e tratativa, recebimento com protocolo, filas, responsáveis, prazos, versões do parecer, aprovação, ações, evidências privadas, histórico e encerramento. | [PR nº 1](https://github.com/faturamento1023/uhp-notifica-/pull/1) · [Contrato da API](https://github.com/faturamento1023/uhp-notifica-/blob/codex/backend-notificacoes/docs/API.md) |
+| Migração para Supabase | O backend do PR nº 1 passou a usar PostgreSQL no Supabase. A migração cria o esquema privado `uhp_notifica`, com RLS e sem acesso direto pelos papéis da Data API. Fotos e evidências permanecem acessíveis pela API, conforme o vínculo com o caso. Os quatro testes passaram em PostgreSQL local. Falta vincular o projeto hospedado e homologar a conexão. | [Instalação no Supabase](https://github.com/faturamento1023/uhp-notifica-/blob/codex/backend-notificacoes/docs/SUPABASE.md) · [Migração](https://github.com/faturamento1023/uhp-notifica-/blob/codex/backend-notificacoes/supabase/migrations/20261113120150_uhp_notifica.sql) |
 | Foto da ocorrência | Os dois formulários aceitam uma foto opcional JPEG ou PNG de até 2 MB (2 MiB). A pessoa pode conferir a foto na revisão, voltar para trocá-la ou removê-la. O painel exibe a imagem no detalhe. O arquivo de teste JSON inclui a foto e a importação continua aceitando registros anteriores sem foto. | [Portal de teste](prototipos/Portal_Notificacoes_V1.html) · [Painel de teste](prototipos/Painel_Gerente_Notificacoes.html) |
+
+O frontend continua usando as rotas `/api/v1` e o cookie de sessão. A URL de conexão do Supabase é configurada no servidor. A outra IA pode continuar seguindo o contrato publicado.
 
 ### Integração da foto no frontend
 
