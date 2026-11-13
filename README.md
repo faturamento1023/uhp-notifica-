@@ -234,3 +234,5 @@ As páginas internas `/` e `/painel.html` usam HTML5 e o CSS local do Bootstrap 
 O refinamento visual do painel acrescentou ícones aos indicadores do Dashboard, cartões de protocolo com situação mais legível, estados vazios e um menu móvel em grade. A ordem dos atalhos e as ações do painel continuam as mesmas. As páginas públicas do QR Code seguem com seu próprio estilo.
 
 O Dashboard ganhou um cabeçalho verde-petróleo, indicadores com maior contraste e cartões de protocolo mais leves. Na tela de Notificações, os filtros e a próxima ação da tratativa têm áreas próprias para facilitar a leitura. A revisão usa o Bootstrap já presente no painel.
+
+O mesmo padrão visual foi aplicado às telas de login, Bate-papo, Relatórios, Alterar senha e Ajuda, com cabeçalhos verde-petróleo, histórico de mensagens, tabela, formulário e tutoriais estilizados para desktop e celular.

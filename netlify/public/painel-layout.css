@@ -174,8 +174,6 @@ body.panel-signed-in.sidebar-collapsed { --sidebar-width: 68px; }
 .report-results th, .report-results td { padding: 10px; border-bottom: 1px solid var(--line); }
 .report-results th { position: sticky; top: 0; background: #edf5f4; }
 .report-results a, .help-tutorials a { color: var(--teal); }
-.help-tutorials details { border-top: 1px solid var(--line); padding: 12px 0; }
-.help-tutorials summary { cursor: pointer; font-weight: 650; }
 .help-tutorials li + li { margin-top: 6px; }
 @media (max-width: 900px) {
   .panel-shell { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto 1fr auto; }
@@ -202,9 +200,6 @@ body.panel-signed-in.sidebar-collapsed { --sidebar-width: 68px; }
   .dashboard-stats dd { font-size: 1.5rem; }
 }
 
-#password-form { width: min(100%, 480px); }
-#password-form button { justify-self: start; }
-#password-rules { margin: 0; }
 
 /* Tema do painel sobre os componentes do Bootstrap */
 :root {
@@ -292,8 +287,6 @@ body { line-height: 1.55; }
 }
 .panel-content .queue .btn[aria-current="true"] { box-shadow: inset 3px 0 var(--brand); }
 .report-results .table { --bs-table-hover-bg: #edf5f4; }
-.help-tutorials details > summary { padding: 4px 0; color: var(--dark); }
-.help-tutorials details[open] > summary { margin-bottom: 10px; }
 @media (max-width: 540px) {
   .panel-content .btn, #login .btn { min-height: 44px; }
   .dashboard-stats dd { font-size: 1.4rem; }
@@ -301,7 +294,7 @@ body { line-height: 1.55; }
 
 /* Hierarquia do dashboard, leitura da fila e navegação compacta */
 .dashboard-heading h1 { font-weight: 750; }
-#home-view .dashboard-hero {
+.panel-content .dashboard-hero {
   min-height: 112px;
   padding-inline: clamp(18px, 3.5vw, 42px);
   border-color: #155960;
@@ -309,7 +302,7 @@ body { line-height: 1.55; }
     repeating-radial-gradient(ellipse at 87% 120%, transparent 0 22px, rgb(255 255 255 / 7%) 23px 24px, transparent 25px 46px),
     linear-gradient(115deg, #083f48, #086467);
 }
-.dashboard-hero h1 { color: #fff; }
+.panel-content .dashboard-hero h1 { color: #fff; }
 #refresh-home { background: #fff; border-color: #fff; }
 #refresh-home:hover { background: #e4f1ef; }
 
@@ -390,7 +383,7 @@ body { line-height: 1.55; }
 }
 @media (max-width: 540px) {
   .panel-menu { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  #home-view .dashboard-hero { min-height: 88px; }
+  .panel-content .dashboard-hero { min-height: 82px; }
   .dashboard-stats .dashboard-metric { min-height: 0; padding: 10px 8px; }
   .metric-icon { position: static; transform: none; width: 28px; height: 28px; margin-bottom: 6px; }
   .metric-icon img { width: 17px; height: 17px; }
@@ -415,3 +408,76 @@ body { line-height: 1.55; }
 }
 .case-overview .next-step strong { margin-bottom: 5px; }
 #detail .card > details > summary .ui-icon { margin-inline: 4px 2px; }
+
+
+/* Apresentação das telas internas e acesso */
+.view-heading { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.view-icon {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 42px;
+  height: 42px;
+  border-radius: 11px;
+  background: rgb(255 255 255 / 13%);
+}
+.view-icon img, #chat-send .ui-icon, #password-form button .ui-icon { filter: brightness(0) invert(1); }
+
+#login-hero {
+  width: min(100%, 520px);
+  margin-inline: auto;
+  border: 1px solid #155960;
+  border-radius: 16px 16px 0 0;
+  background: linear-gradient(115deg, #083f48, #086467);
+}
+#login-hero h1 { color: #fff; font-size: clamp(1.45rem, 4vw, 2rem); }
+#login-hero h1 .ui-icon { filter: brightness(0) invert(1); }
+#login-hero p { color: #d9eeeb; }
+#login {
+  width: min(100%, 520px);
+  max-width: none;
+  margin: 0 auto;
+  border-radius: 0 0 16px 16px;
+}
+body:not(.panel-signed-in) #feedback { max-width: 520px; margin: 12px auto; }
+body:not(.panel-signed-in) #feedback:not(:empty) + #login { border-radius: 16px; }
+
+#chat-view .group-chat .chat-log {
+  border: 0;
+  border-radius: 12px;
+  background: #edf4f4;
+  padding: clamp(12px, 2vw, 20px);
+}
+#chat-view #chat-empty { width: fit-content; max-width: 100%; background: #fff; }
+#chat-view #chat-messages li { width: fit-content; min-width: min(200px, 100%); max-width: min(100%, 68ch); }
+#chat-view #chat-form { gap: 8px; }
+
+#report-results { border: 1px solid var(--line); border-radius: 12px; }
+#report-results th {
+  background: #e8f2f1;
+  color: var(--dark);
+  font-size: .9rem;
+  white-space: nowrap;
+}
+#report-results td { background-color: transparent; }
+#report-results tr:last-child td { border-bottom: 0; }
+
+#password-form { width: min(100%, 560px); gap: 16px; }
+#password-form button { justify-self: start; }
+#password-rules {
+  margin: 0;
+  padding: 12px 14px;
+  border-radius: 10px;
+  background: #e8f2f1;
+  color: var(--dark);
+}
+.help-tutorials details { border: 1px solid var(--line); border-radius: 12px; overflow: hidden; }
+.help-tutorials details > summary { padding: 14px; cursor: pointer; color: var(--dark); font-weight: 650; }
+.help-tutorials details[open] > summary { background: #e8f2f1; border-bottom: 1px solid var(--line); }
+.help-tutorials details > :is(ol, ul) { padding: 0 16px 0 36px; margin: 14px 0; }
+@media (max-width: 540px) {
+  .view-heading { gap: 9px; }
+  .view-icon { width: 34px; height: 34px; }
+  .view-icon img { width: 20px; height: 20px; }
+  #password-form button { justify-self: stretch; }
+}

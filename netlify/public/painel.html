@@ -243,7 +243,7 @@
 </style>
 <link rel="stylesheet" href="bate-papo.css">
 <script src="bate-papo.js" defer></script>
-<link rel="stylesheet" href="painel-layout.css?v=13">
+<link rel="stylesheet" href="painel-layout.css?v=14">
 <script src="painel.js?v=9" defer></script>
 <script src="banners.js" defer></script>
 </head>
@@ -306,7 +306,7 @@
         </div>
       </section>
       <section id="chat-view" class="stack" aria-labelledby="chat-title" hidden>
-        <div class="panel-heading dashboard-heading"><h1 id="chat-title" tabindex="-1">Bate-papo</h1></div>
+        <div class="panel-heading dashboard-heading dashboard-hero"><div class="view-heading"><span class="view-icon" aria-hidden="true"><img src="icons/enviar.png" alt="" width="24" height="24"></span><h1 id="chat-title" tabindex="-1">Bate-papo</h1></div></div>
         <section class="card group-chat" aria-labelledby="group-chat-title">
           <h2 id="group-chat-title">Conversa da equipe</h2>
           <p class="small muted">Todos os usuários do painel podem ler. Evite compartilhar dados de pacientes.</p>
@@ -318,15 +318,15 @@
           <form id="chat-form">
             <label for="chat-input">Mensagem</label>
             <textarea class="form-control" id="chat-input" maxlength="1000" rows="2" required></textarea>
-            <button class="btn btn-primary" id="chat-send" type="submit">Enviar</button>
+            <button class="btn btn-primary" id="chat-send" type="submit"><img class="ui-icon" src="icons/enviar.png" alt="" width="20" height="20">Enviar</button>
           </form>
           <p id="chat-status" class="small muted" role="status"></p>
         </section>
       </section>
       <section id="reports-view" class="stack" aria-labelledby="reports-title" hidden>
-        <div class="panel-heading dashboard-heading"><h1 id="reports-title" tabindex="-1">Relatórios</h1></div>
+        <div class="panel-heading dashboard-heading dashboard-hero"><div class="view-heading"><span class="view-icon" aria-hidden="true"><img src="icons/historico.png" alt="" width="24" height="24"></span><h1 id="reports-title" tabindex="-1">Relatórios</h1></div></div>
         <section class="card stack" aria-labelledby="report-heading">
-          <h2 id="report-heading">Relatório de notificações</h2>
+          <h2 id="report-heading"><img class="ui-icon" src="icons/filtros.png" alt="" width="22" height="22">Relatório de notificações</h2>
           <form id="report-form" class="report-filters">
             <label>Situação<select class="form-select" id="report-status"><option value="">Todas</option><option value="received">Recebidas</option><option value="in_progress">Em tratativa</option><option value="closed">Finalizadas</option></select></label>
             <label>Data da ocorrência de<input class="form-control" id="report-start" type="date"></label>
@@ -335,7 +335,7 @@
           </form>
           <div class="panel-heading">
             <p id="report-feedback" class="muted" role="status"></p>
-            <button id="report-export" class="btn btn-outline-primary secondary" type="button" hidden>Baixar CSV</button>
+            <button id="report-export" class="btn btn-outline-primary secondary" type="button" hidden><img class="ui-icon" src="icons/baixar.png" alt="" width="20" height="20">Baixar CSV</button>
           </div>
           <div id="report-results" class="table-responsive report-results" tabindex="0" role="region" aria-label="Resultado do relatório" hidden>
             <table class="table table-hover align-middle mb-0">
@@ -346,18 +346,18 @@
         </section>
       </section>
       <section id="password-view" class="stack" aria-labelledby="password-title" hidden>
-        <div class="panel-heading dashboard-heading"><h1 id="password-title" tabindex="-1">Alterar senha</h1></div>
+        <div class="panel-heading dashboard-heading dashboard-hero"><div class="view-heading"><span class="view-icon" aria-hidden="true"><img src="icons/editar.png" alt="" width="24" height="24"></span><h1 id="password-title" tabindex="-1">Alterar senha</h1></div></div>
         <form id="password-form" class="card stack">
           <label>Senha atual<input class="form-control" id="current-password" type="password" autocomplete="current-password" maxlength="256" required></label>
           <label>Nova senha<input class="form-control" id="new-password" type="password" autocomplete="new-password" minlength="15" maxlength="256" aria-describedby="password-rules" required></label>
           <p id="password-rules" class="muted">Use pelo menos 15 caracteres. Após salvar, entre novamente com a nova senha.</p>
           <label>Confirmar nova senha<input class="form-control" id="confirm-password" type="password" autocomplete="new-password" minlength="15" maxlength="256" required></label>
-          <button class="btn btn-primary" type="submit">Salvar nova senha</button>
+          <button class="btn btn-primary" type="submit"><img class="ui-icon" src="icons/validar.png" alt="" width="20" height="20">Salvar nova senha</button>
         </form>
       </section>
       <section id="help-view" class="stack" aria-labelledby="help-title" hidden>
-        <div class="panel-heading dashboard-heading"><h1 id="help-title" tabindex="-1">Ajuda</h1></div>
-        <section class="card help-tutorials" aria-labelledby="tutorial-title">
+        <div class="panel-heading dashboard-heading dashboard-hero"><div class="view-heading"><span class="view-icon" aria-hidden="true"><img src="icons/informacao.png" alt="" width="24" height="24"></span><h1 id="help-title" tabindex="-1">Ajuda</h1></div></div>
+        <section class="card help-tutorials stack" aria-labelledby="tutorial-title">
           <h2 id="tutorial-title">Como funciona o UHP Notifica</h2>
           <details open><summary>1. Registrar e consultar uma notificação</summary>
             <ol><li>Abra o formulário pelo QR Code ou pelo <a href="/notificar.html">link de notificação</a>. Escolha <strong>Não conformidade</strong> ou <strong>Incidente ou evento adverso</strong>.</li>
