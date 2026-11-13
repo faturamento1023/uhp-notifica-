@@ -296,18 +296,8 @@
 
   const intakeToken = new URLSearchParams(location.hash.slice(1)).get("entrada");
   const pending = { requestId: null, body: null };
-  if (!intakeToken) {
-    const error = get("entry-notice");
-    error.textContent = "Abra o formulário pelo QR Code institucional para registrar uma notificação.";
-    error.hidden = false;
-  }
   get("register").addEventListener("click", async () => {
-    if (!activeForm || !intakeToken) {
-      const error = get("register-error");
-      error.textContent = "Abra pelo QR Code institucional para enviar.";
-      error.hidden = false;
-      return;
-    }
+    if (!activeForm) return;
     const form = activeForm;
     const data = new FormData(form);
     const kind = form.closest("section").id;
@@ -336,7 +326,7 @@
     try {
       const response = await fetch("/api/v1/notifications", {
         method: "POST", credentials: "same-origin",
-        headers: { "Content-Type": "application/json", "X-Intake-Token": intakeToken },
+        headers: { "Content-Type": "application/json", ...(intakeToken ? { "X-Intake-Token": intakeToken } : {}) },
         body: JSON.stringify({ requestId: pending.requestId, ...payload })
       });
       const result = await response.json();
