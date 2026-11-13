@@ -350,7 +350,8 @@ export function createApi(db, { origin, clock = () => new Date(), evidenceLimit 
           if (method === 'GET' && operation === 'pdf') {
             coordinator(user);
             const row = await notification(user, notificationId);
-            const bytes = await notificationPdf({ protocol: row.protocol, ...JSON.parse(row.payload) }, clock());
+            const photo = await get('SELECT mime,content FROM notification_photos WHERE notification_id=?', notificationId);
+            const bytes = await notificationPdf({ protocol: row.protocol, ...JSON.parse(row.payload) }, clock(), photo);
             return new Response(bytes, { headers: {
               'cache-control': 'no-store',
               'content-type': 'application/pdf',

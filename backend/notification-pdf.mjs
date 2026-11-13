@@ -69,7 +69,7 @@ const normalized = value => String(value).normalize('NFD').replace(/[\u0300-\u03
  * Generate a real, multi-page A4 PDF from the stored notification. No browser screenshot or print HTML is used.
  * The caller must check the user's authorization before passing any record here.
  */
-export async function notificationPdf(record, issuedAt = new Date()) {
+export async function notificationPdf(record, issuedAt = new Date(), photo = null) {
   const doc = await PDFDocument.create();
   const regular = await doc.embedFont(StandardFonts.Helvetica);
   const bold = await doc.embedFont(StandardFonts.HelveticaBold);
@@ -159,6 +159,19 @@ export async function notificationPdf(record, issuedAt = new Date()) {
   if (extra.length) {
     section('Informações complementares');
     for (const [label, value] of extra) field(label, value);
+  }
+
+  if (photo) {
+    const image = photo.mime === 'image/jpeg'
+      ? await doc.embedJpg(photo.content)
+      : await doc.embedPng(photo.content);
+    const scale = Math.min(1, width / image.width, 230 / image.height);
+    const imageWidth = image.width * scale;
+    const imageHeight = image.height * scale;
+    ensure(imageHeight + 40);
+    section('Foto anexada à notificação');
+    page.drawImage(image, { x: MARGIN, y: y - imageHeight, width: imageWidth, height: imageHeight });
+    y -= imageHeight + 12;
   }
 
   ensure(130);

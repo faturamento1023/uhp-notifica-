@@ -174,7 +174,9 @@ test('gera PDF A4 institucional no navegador apenas para a Coordenação', async
       requestId: randomUUID(), kind: 'incident', occurredOn: '2026-11-12',
       sector: 'Internação', period: 'Manhã', subject: 'Queda do paciente',
       harm: 'Leve', description: 'Ocorrência fictícia para conferência do PDF.',
-      entries: [['Fatores contribuintes', 'Comunicação entre equipes']]
+      entries: [['Fatores contribuintes', 'Comunicação entre equipes']],
+      photo: { name: 'foto-ficticia.png', mime: 'image/png',
+        contentBase64: 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jX9sAAAAASUVORK5CYII=' }
     },
     intake: units[0].intake, status: 201
   });
@@ -192,7 +194,7 @@ test('gera PDF A4 institucional no navegador apenas para a Coordenação', async
   const pdf = await PDFDocument.load(bytes);
   assert.equal(pdf.getPageCount(), 1);
   assert.deepEqual(pdf.getPage(0).getSize(), { width: 595.28, height: 841.89 });
-  assert(pdf.context.enumerateIndirectObjects().some(([, object]) => object?.dict?.get?.(PDFName.of('Subtype'))?.toString() === '/Image'));
+  assert(pdf.context.enumerateIndirectObjects().filter(([, object]) => object?.dict?.get?.(PDFName.of('Subtype'))?.toString() === '/Image').length >= 3);
 });
 
 test('anexa foto opcional nos dois tipos e restringe sua visualização', async t => {
