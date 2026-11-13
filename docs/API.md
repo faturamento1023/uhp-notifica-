@@ -4,7 +4,7 @@ O backend usa Node.js 24.14+ e PostgreSQL no Supabase. O frontend e a API usam a
 
 ## Entrada por QR Code
 
-O QR Code aponta para a página de registro, por exemplo `https://notifica.example.test/#entrada=TOKEN_DA_UNIDADE`. O token no fragmento identifica a unidade e autoriza somente a criação. A tela lê o fragmento e envia o valor no cabeçalho `X-Intake-Token`. O token é rotativo e deve circular entre os profissionais da unidade. A tela não oferece consulta por protocolo.
+O QR Code aponta para a página de registro, por exemplo `https://notifica.example.test/#entrada=TOKEN_DA_UNIDADE`. O token no fragmento identifica a unidade e autoriza somente a criação. A tela lê o fragmento e envia o valor no cabeçalho `X-Intake-Token`. O token é rotativo e deve circular entre os profissionais da unidade. A consulta de status usa apenas o protocolo e não exige esse token.
 
 Envie `POST /notifications` com `Content-Type: application/json`.
 
@@ -39,6 +39,10 @@ Envie `POST /notifications` com `Content-Type: application/json`.
 
 O servidor retorna `201` com `{ "id": "uuid", "protocol": "UHP-2026-8A1E68CE6C5E4CF8" }`. Uma repetição idêntica retorna `200` com o mesmo registro. Uma repetição com conteúdo diferente, inclusive se a foto mudar, retorna `409`.
 
+`POST /notifications/status` aceita `{ "protocol": "UHP-2026-8A1E68CE6C5E4CF8" }` sem login e retorna **somente** `{ "status": "received" }`, `{ "status": "in_progress" }` ou `{ "status": "closed" }`. Não expõe relato, setor, responsável, anexos ou evolução. Protocolo inexistente retorna `404`. A consulta é limitada por taxa e não armazena a resposta em cache.
+
+Na confirmação do registro, `POST /notifications/{id}/receipt-pdf` com `X-Receipt-Token: requestId` retorna ao notificante o PDF com **apenas os dados da notificação original** e a foto inicial opcional. A credencial privada vai no cabeçalho, não na URL. A evolução não entra nessa via.
+
 ## Sessão e filas
 
 | Método e rota | Acesso | Entrada e retorno |
@@ -49,7 +53,7 @@ O servidor retorna `201` com `{ "id": "uuid", "protocol": "UHP-2026-8A1E68CE6C5E
 | `GET /notifications?offset=0` | Autenticado | `{ items, nextOffset }`, 30 por página. A Coordenação vê a unidade. As áreas veem apenas casos atribuídos à conta. |
 | `GET /notifications/{id}` | Autenticado e vinculado | Dados do caso, tratativas acessíveis e histórico. |
 | `GET /notifications/{id}/photo` | Autenticado e vinculado | Imagem JPEG ou PNG, com `Cache-Control: no-store`. Retorna `404` se a notificação estiver fora do escopo ou não houver foto. |
-| `GET /notifications/{id}/pdf` | Coordenação | Gera um PDF A4 da notificação para entrega ao setor, com as marcas UHP Notifica e Prefeitura/Secretaria da Saúde, protocolo, dados da ocorrência, foto anexada quando houver e campo de ciência. Retorna `application/pdf` com `Content-Disposition: inline` e `Cache-Control: no-store`, para abrir no visualizador do navegador e imprimir. Exige sessão e vínculo com a unidade; perfis das áreas recebem `403`. |
+| `GET /notifications/{id}/pdf` | Coordenação ou área vinculada | Gera um PDF A4 atualizado com marcas institucionais, relato, foto inicial, pareceres, ações, evolução e conclusão acessíveis ao perfil. Sem campo de assinatura. Retorna `application/pdf` com `Content-Disposition: inline` e `Cache-Control: no-store`, para abrir no navegador e imprimir. |
 | `GET /assignees` | Coordenação | `{ items: [{ id, name, role }] }` com profissionais ativos da unidade. |
 
 Os perfis são `coordination`, `patient_safety`, `ccih` e `administrator`. O navegador envia o cookie automaticamente na mesma origem. Em desenvolvimento, o servidor usa `http://127.0.0.1:3000`. Em homologação, use o Deploy Preview HTTPS do Netlify, que encaminha as chamadas ao Supabase. A API exige o cabeçalho `Origin` correspondente à aplicação em operações de escrita.
@@ -68,16 +72,19 @@ Todas as escritas desta tabela usam `POST` com JSON. Datas usam `AAAA-MM-DD`.
 | `/assignments/{id}/submit` | Responsável da área | `{ body }` ou `{}` para usar o rascunho. Cria versão do parecer e muda para `pending_approval`. |
 | `/assignments/{id}/decision` | Coordenação | `{ version, decision, reason }`. `approved` libera `actions`. `rejected` exige justificativa e devolve para `revision`. |
 | `/assignments/{id}/actions` | Responsável da área | `{ description, performedOn }`. Cria ação em `actions` ou `complement`. Retorna `201` com `id`, `description`, `performedOn`, `createdBy` e `createdAt`. |
-| `/actions/{id}/evidence` | Responsável da área | `{ name, mime, contentBase64 }`. PDF, PNG ou JPEG de até 5 MiB no servidor Node.js e de até 4 MiB na API hospedada no Supabase. Retorna `201` com `id`, `name`, `mime`, `size` e `createdAt`. Limite por tratativa de 30 arquivos e 30 MiB. |
+| `/actions/{id}/evidence` | Responsável da área | `{ name, mime, contentBase64 }`. PDF, PNG ou JPEG de até 4 MiB. Retorna `201` com `id`, `name`, `mime`, `size` e `createdAt`. Limite por tratativa de 30 arquivos e 30 MiB. |
+| `/assignments/{id}/progress` | Responsável da área | `{ body, attachment? }`, em que `attachment` é `{ name, mime, contentBase64 }` para imagem/PDF opcional de até 4 MiB. Limite de 100 evoluções, 20 anexos e 30 MiB por tratativa. |
 | `/assignments/{id}/submit-actions` | Responsável da área | `{}`. Envia para `pending_validation` quando cada ação registrada tem evidência. |
 | `/assignments/{id}/validate` | Coordenação | `{ submissionId, decision, reason }`. Use o `id` do último evento `actions_submitted` daquela tratativa. `validated` valida. `complement` exige justificativa e devolve para complemento. |
 | `/notifications/{id}/close` | Coordenação | `{ conclusion }`. Fecha o caso após validar todas as tratativas. Retorna o detalhe atualizado. |
 
-A resposta padrão de atualização da tratativa contém `id`, `notificationId`, `area`, `assigneeId`, `opinionDue`, `actionsDue`, `status` e `overdue: { opinion, actions }`. No detalhe, a tratativa inclui `draft` (visível ao responsável), `opinions` e `actions`. Cada parecer inclui `version`, `body`, `submittedBy`, `submittedAt`, `decision`, `reason`, `decidedBy` e `decidedAt`. Cada ação tem a lista `evidence`.
+A resposta padrão de atualização da tratativa contém `id`, `notificationId`, `area`, `assigneeId`, `opinionDue`, `actionsDue`, `status` e `overdue: { opinion, actions }`. No detalhe, a tratativa inclui `draft` (visível ao responsável), `opinions`, `actions` e `progress`. Cada parecer inclui `version`, `body`, `submittedBy`, `submittedAt`, `decision`, `reason`, `decidedBy` e `decidedAt`. Cada ação tem a lista `evidence`. O conteúdo binário não entra na resposta do detalhe.
 
 O estado do caso é `received`, `in_progress` ou `closed`. O atraso é calculado em dias no horário de Brasília e aparece junto à etapa pendente. A data limite pode ser atualizada pela Coordenação. O indicador de atraso não impede o envio.
 
 Use `GET /evidence/{id}` para baixar a evidência com sessão e vínculo. O servidor devolve o arquivo como anexo. Renderize os textos registrados como texto puro.
+
+Use `GET /evidence/{id}/preview` ou `GET /progress/{id}/attachment` para abrir imagens e PDFs autorizados no navegador. O PDF atualizado lista os nomes dos anexos; os arquivos são acessados separadamente no painel.
 
 ## Erros
 

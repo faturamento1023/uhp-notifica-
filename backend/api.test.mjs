@@ -194,7 +194,10 @@ test('gera PDF A4 institucional para pessoas vinculadas e recibo privado do noti
   const assigned = await json('POST', '/notifications/' + record.id + '/assignments', { user: coord,
     body: { area: 'patient_safety', assigneeId: safety.id, opinionDue: '2026-11-14', actionsDue: '2026-11-20' }, status: 201 });
   await call('GET', path, { user: safety });
-  await call('POST', '/assignments/' + assigned.id + '/progress', { user: safety, body: { body: 'Avaliação inicial.' }, status: 201 });
+  await call('POST', '/assignments/' + assigned.id + '/progress', { user: safety,
+    body: { body: 'Avaliação inicial e acompanhamento. '.repeat(120) }, status: 201 });
+  const receiptAfterProgress = await call('POST', '/notifications/' + record.id + '/receipt-pdf', { receiptToken: requestId });
+  const notifierPdf = await PDFDocument.load(await receiptAfterProgress.arrayBuffer());
   const response = await call('GET', path, { user: coord });
   assert.equal(response.headers.get('content-type'), 'application/pdf');
   assert.match(response.headers.get('content-disposition'), /^inline; filename="UHP-/);
@@ -203,7 +206,7 @@ test('gera PDF A4 institucional para pessoas vinculadas e recibo privado do noti
   const bytes = new Uint8Array(await response.arrayBuffer());
   assert.equal(Buffer.from(bytes.subarray(0, 5)).toString(), '%PDF-');
   const pdf = await PDFDocument.load(bytes);
-  assert(pdf.getPageCount() >= 1);
+  assert(pdf.getPageCount() > notifierPdf.getPageCount(), 'O PDF do notificante não inclui a evolução extensa.');
   assert.deepEqual(pdf.getPage(0).getSize(), { width: 595.28, height: 841.89 });
   assert(pdf.context.enumerateIndirectObjects().filter(([, object]) => object?.dict?.get?.(PDFName.of('Subtype'))?.toString() === '/Image').length >= 3);
 });
@@ -237,6 +240,40 @@ test('evolução guarda imagem/PDF com limite e protege o anexo por área', asyn
   assert.equal(detail.assignments[0].progress[0].body, 'Avaliação registrada.');
   assert.equal(detail.assignments[0].progress[0].fileSize, png.length);
   assert.equal(JSON.stringify(detail).includes('contentBase64'), false);
+});
+
+test('consulta pública por protocolo retorna somente a situação, sem dados assistenciais', async t => {
+  const { units, users, call, json, login } = await fixture(t);
+  const [coord, safety] = users;
+  await Promise.all([login(coord), login(safety)]);
+  const record = await json('POST', '/notifications', { intake: units[0].intake, status: 201,
+    body: { requestId: randomUUID(), kind: 'nonconformity', occurredOn: '2026-11-13',
+      sector: 'Setor reservado', period: 'Manhã', description: 'Relato sigiloso.' } });
+  const lookup = protocol => json('POST', '/notifications/status', { body: { protocol } });
+  assert.deepEqual(await lookup(record.protocol.toLowerCase()), { status: 'received' });
+  await call('POST', '/notifications/status', { body: { protocol: 'UHP-2026-0000000000000000' }, status: 404 });
+  await call('POST', '/notifications/status', { body: { protocol: 'UHP-2026-inválido' }, status: 400 });
+  await call('POST', '/notifications/status', { body: { protocol: record.protocol },
+    from: 'https://other.example.test', status: 403 });
+  const assignment = await json('POST', '/notifications/' + record.id + '/assignments', { user: coord, status: 201,
+    body: { area: safety.role, assigneeId: safety.id, opinionDue: '2026-11-14', actionsDue: '2026-11-20' } });
+  assert.deepEqual(await lookup(record.protocol), { status: 'in_progress' });
+  await call('POST', '/assignments/' + assignment.id + '/submit', { user: safety, body: { body: 'Parecer.' } });
+  await call('POST', '/assignments/' + assignment.id + '/decision', { user: coord,
+    body: { version: 1, decision: 'approved' } });
+  const action = await json('POST', '/assignments/' + assignment.id + '/actions', { user: safety, status: 201,
+    body: { description: 'Ação.', performedOn: '2026-11-13' } });
+  const png = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jX9sAAAAASUVORK5CYII=';
+  await call('POST', '/actions/' + action.id + '/evidence', { user: safety, status: 201,
+    body: { name: 'evidencia.png', mime: 'image/png', contentBase64: png } });
+  await call('POST', '/assignments/' + assignment.id + '/submit-actions', { user: safety, body: {} });
+  const detail = await json('GET', '/notifications/' + record.id, { user: coord });
+  const submissionId = detail.history.findLast(e => e.event === 'actions_submitted').id;
+  await call('POST', '/assignments/' + assignment.id + '/validate', { user: coord,
+    body: { submissionId, decision: 'validated' } });
+  await call('POST', '/notifications/' + record.id + '/close', { user: coord,
+    body: { conclusion: 'Conclusão reservada.' } });
+  assert.deepEqual(await lookup(record.protocol), { status: 'closed' });
 });
 
 test('anexa foto opcional nos dois tipos e restringe sua visualização', async t => {

@@ -100,6 +100,34 @@
   const photos = new WeakMap();
   let lastProtocol = "";
 
+  get("status-form").addEventListener("submit",async event=>{
+    event.preventDefault();
+    const result=get("status-result"),button=get("status-submit");
+    const protocol=get("status-protocol").value.trim().toUpperCase();
+    get("status-protocol").value=protocol;
+    result.hidden=true;
+    button.disabled=true;
+    try {
+      const response=await fetch("/api/v1/notifications/status",{
+        method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({protocol})
+      });
+      if(!response.ok) throw Error(response.status===404
+        ? "Protocolo não encontrado. Confira o número informado."
+        : "Não foi possível consultar agora. Tente novamente.");
+      const data=await response.json();
+      const labels={received:"Recebida",in_progress:"Em tratativa",closed:"Finalizada"};
+      if(!labels[data.status]) throw Error("Não foi possível consultar agora. Tente novamente.");
+      const title=document.createElement("strong");title.textContent="Situação: "+labels[data.status];
+      const guidance=document.createElement("p");guidance.textContent="Para mais informações, procure a Coordenação de Enfermagem.";
+      result.replaceChildren(title,guidance);
+      result.classList.remove("error");
+    } catch(error) {
+      result.textContent=error.message;
+      result.classList.add("error");
+    } finally {result.hidden=false;button.disabled=false;}
+  });
+
   get("copy-protocol").addEventListener("click", async () => {
     try {
       await navigator.clipboard.writeText(lastProtocol);

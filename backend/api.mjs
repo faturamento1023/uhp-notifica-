@@ -222,9 +222,9 @@ export function createApi(db, { origin, clock = () => new Date(), evidenceLimit 
     };
   }
 
-  async function pdfResponse(user, row) {
+  async function pdfResponse(user, row, includeTreatments = true) {
     const [record, photo] = await Promise.all([
-      detail(user, row),
+      includeTreatments ? detail(user, row) : { protocol: row.protocol, ...JSON.parse(row.payload) },
       get('SELECT mime,content FROM notification_photos WHERE notification_id=?', row.id)
     ]);
     const bytes = await notificationPdf(record, clock(), photo);
@@ -318,6 +318,16 @@ export function createApi(db, { origin, clock = () => new Date(), evidenceLimit 
         return json({ id: user.id, unitId: user.unit_id, email: user.email, name: user.name, role: user.role }, 200, { 'set-cookie': cookie(raw, sessionSeconds) });
       }
 
+      if (method === 'POST' && path === '/api/v1/notifications/status') {
+        const body = await readJson(request, 256);
+        const protocol = str(body.protocol, 'protocol', 32).toUpperCase();
+        if (!/^UHP-[0-9]{4}-[A-F0-9]{16}$/.test(protocol)) invalid('protocol');
+        await throttle('status:address:' + clientAddress, 300, 900);
+        const row = await get('SELECT status FROM notifications WHERE protocol=?', protocol);
+        if (!row) unavailable();
+        return json({ status: row.status });
+      }
+
       if (method === 'POST' && path === '/api/v1/notifications') {
         const intake = request.headers.get('x-intake-token');
         if (intake !== null && !/^[a-f0-9]{64}$/.test(intake)) forbidden();
@@ -365,7 +375,7 @@ export function createApi(db, { origin, clock = () => new Date(), evidenceLimit 
         const requestId = id(request.headers.get('x-receipt-token'), 'receiptToken');
         const row = await get('SELECT * FROM notifications WHERE id=? AND request_id=?', notificationId, requestId);
         if (!row) unavailable();
-        return await db.read(() => pdfResponse({ role: 'coordination', unitId: row.unit_id }, row));
+        return await db.read(() => pdfResponse(null, row, false));
       }
 
       const authenticated = async () => {
