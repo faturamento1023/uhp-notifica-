@@ -170,3 +170,7 @@ O Netlify serve a revisão do PR nº 3 com consulta pública de situação por p
 O formulário e o painel exibem a mesma arte durante todo o dia. O banner muda à meia-noite no horário de Brasília, seguindo a ordem das 14 artes da rotação pública.
 
 O login, o painel e o formulário público exibem no rodapé os direitos reservados ao Hospital Municipal Dr Arquimedes Vieira de Brito Posse e o CNPJ 24.855.744/0001-56.
+
+## Organização das tratativas
+
+O painel mostra a evolução por área, da mais recente para a mais antiga, depois das ações da etapa atual. Imagens de evidências e de evolução aparecem no próprio painel e PDFs mantêm link. A seção Encerramento mostra o que cada área precisa concluir e libera a conclusão quando todas as tratativas forem validadas.

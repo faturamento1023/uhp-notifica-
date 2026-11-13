@@ -223,16 +223,33 @@ function renderTriage(record) {
   }
   updateAssigneeSelect();
 }
+function renderAttachment(name, mime, path) {
+  const link=el("a",mime==="application/pdf"?"Abrir PDF: "+name:"Abrir imagem em tamanho original");
+  link.href=API+path;
+  link.target="_blank";
+  link.rel="noopener noreferrer";
+  link.className="evidence-link";
+  if(!["image/png","image/jpeg"].includes(mime)) return link;
+  const preview=el("figure","","attachment-preview");
+  const image=el("img");
+  image.alt=name;
+  image.loading="lazy";
+  image.decoding="async";
+  const caption=el("figcaption","","small muted");
+  caption.append(el("span",name),link);
+  image.addEventListener("error",()=>{
+    image.hidden=true;
+    caption.prepend(el("span","Prévia indisponível."));
+  });
+  image.src=link.href;
+  preview.append(image,caption);
+  return preview;
+}
 function renderAction(action,assignment,areaOwner) {
   const container=el("div","","area");
   container.append(labeled("p",formatDate(action.performedOn)+" · "+action.description,"info-line","acoes"));
   for(const evidence of action.evidence) {
-    const link=el("a",evidence.name+" ("+Math.ceil(evidence.size/1024)+" KB) · Abrir");
-    link.href=API+"/evidence/"+encodeURIComponent(evidence.id)+"/preview";
-    link.target="_blank";link.rel="noopener noreferrer";
-    link.className="evidence-link";
-    link.prepend(icon(evidence.mime==="application/pdf"?"pdf":"foto"));
-    container.append(link);
+    container.append(renderAttachment(evidence.name,evidence.mime,"/evidence/"+encodeURIComponent(evidence.id)+"/preview"));
   }
   if(areaOwner && ["actions","complement"].includes(assignment.status)) {
     const file=inputField("Anexar evidência (PDF, PNG ou JPEG; até 4 MB)","","file");
@@ -266,25 +283,24 @@ async function refreshCase(text) {
 function renderProgress(assignment,owner) {
   const box=el("section","","section-title");
   box.append(labeled("h3","Evolução da tratativa","","historico"));
-  if(!assignment.progress.length) box.append(el("p","Nenhuma evolução registrada.","small muted"));
-  for(const entry of assignment.progress) {
-    const card=el("div","","area");
-    card.append(el("strong",formatTime(entry.createdAt)+" · "+entry.author,"small"),el("p",entry.body));
-    if(entry.fileName) {
-      const link=el("a",entry.fileName+" ("+Math.ceil(entry.fileSize/1024)+" KB) · Abrir");
-      link.href=API+"/progress/"+encodeURIComponent(entry.id)+"/attachment";
-      link.target="_blank";link.rel="noopener noreferrer";link.className="evidence-link";
-      link.prepend(icon(entry.fileMime==="application/pdf"?"pdf":"foto"));
-      card.append(link);
-    }
-    box.append(card);
+  const entries=assignment.progress ?? [];
+  if(!entries.length) box.append(el("p","Nenhuma evolução registrada.","small muted"));
+  const timeline=el("ol","","progress-timeline");
+  for(const entry of [...entries].reverse()) {
+    const card=el("li","","progress-entry");
+    card.append(el("strong",formatTime(entry.createdAt)+" · "+entry.author,"small"),
+      el("p",entry.body,"progress-body"));
+    if(entry.fileName) card.append(renderAttachment(entry.fileName,entry.fileMime,"/progress/"+encodeURIComponent(entry.id)+"/attachment"));
+    timeline.append(card);
   }
+  if(entries.length) box.append(timeline);
   if(owner && current.status!=="closed" && assignment.status!=="validated") {
     const note=inputField("Descreva a evolução (até 5.000 caracteres)","","textarea");
     note.input.maxLength=5000;
     const file=inputField("Anexo opcional: imagem ou PDF (até 4 MB por arquivo)","","file");
     file.input.accept=".pdf,.png,.jpg,.jpeg,application/pdf,image/png,image/jpeg";
-    box.append(note.wrap,file.wrap,button("Registrar evolução",async()=>{
+    const composer=el("details","","progress-composer");
+    composer.append(el("summary","Adicionar evolução (opcional)"),note.wrap,file.wrap,button("Registrar evolução",async()=>{
       const body=note.input.value.trim();
       if(!body) throw Error("Descreva a evolução antes de salvar.");
       const chosen=file.input.files[0];
@@ -294,6 +310,7 @@ function renderProgress(assignment,owner) {
       await api("/assignments/"+encodeURIComponent(assignment.id)+"/progress","POST",{body,attachment});
       await refreshCase("Evolução registrada.");
     }));
+    box.append(composer);
   }
   return box;
 }
@@ -371,7 +388,6 @@ function renderAssignment(assignment) {
     },true));
     box.append(actions);
   }
-  box.append(renderProgress(assignment,owner));
   if(coord && assignment.status==="pending_validation") {
     const submission=current.history.filter(event=>event.assignmentId===assignment.id && event.event==="actions_submitted").at(-1);
     const reason=inputField("Justificativa para complemento","");
@@ -407,6 +423,7 @@ function renderAssignment(assignment) {
     }));
     box.append(change);
   }
+  box.append(renderProgress(assignment,owner));
   return box;
 }
 function renderDetail() {
@@ -431,13 +448,31 @@ function renderDetail() {
   for(const assignment of record.assignments) areas.append(renderAssignment(assignment));
   const closure=$("closure");
   closure.hidden=!canCoordinate();
+  $("go-closure").hidden=closure.hidden || record.status==="closed";
   const ready=record.assignments.length>0 && record.assignments.every(item=>item.status==="validated");
+  $("close-case").hidden=record.status==="closed";
   $("close-case").disabled=!ready || record.status==="closed";
+  const checklist=$("closure-checklist");
+  checklist.replaceChildren();
+  const pendingText={
+    draft:"A área precisa enviar o parecer.",
+    revision:"A área precisa ajustar e reenviar o parecer.",
+    pending_approval:"A Coordenação precisa aprovar o parecer.",
+    actions:"A área precisa registrar as ações, anexar as evidências e enviá-las para validação.",
+    complement:"A área precisa complementar as ações e reenviá-las.",
+    pending_validation:"A Coordenação precisa validar as ações e evidências.",
+    validated:"Tratativa validada."
+  };
+  for(const assignment of record.assignments) {
+    const row=el("li");
+    row.append(el("strong",areaName[assignment.area]+" — "),document.createTextNode(pendingText[assignment.status] ?? stepName[assignment.status] ?? assignment.status));
+    checklist.append(row);
+  }
   $("close-hint").textContent=record.status==="closed"
     ?"Finalizada em "+formatTime(record.closedAt)+". Conclusão: "+record.closure
     :ready?"Todas as tratativas foram validadas."
-    :"O encerramento só fica disponível após validar todas as áreas encaminhadas.";
-  $("conclusion").parentElement.hidden=record.status==="closed";
+    :record.assignments.length?"Confira a pendência de cada área abaixo.":"Primeiro, encaminhe a notificação para uma área.";
+  $("conclusion").parentElement.hidden=!ready || record.status==="closed";
   const history=$("history");history.replaceChildren();
   for(const entry of record.history) {
     history.append(labeled("li",formatTime(entry.createdAt)+" · "+(eventName[entry.event] || entry.event)+
