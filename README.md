@@ -143,3 +143,20 @@ O perfil Administrador (`administrator`) tem acesso à fila e às operações de
 ## Formulário e painel no Netlify
 
 A `main` abre o login do painel em `/`. O endereço `/painel.html` continua disponível para quem já usa o link anterior. O formulário fica em `/notificar.html`. O formulário aceita envio direto pelo link `/notificar.html`, destinado à UHP – Posse/GO. O QR Code pode apontar para esse mesmo link. QR Codes anteriores com um token válido continuam funcionando. A abertura para envio direto não libera acesso ao painel ou a notificações existentes. A API continua no Supabase, acessada pelo proxy do Netlify.
+
+## GIFs de carregamento e ícone do PDF
+
+Os 12 GIFs animados estão em `netlify/public/carregamento/`. São quatro opções (logo UHP, ampulheta, pontos e cruz médica), com versões de 64, 128 e 256 px.
+
+Para ações curtas, use o GIF de 64 px junto a um texto de status, por exemplo:
+
+```html
+<span role="status" hidden>
+  <img src="/carregamento/01-logo-uhp-notifica-carregando-64px.gif" alt="" width="24" height="24">
+  Carregando…
+</span>
+```
+
+Mostre o indicador apenas durante a operação e oculte ao finalizar, inclusive se houver erro. Use 128 ou 256 px quando a imagem ocupar uma área maior. Para quem prefere movimento reduzido, oculte o GIF via `prefers-reduced-motion` e mantenha o texto de status.
+
+O botão do painel abre `/notificacao-pdf.html?id=...`. Essa página carrega o PDF autenticado em um visualizador e define o favicon do UHP Notifica. O botão **Abrir PDF diretamente** é uma alternativa quando o navegador não oferece visualização incorporada.

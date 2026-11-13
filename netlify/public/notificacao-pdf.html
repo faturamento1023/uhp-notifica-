@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Notificação em PDF | UHP Notifica</title>
+<link rel="icon" type="image/png" href="/uhp-notifica-icone.png">
+<style>
+body{margin:0;background:#eef5f4;color:#17343b;font:16px system-ui,sans-serif}
+main{height:100dvh;display:flex;flex-direction:column}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 16px;background:white;border-bottom:1px solid #d5e6e3}
+a{color:#005c61;font-weight:700}
+iframe{border:0;width:100%;flex:1;min-height:0}
+p{padding:0 16px}
+</style>
+<script src="/notificacao-pdf.js" defer></script>
+</head>
+<body><main>
+<header><strong>Notificação em PDF</strong><a id="open-pdf" hidden>Abrir PDF diretamente</a></header>
+<p id="pdf-error" role="alert" hidden>O endereço da notificação é inválido. Abra o PDF pelo painel.</p>
+<iframe id="pdf-frame" title="Visualizador da notificação em PDF" hidden></iframe>
+</main></body></html>
