@@ -1,0 +1,318 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; form-action 'none'; base-uri 'none'">
+<title>Painel do Gerente | Portal de Notificações</title>
+<style>
+  :root { color: #142f37; background: #f3f7f6; font: 16px/1.5 "DM Sans", "Segoe UI", system-ui, sans-serif; --teal: #00665d; --muted: #4b646a; --line: #d5e1df; }
+  * { box-sizing: border-box; }
+  body { margin: 0; }
+  [hidden] { display: none !important; }
+  .shell { width: min(100% - 40px, 1120px); margin-inline: auto; }
+  header { background: #fff; border-bottom: 1px solid var(--line); }
+  .top { display: flex; align-items: center; justify-content: space-between; min-height: 72px; gap: 12px; }
+  .brand { display: flex; align-items: center; gap: 11px; font-weight: 750; line-height: 1.2; }
+  .mark { display: grid; place-items: center; flex: none; width: 37px; height: 37px; border-radius: 11px; background: #086459; color: #fff; font-size: 26px; }
+  .muted { color: var(--muted); }
+  .top .muted { font-size: .85rem; text-align: right; }
+  main { padding-block: 33px 64px; }
+  h1, h2, p { margin: 0; }
+  h1 { font-size: clamp(1.9rem, 5vw, 3.1rem); line-height: 1.08; letter-spacing: -.045em; }
+  h2 { font-size: 1.25rem; line-height: 1.25; }
+  .hero { display: flex; justify-content: space-between; align-items: center; gap: 18px; flex-wrap: wrap; color: #fff; padding: clamp(23px, 5vw, 38px); border-radius: 20px; background: linear-gradient(120deg, #073937, #0b514a); }
+  .hero p { margin-top: 9px; color: #d8efea; }
+  button, select, input { font: inherit; }
+  button { cursor: pointer; }
+  button, input, select { min-height: 44px; border-radius: 8px; }
+  button { padding: 8px 14px; font-weight: 700; border: 1px solid #afc8c3; color: var(--teal); background: #fff; }
+  button:hover { background: #e8f4f0; }
+  :focus-visible { outline: 3px solid #218bba; outline-offset: 3px; }
+  .notice { margin: 16px 0; padding: 12px 15px; border-left: 3px solid #75a99f; border-radius: 0 9px 9px 0; background: #e7f0ee; color: #324f54; font-size: .91rem; }
+  #feedback:empty { display: none; }
+  .metrics { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 12px; margin: 16px 0; }
+  .metric, .panel { background: #fff; border: 1px solid var(--line); border-radius: 14px; }
+  .metric { padding: 13px 16px; color: var(--muted); }
+  .metric strong { display: block; font-size: 1.7rem; line-height: 1.2; color: #142f37; }
+  .panel { padding: clamp(15px, 3vw, 23px); }
+  .filters { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 12px; margin: 15px 0; }
+  label { display: grid; gap: 5px; font-weight: 650; min-width: 0; }
+  input, select { width: 100%; min-width: 0; border: 1px solid #aabebc; color: #142f37; background: #fff; padding: 8px 10px; }
+  .list { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+  .row { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 12px; align-items: center; border: 1px solid var(--line); border-radius: 10px; padding: 12px; overflow-wrap: anywhere; }
+  .row strong { display: block; }
+  .row small { color: var(--muted); }
+  .status { font-size: .82rem; border-radius: 999px; padding: 4px 9px; color: #294f49; background: #e4f3ee; white-space: nowrap; }
+  .status[data-state="new"] { background: #f7efd9; color: #624810; }
+  .status[data-state="closed"] { background: #e7edf6; color: #35537c; }
+  #empty { padding: 16px 0; color: var(--muted); }
+  #details { margin-top: 16px; }
+  .detail-head { display: flex; justify-content: space-between; gap: 10px; align-items: start; }
+  #detail-meta { margin-top: 4px; overflow-wrap: anywhere; }
+  #status-label { max-width: 240px; margin-top: 13px; }
+  dl { margin: 12px 0 0; display: grid; grid-template-columns: minmax(0,1fr) minmax(0,2fr); column-gap: 15px; }
+  dt, dd { margin: 0; padding: 8px 0; border-bottom: 1px solid var(--line); overflow-wrap: anywhere; }
+  dt { font-weight: 700; }
+  dd { white-space: pre-wrap; }
+  @media (max-width: 650px) {
+    .shell { width: min(100% - 28px, 1120px); }
+    main { padding-top: 20px; }
+    .metrics { gap: 6px; }
+    .metric { padding: 9px; font-size: .79rem; }
+    .filters { grid-template-columns: 1fr; }
+    .row { grid-template-columns: minmax(0,1fr) auto; gap: 8px; }
+    .row button { grid-column: 1 / -1; justify-self: start; }
+    dl { grid-template-columns: 1fr; }
+    dt { border: 0; padding-bottom: 0; }
+    dd { padding-top: 2px; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="shell top">
+    <div class="brand"><span class="mark" aria-hidden="true">+</span><span>Portal de Notificações</span></div>
+    <span class="muted">Versão de teste</span>
+  </div>
+</header>
+<main class="shell">
+  <div class="hero">
+    <div><h1>Painel do gerente</h1><p>Consulte e acompanhe as notificações registradas.</p></div>
+    <button id="import-button" type="button">Importar notificações (.json)</button>
+    <input id="import-files" type="file" accept=".json,application/json" multiple hidden aria-label="Arquivos de notificações de teste">
+  </div>
+  <p class="notice">Use dados fictícios. Para consultar registros de outro aparelho ou navegador, importe o arquivo baixado no formulário.</p>
+  <noscript><p class="notice">Ative o JavaScript para consultar as notificações.</p></noscript>
+  <p class="notice" id="storage-note" hidden>O armazenamento do navegador está indisponível. Os registros importados nesta sessão serão descartados ao fechar ou recarregar a página.</p>
+  <p class="notice" id="feedback" role="status" aria-live="polite"></p>
+  <div class="metrics" aria-label="Resumo das notificações">
+    <div class="metric"><strong id="total">0</strong>Total</div>
+    <div class="metric"><strong id="nc-total">0</strong>Não conformidades</div>
+    <div class="metric"><strong id="event-total">0</strong>Incidentes e eventos</div>
+  </div>
+  <section class="panel" aria-labelledby="queue-title">
+    <h2 id="queue-title" tabindex="-1">Notificações registradas</h2>
+    <div class="filters">
+      <label>Buscar<input id="query" type="search" placeholder="Protocolo, setor, tipo ou relato"></label>
+      <label>Tipo<select id="kind"><option value="">Todos</option><option value="nonconformity">Não conformidade</option><option value="incident">Incidente ou evento adverso</option></select></label>
+      <label>Situação<select id="state"><option value="">Todas</option><option value="new">Nova</option><option value="reviewing">Em análise</option><option value="closed">Concluída</option></select></label>
+    </div>
+    <p id="empty">Nenhuma notificação registrada. Importe um arquivo de teste gerado no formulário.</p>
+    <ul class="list" id="records"></ul>
+  </section>
+  <section class="panel" id="details" hidden aria-labelledby="detail-title">
+    <div class="detail-head">
+      <div><h2 id="detail-title" tabindex="-1"></h2><p class="muted" id="detail-meta"></p></div>
+      <button type="button" id="close-details">Fechar</button>
+    </div>
+    <label id="status-label">Situação da notificação
+      <select id="edit-state"><option value="new">Nova</option><option value="reviewing">Em análise</option><option value="closed">Concluída</option></select>
+    </label>
+    <p id="status-feedback" class="muted" role="status"></p>
+    <dl id="entries"></dl>
+  </section>
+</main>
+<script>
+  "use strict";
+
+  const get = id => document.getElementById(id);
+  const recordPrefix = "portal-notificacoes:teste:registro:";
+  const statePrefix = "portal-notificacoes:teste:situacao:";
+  const kindLabels = { nonconformity: "Não conformidade", incident: "Incidente ou evento adverso" };
+  const stateLabels = { new: "Nova", reviewing: "Em análise", closed: "Concluída" };
+  const sessionRecords = new Map();
+  const sessionStates = new Map();
+  const dateFormat = new Intl.DateTimeFormat("pt-BR", { dateStyle: "short", timeStyle: "short", timeZone: "America/Sao_Paulo" });
+  let records = new Map();
+  let states = new Map();
+  let selectedId = null;
+
+  function validRecord(record) {
+    return record && record.version === 1
+      && typeof record.id === "string" && /^[a-f0-9]{32}$/.test(record.id)
+      && Object.hasOwn(kindLabels, record.kind)
+      && typeof record.createdAt === "string" && Number.isFinite(Date.parse(record.createdAt))
+      && typeof record.occurredOn === "string" && /^\d{4,6}-\d{2}-\d{2}$/.test(record.occurredOn)
+      && ["sector", "subject", "harm"].every(key => typeof record[key] === "string" && record[key].length <= 250)
+      && Array.isArray(record.entries) && record.entries.length > 0 && record.entries.length <= 40
+      && record.entries.every(entry => Array.isArray(entry) && entry.length === 2
+        && entry.every(value => typeof value === "string")
+        && entry[0].length <= 180 && entry[1].length <= 5000);
+  }
+
+  function readRecords() {
+    records = new Map(sessionRecords);
+    states = new Map(sessionStates);
+    try {
+      for (let index = 0; index < localStorage.length; index++) {
+        const key = localStorage.key(index);
+        if (!key) continue;
+        if (key.startsWith(statePrefix)) {
+          const state = localStorage.getItem(key);
+          if (Object.hasOwn(stateLabels, state)) states.set(key.slice(statePrefix.length), state);
+        }
+        if (key.startsWith(recordPrefix)) {
+          try {
+            const record = JSON.parse(localStorage.getItem(key));
+            if (validRecord(record) && key === recordPrefix + record.id) records.set(record.id, record);
+          } catch {
+            // Ignore malformed entries while reading the remaining records.
+          }
+        }
+      }
+    } catch {
+      get("storage-note").hidden = false;
+    }
+  }
+
+  const protocol = record => record.id.slice(0, 10).toUpperCase();
+  const normalize = text => text.toLowerCase().normalize("NFD").replace(/\p{Diacritic}/gu, "");
+  const stateOf = record => states.get(record.id) || "new";
+  const dateOf = record => record.occurredOn.split("-").reverse().join("/");
+
+  function renderList() {
+    const all = [...records.values()];
+    const query = normalize(get("query").value.trim());
+    const kind = get("kind").value;
+    const state = get("state").value;
+    get("total").textContent = all.length;
+    get("nc-total").textContent = all.filter(record => record.kind === "nonconformity").length;
+    get("event-total").textContent = all.filter(record => record.kind === "incident").length;
+    const filtered = all.filter(record => {
+      if (kind && record.kind !== kind || state && stateOf(record) !== state) return false;
+      if (!query) return true;
+      const searchable = [protocol(record), kindLabels[record.kind], record.sector, record.subject, ...record.entries.flat()];
+      return normalize(searchable.join(" ")).includes(query);
+    }).sort((left, right) => Date.parse(right.createdAt) - Date.parse(left.createdAt));
+
+    const list = get("records");
+    const empty = get("empty");
+    list.replaceChildren();
+    empty.hidden = filtered.length > 0;
+    empty.textContent = all.length ? "Nenhuma notificação corresponde aos filtros." : "Nenhuma notificação registrada. Importe um arquivo de teste gerado no formulário.";
+    for (const record of filtered) {
+      const row = document.createElement("li");
+      row.className = "row";
+      const copy = document.createElement("div");
+      const title = document.createElement("strong");
+      title.textContent = record.subject || kindLabels[record.kind];
+      const meta = document.createElement("small");
+      meta.textContent = [protocol(record), dateOf(record), record.sector].filter(Boolean).join(" · ");
+      copy.append(title, meta);
+      const status = document.createElement("span");
+      status.className = "status";
+      status.dataset.state = stateOf(record);
+      status.textContent = stateLabels[status.dataset.state];
+      const button = document.createElement("button");
+      button.type = "button";
+      button.textContent = "Abrir";
+      button.dataset.id = record.id;
+      button.setAttribute("aria-label", "Abrir notificação " + protocol(record));
+      button.addEventListener("click", () => {
+        selectedId = record.id;
+        get("status-feedback").textContent = "";
+        renderDetails();
+        get("detail-title").focus();
+      });
+      row.append(copy, status, button);
+      list.append(row);
+    }
+  }
+
+  function renderDetails() {
+    const record = records.get(selectedId);
+    get("details").hidden = !record;
+    const entries = get("entries");
+    entries.replaceChildren();
+    if (!record) return;
+    get("detail-title").textContent = kindLabels[record.kind];
+    get("detail-meta").textContent = "Protocolo " + protocol(record) + " · Registrada em " + dateFormat.format(new Date(record.createdAt));
+    get("edit-state").value = stateOf(record);
+    for (const [label, value] of record.entries) {
+      const term = document.createElement("dt");
+      term.textContent = label;
+      const detail = document.createElement("dd");
+      detail.textContent = value;
+      entries.append(term, detail);
+    }
+  }
+
+  function refresh() {
+    readRecords();
+    renderList();
+    renderDetails();
+  }
+
+  get("query").addEventListener("input", renderList);
+  get("kind").addEventListener("change", renderList);
+  get("state").addEventListener("change", renderList);
+  get("close-details").addEventListener("click", () => {
+    const button = get("records").querySelector('[data-id="' + selectedId + '"]');
+    selectedId = null;
+    renderDetails();
+    (button || get("queue-title")).focus();
+  });
+
+  get("edit-state").addEventListener("change", event => {
+    if (!records.has(selectedId)) return;
+    const state = event.target.value;
+    let message = "Situação atualizada neste navegador.";
+    try {
+      localStorage.setItem(statePrefix + selectedId, state);
+    } catch {
+      message = "Situação atualizada apenas nesta sessão.";
+    }
+    sessionStates.set(selectedId, state);
+    states.set(selectedId, state);
+    renderList();
+    get("status-feedback").textContent = message;
+  });
+
+  const fileInput = get("import-files");
+  get("import-button").addEventListener("click", () => fileInput.click());
+  fileInput.addEventListener("change", async () => {
+    const files = [...fileInput.files];
+    fileInput.value = "";
+    let added = 0;
+    let duplicates = 0;
+    let rejected = 0;
+    for (const file of files) {
+      let record;
+      try {
+        if (file.size > 200000) throw new Error("Arquivo acima do limite");
+        record = JSON.parse(await file.text());
+        if (!validRecord(record)) throw new Error("Formato inválido");
+      } catch {
+        rejected++;
+        continue;
+      }
+      readRecords();
+      if (records.has(record.id)) {
+        duplicates++;
+        continue;
+      }
+      sessionRecords.set(record.id, record);
+      try {
+        localStorage.setItem(recordPrefix + record.id, JSON.stringify(record));
+      } catch {
+        get("storage-note").hidden = false;
+      }
+      added++;
+    }
+    refresh();
+    const messages = [];
+    if (added) messages.push(added === 1 ? "1 notificação importada." : added + " notificações importadas.");
+    if (duplicates) messages.push(duplicates === 1 ? "1 registro já estava no painel." : duplicates + " registros já estavam no painel.");
+    if (rejected) messages.push(rejected === 1 ? "1 arquivo inválido." : rejected + " arquivos inválidos.");
+    get("feedback").textContent = messages.join(" ");
+  });
+
+  window.addEventListener("storage", event => {
+    if (!event.key || event.key.startsWith(recordPrefix) || event.key.startsWith(statePrefix)) refresh();
+  });
+  refresh();
+</script>
+</body>
+</html>
