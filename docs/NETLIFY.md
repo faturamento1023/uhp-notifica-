@@ -1,21 +1,21 @@
 # Homologação no Netlify
 
-Use o projeto Netlify conectado ao repositório `faturamento1023/uhp-notifica-`. A configuração da branch `codex/backend-notificacoes` serve a API por Netlify Functions e inclui uma página simples para consultar o estado da conexão. A entrega do frontend substitui essa página pelas telas integradas e usa chamadas relativas a `/api/v1`.
+O Netlify publica os arquivos de `netlify/public` a partir do GitHub. O `netlify.toml` encaminha `/api/v1/*` para a função `uhp-api` no Supabase, mantendo a origem do site para as telas e o cookie de sessão. A função usa `SUPABASE_DB_URL`, fornecida pelo próprio Supabase, e executa as consultas sob o papel `uhp_notifica_app` dentro de cada transação. O Netlify dispensa `UHP_DATABASE_URL`.
 
-## Configurar o Deploy Preview do PR nº 1
+## Deploy Preview
 
-1. No Supabase UHP Notifica, defina a senha do usuário técnico `uhp_notifica_backend`, que já foi criado no banco hospedado pelo procedimento em [Instalação no Supabase](SUPABASE.md). A migração inicial já está aplicada no projeto hospedado.
-2. No Netlify, configure `UHP_DATABASE_URL` como segredo para o contexto de Deploy Preview do PR nº 1 ou da branch `codex/backend-notificacoes`. O valor é a URL do pooler do Supabase com o usuário técnico, sem parâmetros. Copie o host no painel de conexão do Supabase. Se a validação TLS exigir o certificado raiz do projeto, configure também `UHP_DB_CA_PEM` com o PEM completo. Essas variáveis ficam no ambiente da função.
-3. Gere um novo Deploy Preview para o PR nº 1. O arquivo `netlify.toml` define a pasta pública e a pasta das funções. A branch usa Node.js 24.
-4. Abra `/api/v1/health` no endereço do Deploy Preview. O retorno `200` com `status: "ok"` confirma a conexão com o esquema. `provisioned: false` indica que ainda falta cadastrar a primeira unidade. `503` indica que o banco não pôde ser consultado. `GET /api/v1/session` sem sessão deve retornar `401`.
-5. Com a conexão verificada, cadastre uma unidade fictícia e as três contas de teste com `backend/admin.mjs`. Mantenha senhas e token do QR Code no ambiente de homologação. Teste cadastro com foto, login, encaminhamento, parecer, evidências e encerramento antes de usar as telas com a equipe.
+- [Página de homologação](https://deploy-preview-1--uhp-notifica.netlify.app)
+- [Verificação da API](https://deploy-preview-1--uhp-notifica.netlify.app/api/v1/health)
+- [PR nº 1](https://github.com/faturamento1023/uhp-notifica-/pull/1)
 
-O limite por arquivo de evidência no Deploy Preview é de **4 MiB** para que a codificação em Base64 caiba no limite de 6 MB do Netlify. A foto da notificação continua limitada a **2 MiB**. A função usa o IP fornecido pelo Netlify e mantém o cookie seguro na mesma origem.
+O limite é de **4 MiB** por evidência e **2 MiB** para a foto inicial. As telas integradas devem usar rotas relativas e enviar o token de entrada apenas no cabeçalho `X-Intake-Token`.
 
-- [Deploy Previews](https://docs.netlify.com/deploy/deploy-types/deploy-previews/)
-- [Variáveis de ambiente para Functions](https://docs.netlify.com/build/functions/environment-variables/)
-- [Limites das Functions](https://docs.netlify.com/build/functions/configuration/)
+## Atualizar a API
+
+A origem da função está em `supabase/functions/uhp-api/index.mjs`, com dependências de `backend/` e import map local. Faça o deploy da função no projeto UHP Notifica, incluindo esses arquivos. O gateway está configurado com `verify_jwt: false` porque a API usa sessão própria e token de registro. As origens aceitas para escrita são o domínio do projeto Netlify e o Deploy Preview nº 1.
 
 ## Rodar o teste HTTP
 
-Execute `node scripts/check-preview.mjs URL_DO_PREVIEW` para verificar a conexão e a exigência de sessão. Para testar o fluxo completo, configure `UHP_TEST_INTAKE_TOKEN` e os pares `UHP_TEST_COORD_EMAIL` / `UHP_TEST_COORD_PASSWORD`, `UHP_TEST_SAFETY_EMAIL` / `UHP_TEST_SAFETY_PASSWORD` e `UHP_TEST_CCIH_EMAIL` / `UHP_TEST_CCIH_PASSWORD` em um ambiente privado. Execute o mesmo comando com `--full`. Use somente uma unidade fictícia e contas terminadas em `@example.test`. Cada execução completa grava uma notificação fictícia para conferência.
+Execute `node scripts/check-preview.mjs URL_DO_PREVIEW` para verificar a conexão e a exigência de sessão. Para rodar o fluxo completo, configure `UHP_TEST_INTAKE_TOKEN` e os pares `UHP_TEST_COORD_EMAIL` / `UHP_TEST_COORD_PASSWORD`, `UHP_TEST_SAFETY_EMAIL` / `UHP_TEST_SAFETY_PASSWORD` e `UHP_TEST_CCIH_EMAIL` / `UHP_TEST_CCIH_PASSWORD` em ambiente privado. Execute com `--full`, em uma unidade fictícia e com contas terminadas em `@example.test`. O teste cria uma notificação fictícia e encerra as sessões que abriu.
+
+A página publicada no preview mostra o status da API. A interface final, o QR Code e as contas da unidade dependem da retomada do frontend e da homologação com a equipe.
