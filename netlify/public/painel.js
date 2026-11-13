@@ -118,6 +118,7 @@ function showLogin() {
   queuePageCount=1;
   document.body.classList.remove("panel-signed-in");
   $("login-hero").after($("feedback"));
+  $("workspace").parentElement.after(document.querySelector(".institutional-footer"));
   groupChat.stop();
   $("login-hero").hidden=false;
   $("detail").hidden=true;
@@ -137,6 +138,7 @@ function showLogin() {
 function showWorkspace() {
   document.body.classList.add("panel-signed-in");
   $("home-view").before($("feedback"));
+  $("workspace").append(document.querySelector(".institutional-footer"));
   setSidebarExpanded(true);
   $("login").hidden=true;$("workspace").hidden=false;$("logout").hidden=false;
   $("identity").textContent=account.name;

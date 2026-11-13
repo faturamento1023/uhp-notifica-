@@ -6,20 +6,18 @@ body.panel-signed-in.sidebar-collapsed { --sidebar-width: 68px; }
   padding: 0;
   display: flex;
   flex-direction: column;
-  background: linear-gradient(to right, var(--sidebar-bg) var(--sidebar-width), transparent var(--sidebar-width));
 }
 .panel-signed-in #feedback { margin: 0 0 14px; }
-.panel-signed-in .institutional-footer {
-  margin-inline-start: var(--sidebar-width);
-  box-shadow: calc(-1 * var(--sidebar-width)) 0 var(--sidebar-bg);
-}
 .panel-shell {
   display: grid;
   grid-template-columns: var(--sidebar-width, 216px) minmax(0, 1fr);
+  grid-template-rows: 1fr auto;
   flex: 1;
   font-size: 1.067rem;
 }
 .panel-sidebar {
+  grid-column: 1;
+  grid-row: 1 / -1;
   display: flex;
   position: relative;
   background: var(--sidebar-bg);
@@ -99,7 +97,8 @@ body.panel-signed-in.sidebar-collapsed { --sidebar-width: 68px; }
 .sidebar-collapsed #logout span { display: none; }
 .sidebar-collapsed .panel-menu a, .sidebar-collapsed #logout { justify-content: center; padding-inline: 0; }
 .sidebar-collapsed .sidebar-avatar { width: 38px; height: 38px; font-size: .85rem; }
-.panel-content { min-width: 0; width: 100%; padding: 24px clamp(24px, 2vw, 40px) 40px; }
+.panel-shell > .institutional-footer { grid-column: 2; grid-row: 2; }
+.panel-content { grid-column: 2; grid-row: 1; min-width: 0; width: 100%; padding: 24px clamp(24px, 2vw, 40px) 40px; }
 .panel-heading {
   display: flex;
   align-items: center;
@@ -173,10 +172,10 @@ body.panel-signed-in.sidebar-collapsed { --sidebar-width: 68px; }
 .help-tutorials summary { cursor: pointer; font-weight: 650; }
 .help-tutorials li + li { margin-top: 6px; }
 @media (max-width: 900px) {
-  .panel-signed-in main.shell { background: none; }
-  .panel-signed-in .institutional-footer { margin-inline-start: 0; box-shadow: none; }
-  .panel-shell { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto 1fr; }
-  .panel-sidebar { padding: 9px 12px; }
+  .panel-shell { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto 1fr auto; }
+  .panel-sidebar { grid-row: 1; padding: 9px 12px; }
+  .panel-content { grid-column: 1; grid-row: 2; }
+  .panel-shell > .institutional-footer { grid-column: 1; grid-row: 3; }
   #sidebar-content { display: flex; flex-direction: row; align-items: center; flex-wrap: wrap; gap: 5px 10px; }
   .sidebar-toggle { display: none; }
   .sidebar-profile { display: flex; justify-items: start; text-align: left; padding: 3px 0; border: 0; flex: 1 1 200px; }
