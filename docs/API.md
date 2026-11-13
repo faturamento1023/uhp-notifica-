@@ -51,7 +51,7 @@ O servidor retorna `201` com `{ "id": "uuid", "protocol": "UHP-2026-8A1E68CE6C5E
 | `GET /notifications/{id}/photo` | Autenticado e vinculado | Imagem JPEG ou PNG, com `Cache-Control: no-store`. Retorna `404` se a notificação estiver fora do escopo ou não houver foto. |
 | `GET /assignees` | Coordenação | `{ items: [{ id, name, role }] }` com profissionais ativos da unidade. |
 
-Os perfis são `coordination`, `patient_safety` e `ccih`. O navegador envia o cookie automaticamente na mesma origem. Em desenvolvimento, o servidor usa `http://127.0.0.1:3000`. Em homologação e produção, configure HTTPS. A API exige o cabeçalho `Origin` correspondente à aplicação em operações de escrita.
+Os perfis são `coordination`, `patient_safety` e `ccih`. O navegador envia o cookie automaticamente na mesma origem. Em desenvolvimento, o servidor usa `http://127.0.0.1:3000`. Em homologação, use o Deploy Preview HTTPS do Netlify, que encaminha as chamadas ao Supabase. A API exige o cabeçalho `Origin` correspondente à aplicação em operações de escrita.
 
 Cada item da fila contém `id`, `protocol`, `status`, `createdAt`, `kind`, `sector`, `occurredOn`, `subject`, `harm` e `assignments`. O detalhe inclui também `period`, `description`, `entries`, `closure`, `closedAt`, `closedBy` e `history`, além de `photo` (`null` ou `{ name, mime, size }`). Use a rota de foto com a sessão atual para visualizar a imagem. O histórico traz `id`, `assignmentId`, `actorId`, `event`, `detail` e `createdAt`.
 
@@ -67,7 +67,7 @@ Todas as escritas desta tabela usam `POST` com JSON. Datas usam `AAAA-MM-DD`.
 | `/assignments/{id}/submit` | Responsável da área | `{ body }` ou `{}` para usar o rascunho. Cria versão do parecer e muda para `pending_approval`. |
 | `/assignments/{id}/decision` | Coordenação | `{ version, decision, reason }`. `approved` libera `actions`. `rejected` exige justificativa e devolve para `revision`. |
 | `/assignments/{id}/actions` | Responsável da área | `{ description, performedOn }`. Cria ação em `actions` ou `complement`. Retorna `201` com `id`, `description`, `performedOn`, `createdBy` e `createdAt`. |
-| `/actions/{id}/evidence` | Responsável da área | `{ name, mime, contentBase64 }`. PDF, PNG ou JPEG de até 5 MiB no servidor Node.js e de até 4 MiB no Deploy Preview do Netlify. Retorna `201` com `id`, `name`, `mime`, `size` e `createdAt`. Limite por tratativa de 30 arquivos e 30 MiB. |
+| `/actions/{id}/evidence` | Responsável da área | `{ name, mime, contentBase64 }`. PDF, PNG ou JPEG de até 5 MiB no servidor Node.js e de até 4 MiB na API hospedada no Supabase. Retorna `201` com `id`, `name`, `mime`, `size` e `createdAt`. Limite por tratativa de 30 arquivos e 30 MiB. |
 | `/assignments/{id}/submit-actions` | Responsável da área | `{}`. Envia para `pending_validation` quando cada ação registrada tem evidência. |
 | `/assignments/{id}/validate` | Coordenação | `{ submissionId, decision, reason }`. Use o `id` do último evento `actions_submitted` daquela tratativa. `validated` valida. `complement` exige justificativa e devolve para complemento. |
 | `/notifications/{id}/close` | Coordenação | `{ conclusion }`. Fecha o caso após validar todas as tratativas. Retorna o detalhe atualizado. |
@@ -102,4 +102,4 @@ A aplicação escuta somente no loopback. Use `UHP_PORT` para alterar a porta, `
 
 ## Antes do uso assistencial
 
-Instale um proxy HTTPS na mesma máquina e configure a origem institucional. Configure backup e teste a restauração do banco, que contém as fotos e evidências. Mantenha a conexão exclusiva do servidor e restrinja o acesso operacional ao banco. Defina retenção, acesso ao QR Code, controle de volume no proxy, tratamento de anexos no ambiente institucional e responsáveis pelo provisionamento de contas. Nesta versão, a limitação de tentativas usa o endereço da conexão direta, sem confiar em cabeçalhos enviados pelo cliente. Atrás de um único proxy, o limite por endereço é compartilhado. A integração das telas e a homologação com a unidade precedem o uso de dados reais.
+Defina a origem HTTPS institucional. Se optar pelo servidor Node.js independente, instale um proxy HTTPS na mesma máquina. Configure backup e teste a restauração do banco, que contém as fotos e evidências. Mantenha a conexão exclusiva do servidor e restrinja o acesso operacional ao banco. Defina retenção, acesso ao QR Code, controle de volume no proxy, tratamento de anexos no ambiente institucional e responsáveis pelo provisionamento de contas. Nesta versão, a limitação de tentativas usa o endereço da conexão direta, sem confiar em cabeçalhos enviados pelo cliente. Atrás de um único proxy, o limite por endereço é compartilhado. A integração das telas e a homologação com a unidade precedem o uso de dados reais.
