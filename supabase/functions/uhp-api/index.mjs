@@ -10,8 +10,7 @@ const database = openStore({ UHP_DATABASE_URL: Deno.env.get('SUPABASE_DB_URL') }
   maxConnections: 1, restrictedRole: true
 });
 const evidenceLimit = 4 * 1024 * 1024;
-const directIntakeUnitId = '9c2b0a07-7021-4916-967d-251480c399f1';
-const handlers = new Map([...origins].map(origin => [origin, createApi(database, { origin, evidenceLimit, directIntakeUnitId })]));
+const handlers = new Map([...origins].map(origin => [origin, createApi(database, { origin, evidenceLimit })]));
 const noStore = { 'cache-control': 'no-store', 'x-content-type-options': 'nosniff' };
 
 Deno.serve(async request => {

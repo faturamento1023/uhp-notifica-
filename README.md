@@ -132,6 +132,36 @@ O limite é de 4 MiB por arquivo de evidência e 2 MiB para a foto inicial. O [P
 - No painel integrado, ler `photo` no detalhe e carregar a imagem por `GET /api/v1/notifications/{id}/photo` com a sessão atual. A Coordenação da unidade e os responsáveis pelas tratativas atribuídas podem consultar a foto. O anexo inicial da ocorrência é independente das evidências das ações.
 - O Codex atualizou os protótipos, a API, o banco, o contrato e os testes de acesso à foto. A outra IA deve reaproveitar o comportamento na branch de frontend. O protótipo HTML segue destinado a dados fictícios e usa importação ou armazenamento local. A publicação institucional depende da integração com o backend do PR nº 1.
 
+## Ícones e marcas da interface
+
+Os 50 PNGs de interface estão em [netlify/public/icons](netlify/public/icons/README.md). O portal e o painel usam esses ícones nas etapas, seções, ações e estados, mantendo rótulos de texto e imagens decorativas com `alt` vazio. A confirmação permite copiar o protocolo.
+
+| Arquivo | Uso |
+| --- | --- |
+| `uhp-notifica-login.png` | Marca horizontal do sistema no portal e no painel. |
+| `uhp-notifica-icone.png` | Favicon e marca na tela de acesso. |
+| `logo-posse-saude.png` | Marca da Prefeitura e Secretaria de Saúde ao lado da marca do sistema. |
+
+O PDF para o setor contém as duas marcas.
+
 ## Perfil Administrador
 
 O perfil Administrador (`administrator`) tem acesso à fila e às operações de gestão da própria unidade, com as mesmas permissões operacionais da Coordenação. O perfil aparece separado no login e não pode ser indicado como responsável de Segurança do Paciente ou CCIH. A conta inicial de administração foi provisionada no Supabase. As credenciais ficam fora do GitHub.
+
+## Banners educativos
+
+Os 15 banners fornecidos estão em `netlify/public/banners/`, convertidos para WebP para reduzir o peso da página. A integração fica com quem está editando as telas.
+
+- **Formulário público (`/notificar.html`).** Usar a faixa abaixo dos três passos na tela de escolha do tipo de notificação.
+- **Painel autenticado.** Usar o espaço abaixo de **Selecione um protocolo**, à direita da fila. Exibir ali enquanto nenhum protocolo estiver selecionado, para preservar o espaço do detalhe.
+- Alternar os 15 banners em sequência. Manter a proporção da imagem, sem cortar textos ou ilustrações, com ajuste responsivo e opção de pausar. Conferir as referências normativas presentes nas artes antes da publicação.
+
+## GIFs de carregamento e ícone do PDF
+
+Os 12 GIFs estão em `netlify/public/carregamento/`. Use 64 px em controles e 128 ou 256 px em áreas maiores. Mostre durante a operação junto a um status textual e oculte no fim, inclusive em erro. Para `prefers-reduced-motion`, mantenha apenas o texto. Exemplo: `/carregamento/01-logo-uhp-notifica-carregando-64px.gif`.
+
+O botão do painel abre `notificacao-pdf.html` com o favicon do UHP Notifica e visualização do PDF autenticado.
+
+### Exibição dos banners
+
+O formulário e o painel exibem a mesma arte durante todo o dia. O banner muda à meia-noite no horário de Brasília, seguindo a ordem das 14 artes da rotação pública.

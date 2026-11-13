@@ -100,6 +100,44 @@
   const photos = new WeakMap();
   let lastProtocol = "";
 
+  get("status-form").addEventListener("submit",async event=>{
+    event.preventDefault();
+    const result=get("status-result"),button=get("status-submit");
+    const protocol=get("status-protocol").value.trim().toUpperCase();
+    get("status-protocol").value=protocol;
+    result.textContent="Consultando a situação da notificação...";
+    result.classList.remove("error");
+    result.hidden=false;
+    button.disabled=true;
+    const statusIcon=button.querySelector("img");
+    statusIcon.src="carregamento/03-pontos-animados-64px.gif";
+    statusIcon.classList.add("loading-gif");
+    get("status-label").textContent="Consultando...";
+    try {
+      const response=await fetch("/api/v1/notifications/status",{
+        method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({protocol})
+      });
+      if(!response.ok) throw Error(response.status===404
+        ? "Protocolo não encontrado. Confira o número informado."
+        : "Não foi possível consultar agora. Tente novamente.");
+      const data=await response.json();
+      const labels={received:"Recebida",in_progress:"Em tratativa",closed:"Finalizada"};
+      if(!labels[data.status]) throw Error("Não foi possível consultar agora. Tente novamente.");
+      const title=document.createElement("strong");title.textContent="Situação: "+labels[data.status];
+      const guidance=document.createElement("p");guidance.textContent="Para mais informações, procure a Coordenação de Enfermagem.";
+      result.replaceChildren(title,guidance);
+      result.classList.remove("error");
+    } catch(error) {
+      result.textContent=error.message;
+      result.classList.add("error");
+    } finally {
+      result.hidden=false;button.disabled=false;
+      statusIcon.src="icons/buscar.png";statusIcon.classList.remove("loading-gif");
+      get("status-label").textContent="Consultar status";
+    }
+  });
+
   get("copy-protocol").addEventListener("click", async () => {
     try {
       await navigator.clipboard.writeText(lastProtocol);
@@ -201,13 +239,14 @@
   function reviewEntries(form) {
     const entries = [];
     for (const field of form.elements) {
-      if (!field.name || field.disabled || !field.value.trim()) continue;
+      if (!field.name || field.disabled || !field.value.trim() || (field.type === "radio" && !field.checked)) continue;
       if (["ageUnit", "factors", "otherSector"].includes(field.name)) continue;
       let value = field.value.trim();
       if (field.type === "date") value = value.split("-").reverse().join("/");
       if (field.name === "age") value += " " + get("event-age-unit").value.toLowerCase();
       if (field.id === "event-sector" && value === "Outro") value = get("event-other-sector").value.trim();
-      const label = field.labels[0].textContent.replace(/ \*$/, "");
+      const label = field.name === "identity" ? "Identificação de quem notifica"
+        : field.labels[0].textContent.replace(/ \*$/, "");
       entries.push([label, value]);
     }
     const selectedFactors = new FormData(form).getAll("factors");
@@ -215,7 +254,19 @@
     return entries;
   }
 
-  for (const form of document.querySelectorAll("form")) {
+  for (const form of document.querySelectorAll("#nonconformity form, #incident form")) {
+    const identity = form.querySelector("[data-identity]");
+    const nameWrap = identity.querySelector("[data-identity-name]");
+    const notifierName = nameWrap.querySelector("input");
+    function syncIdentity() {
+      const identified = identity.querySelector('input[name="identity"]:checked')?.value === "Identificada";
+      nameWrap.hidden = !identified;
+      notifierName.disabled = !identified;
+      notifierName.required = identified;
+      if (!identified) notifierName.value = "";
+    }
+    identity.addEventListener("change", syncIdentity);
+    syncIdentity();
     const photoInput = form.querySelector("[data-photo]");
     const photoError = form.querySelector("[data-photo-error]");
     const removePhoto = form.querySelector("[data-remove-photo]");
@@ -229,7 +280,7 @@
       reviewButton.disabled = false;
     }
 
-    form.addEventListener("reset", clearPhoto);
+    form.addEventListener("reset", () => { clearPhoto(); queueMicrotask(syncIdentity); });
     removePhoto.addEventListener("click", () => {
       clearPhoto();
       photoInput.focus();
@@ -253,7 +304,8 @@
         preview.src = data;
         await preview.decode();
         if (photoInput.files[0] !== file) return;
-        photos.set(form, { name: file.name.slice(0, 180), mime: file.type, contentBase64: data.split(",")[1] });
+        photos.set(form, { name: file.type === "image/png" ? "foto-ocorrencia.png" : "foto-ocorrencia.jpg",
+          mime: file.type, contentBase64: data.split(",")[1] });
       } catch (error) {
         if (photoInput.files[0] !== file) return;
         photoInput.value = "";
@@ -296,6 +348,35 @@
 
   const intakeToken = new URLSearchParams(location.hash.slice(1)).get("entrada");
   const pending = { requestId: null, body: null };
+  let receiptCredentials = null;
+  get("receipt-pdf").addEventListener("click",async()=>{
+    if(!receiptCredentials) return;
+    const tab=window.open("","_blank");
+    const button=get("receipt-pdf");button.disabled=true;
+    const pdfIcon=button.querySelector("img");
+    pdfIcon.src="carregamento/02-ampulheta-64px.gif";
+    pdfIcon.classList.add("loading-gif");
+    get("receipt-pdf-label").textContent="Gerando PDF...";
+    get("receipt-note").textContent="Gerando o PDF da notificação. Aguarde...";
+    try {
+      const response=await fetch("/api/v1/notifications/"+encodeURIComponent(receiptCredentials.id)+"/receipt-pdf",{
+        method:"POST",credentials:"same-origin",headers:{"X-Receipt-Token":receiptCredentials.requestId}
+      });
+      if(!response.ok) throw Error("Não foi possível gerar o PDF. Tente novamente.");
+      const url=URL.createObjectURL(await response.blob());
+      if(tab) tab.location.href=url;
+      else {const link=document.createElement("a");link.href=url;link.download=receiptCredentials.protocol+".pdf";link.click();}
+      setTimeout(()=>URL.revokeObjectURL(url),120000);
+      get("receipt-note").textContent="PDF aberto para visualização e download.";
+    } catch(error) {
+      if(tab) tab.close();
+      get("receipt-note").textContent=error.message;
+    } finally {
+      button.disabled=false;
+      pdfIcon.src="icons/pdf.png";pdfIcon.classList.remove("loading-gif");
+      get("receipt-pdf-label").textContent="Abrir e baixar PDF";
+    }
+  });
   get("register").addEventListener("click", async () => {
     if (!activeForm) return;
     const form = activeForm;
@@ -320,8 +401,9 @@
     const button = get("register");
     button.disabled = true;
     const buttonIcon = button.querySelector("img");
-    buttonIcon.src = "icons/carregando.png";
-    buttonIcon.classList.add("busy-icon");
+    buttonIcon.src = "carregamento/01-logo-uhp-notifica-carregando-64px.gif";
+    buttonIcon.classList.add("loading-gif");
+    get("register-label").textContent="Enviando...";
     get("register-error").hidden = true;
     try {
       const response = await fetch("/api/v1/notifications", {
@@ -332,6 +414,7 @@
       const result = await response.json();
       if (!response.ok) throw new Error(result.error?.message || "Não foi possível registrar. Tente novamente.");
       lastProtocol = result.protocol;
+      receiptCredentials={id:result.id,requestId:pending.requestId,protocol:result.protocol};
       get("receipt").textContent = "Protocolo " + result.protocol;
       get("receipt-note").textContent = "Guarde este protocolo. A Coordenação de Enfermagem recebeu a notificação.";
       form.reset();
@@ -349,7 +432,8 @@
     } finally {
       button.disabled = false;
       buttonIcon.src = "icons/enviar.png";
-      buttonIcon.classList.remove("busy-icon");
+      buttonIcon.classList.remove("loading-gif");
+      get("register-label").textContent="Enviar notificação";
     }
   });
 
