@@ -3,3 +3,6 @@ data/
 *.sqlite-wal
 *.sqlite-shm
 .env
+node_modules/
+.env.*
+!.env.example
