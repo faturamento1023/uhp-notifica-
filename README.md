@@ -115,6 +115,12 @@ A verificação no banco confirmou RLS nas 11 tabelas, ausência de acesso pelos
 
 Falta configurar o usuário técnico e a conexão TLS no ambiente em que a API Node.js será hospedada, provisionar as contas da unidade e homologar o fluxo com o frontend. As telas continuam chamando `/api/v1` conforme o contrato. [Projeto no Supabase](https://supabase.com/dashboard/project/mtthtojrcpbdeocztrpx) · [Instalação no Supabase](https://github.com/faturamento1023/uhp-notifica-/blob/codex/backend-notificacoes/docs/SUPABASE.md)
 
+### Homologação no Netlify
+
+O PR nº 1 inclui `netlify.toml`, uma Netlify Function para `/api/v1/*` e a rota `/api/v1/health` para verificar a conexão com o Supabase. Os quatro testes locais passaram. Falta configurar a credencial do usuário técnico no Netlify, confirmar o Deploy Preview e cadastrar as contas fictícias. O limite de evidência no Netlify é de 4 MiB por arquivo, e a foto inicial continua com limite de 2 MiB. [Instruções para o Deploy Preview](https://github.com/faturamento1023/uhp-notifica-/blob/codex/backend-notificacoes/docs/NETLIFY.md)
+
+O [PR nº 2](https://github.com/faturamento1023/uhp-notifica-/pull/2) contém a identidade visual. Na última consulta, ainda não havia PR com os formulários e painéis integrados.
+
 ### Integração da foto no frontend
 
 - Incluir o campo **Foto da ocorrência (opcional)** tanto em não conformidade quanto em incidente ou evento adverso. Manter a prévia, a remoção e o envio sem foto.
