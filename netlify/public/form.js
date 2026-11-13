@@ -105,8 +105,14 @@
     const result=get("status-result"),button=get("status-submit");
     const protocol=get("status-protocol").value.trim().toUpperCase();
     get("status-protocol").value=protocol;
-    result.hidden=true;
+    result.textContent="Consultando a situação da notificação...";
+    result.classList.remove("error");
+    result.hidden=false;
     button.disabled=true;
+    const statusIcon=button.querySelector("img");
+    statusIcon.src="carregamento/03-pontos-animados-64px.gif";
+    statusIcon.classList.add("loading-gif");
+    get("status-label").textContent="Consultando...";
     try {
       const response=await fetch("/api/v1/notifications/status",{
         method:"POST",credentials:"same-origin",headers:{"Content-Type":"application/json"},
@@ -125,7 +131,11 @@
     } catch(error) {
       result.textContent=error.message;
       result.classList.add("error");
-    } finally {result.hidden=false;button.disabled=false;}
+    } finally {
+      result.hidden=false;button.disabled=false;
+      statusIcon.src="icons/buscar.png";statusIcon.classList.remove("loading-gif");
+      get("status-label").textContent="Consultar status";
+    }
   });
 
   get("copy-protocol").addEventListener("click", async () => {
@@ -343,6 +353,11 @@
     if(!receiptCredentials) return;
     const tab=window.open("","_blank");
     const button=get("receipt-pdf");button.disabled=true;
+    const pdfIcon=button.querySelector("img");
+    pdfIcon.src="carregamento/02-ampulheta-64px.gif";
+    pdfIcon.classList.add("loading-gif");
+    get("receipt-pdf-label").textContent="Gerando PDF...";
+    get("receipt-note").textContent="Gerando o PDF da notificação. Aguarde...";
     try {
       const response=await fetch("/api/v1/notifications/"+encodeURIComponent(receiptCredentials.id)+"/receipt-pdf",{
         method:"POST",credentials:"same-origin",headers:{"X-Receipt-Token":receiptCredentials.requestId}
@@ -352,10 +367,15 @@
       if(tab) tab.location.href=url;
       else {const link=document.createElement("a");link.href=url;link.download=receiptCredentials.protocol+".pdf";link.click();}
       setTimeout(()=>URL.revokeObjectURL(url),120000);
+      get("receipt-note").textContent="PDF aberto para visualização e download.";
     } catch(error) {
       if(tab) tab.close();
       get("receipt-note").textContent=error.message;
-    } finally {button.disabled=false;}
+    } finally {
+      button.disabled=false;
+      pdfIcon.src="icons/pdf.png";pdfIcon.classList.remove("loading-gif");
+      get("receipt-pdf-label").textContent="Abrir e baixar PDF";
+    }
   });
   get("register").addEventListener("click", async () => {
     if (!activeForm) return;
@@ -381,8 +401,9 @@
     const button = get("register");
     button.disabled = true;
     const buttonIcon = button.querySelector("img");
-    buttonIcon.src = "icons/carregando.png";
-    buttonIcon.classList.add("busy-icon");
+    buttonIcon.src = "carregamento/01-logo-uhp-notifica-carregando-64px.gif";
+    buttonIcon.classList.add("loading-gif");
+    get("register-label").textContent="Enviando...";
     get("register-error").hidden = true;
     try {
       const response = await fetch("/api/v1/notifications", {
@@ -411,7 +432,8 @@
     } finally {
       button.disabled = false;
       buttonIcon.src = "icons/enviar.png";
-      buttonIcon.classList.remove("busy-icon");
+      buttonIcon.classList.remove("loading-gif");
+      get("register-label").textContent="Enviar notificação";
     }
   });
 

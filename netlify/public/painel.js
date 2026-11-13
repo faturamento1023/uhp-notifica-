@@ -98,12 +98,18 @@ async function perform(operation) {
   if(busy) return;
   busy=true;
   document.body.style.cursor="progress";
+  const loadingTimer=setTimeout(()=>{ $("loading-overlay").hidden=false;document.body.setAttribute("aria-busy","true"); },280);
   try { await operation() }
   catch(error) {
     message(error.message || "Falha de comunicação. Tente novamente.",true);
     if(error.status===401) showLogin();
     if(error.status===409 && selected) await openCase(selected).catch(()=>{});
-  } finally { busy=false;document.body.style.cursor="" }
+  } finally {
+    clearTimeout(loadingTimer);
+    $("loading-overlay").hidden=true;
+    document.body.removeAttribute("aria-busy");
+    busy=false;document.body.style.cursor="";
+  }
 }
 function showLogin() {
   account=null; current=null;selected=null;items=[];nextOffset=null;

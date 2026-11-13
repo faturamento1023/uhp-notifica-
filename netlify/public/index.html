@@ -45,6 +45,10 @@
   .banner-controls button { min-height:40px; padding:7px 11px; border:1px solid var(--teal); border-radius:8px; background:#fff; color:var(--teal); font-weight:700 }
   .banner-controls button:hover { background:#e7f2f1 }
   .banner-count { min-width:56px; text-align:center; color:var(--muted) }
+  .loading-overlay { position:fixed; inset:0; z-index:20; display:flex; align-items:center; justify-content:center; background:#f3f7f6e8; padding:20px }
+  .loading-card { display:grid; justify-items:center; gap:12px; width:min(100%,340px); padding:25px; border:1px solid var(--line); border-radius:16px; background:#fff; box-shadow:0 12px 35px #17343b22; text-align:center }
+  .loading-card img { width:128px; height:128px; object-fit:contain }
+  @media(prefers-reduced-motion:reduce) { .loading-card img { display:none } }
   #feedback:not(:empty) { display:flex; align-items:center; gap:9px }
   #feedback .ui-icon { width:20px; height:20px }
   main { padding:28px 0 70px }
@@ -110,6 +114,7 @@
 </head>
 <body>
 <header><div class="shell top"><div class="brand"><img src="uhp-notifica-login.png" width="240" height="80" alt="UHP Notifica — Sistema de Notificações"></div><div class="institution"><img src="logo-posse-saude.png" width="145" height="70" alt="Prefeitura Municipal de Posse e Secretaria da Saúde"></div><div class="account"><span id="identity" class="muted small"></span><button id="logout" type="button" class="secondary" hidden><img class="ui-icon" src="icons/sair.png" alt="" width="20" height="20">Sair</button></div></div></header>
+<div id="loading-overlay" class="loading-overlay" role="status" aria-live="polite" hidden><div class="loading-card"><img src="carregamento/01-logo-uhp-notifica-carregando-128px.gif" alt=""><span>Aguarde, processando sua solicitação...</span></div></div>
 <main class="shell">
   <div class="hero"><h1><img class="ui-icon" src="icons/notificacoes.png" alt="" width="34" height="34">Painel de notificações</h1><p id="panel-guide">Acompanhe cada ocorrência da triagem ao encerramento.</p></div>
   <p id="feedback" class="notice" role="status" aria-live="polite"></p>

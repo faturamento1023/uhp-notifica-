@@ -60,8 +60,9 @@
   .receipt-row .ui-icon { width: 24px; height: 24px; }
   .receipt-row .intro { margin: 0; }
   .busy-icon { animation: icon-spin 1s linear infinite; }
+  .button .loading-gif { filter: none !important; }
   @keyframes icon-spin { to { transform: rotate(360deg); } }
-  @media (prefers-reduced-motion: reduce) { .busy-icon { animation: none; } }
+  @media (prefers-reduced-motion: reduce) { .busy-icon { animation: none; } .loading-gif { display: none; } }
   .choice strong { font-size: clamp(1.22rem, 2.7vw, 1.55rem); line-height: 1.2; letter-spacing: -.025em; }
   .choice .copy { color: var(--muted); }
   .choice .action { padding-top: 5px; margin-top: auto; font-weight: 750; color: var(--teal); }
@@ -182,7 +183,7 @@
       <p class="intro">Informe o número do protocolo para ver somente a situação atual.</p>
       <form id="status-form" class="status-form" autocomplete="off">
         <div class="field"><label for="status-protocol">Número do protocolo</label><input id="status-protocol" name="protocol" required maxlength="25" placeholder="UHP-2026-XXXXXXXXXXXXXXXX" autocapitalize="characters" spellcheck="false"></div>
-        <button class="button" type="submit" id="status-submit"><img class="ui-icon" src="icons/buscar.png" alt="" width="20" height="20">Consultar status</button>
+        <button class="button" type="submit" id="status-submit"><img class="ui-icon" src="icons/buscar.png" alt="" width="20" height="20"><span id="status-label">Consultar status</span></button>
       </form>
       <div id="status-result" class="status-result" role="status" aria-live="polite" hidden></div>
     </section>
@@ -314,7 +315,7 @@
     <p class="notice" id="register-error" role="alert" hidden></p>
     <div class="buttons">
       <button class="button secondary" type="button" data-edit><img class="ui-icon" src="icons/editar.png" alt="" width="20" height="20">Editar dados</button>
-      <button class="button" type="button" id="register"><img class="ui-icon" src="icons/enviar.png" alt="" width="20" height="20">Enviar notificação</button>
+      <button class="button" type="button" id="register"><img class="ui-icon" src="icons/enviar.png" alt="" width="20" height="20"><span id="register-label">Enviar notificação</span></button>
     </div>
   </section>
 
@@ -326,7 +327,7 @@
       <p class="notice" id="receipt-note"></p>
       <div class="buttons">
         <button type="button" class="button secondary" id="copy-protocol"><img class="ui-icon" src="icons/copiar.png" alt="" width="20" height="20">Copiar protocolo</button>
-        <button type="button" class="button secondary" id="receipt-pdf"><img class="ui-icon" src="icons/pdf.png" alt="" width="20" height="20">Abrir e baixar PDF</button>
+        <button type="button" class="button secondary" id="receipt-pdf"><img class="ui-icon" src="icons/pdf.png" alt="" width="20" height="20"><span id="receipt-pdf-label">Abrir e baixar PDF</span></button>
         <button type="button" class="button secondary" data-view="home"><img class="ui-icon" src="icons/nova-notificacao.png" alt="" width="20" height="20">Registrar outra notificação</button>
       </div>
     </div>
