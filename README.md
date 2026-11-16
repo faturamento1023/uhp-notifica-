@@ -238,3 +238,5 @@ O Dashboard ganhou um cabeçalho verde-petróleo, indicadores com maior contrast
 O mesmo padrão visual foi aplicado às telas de login, Bate-papo, Relatórios, Alterar senha e Ajuda, com cabeçalhos verde-petróleo, histórico de mensagens, tabela, formulário e tutoriais estilizados para desktop e celular.
 
 A aba **Notificações** recebeu o cabeçalho verde-petróleo do painel, com o ícone e a orientação do perfil. A fila e o cabeçalho do protocolo receberam ajustes de espaçamento e contraste.
+
+O formulário **Notificar incidente ou evento adverso** ganhou os campos opcionais **Nome completo do paciente** e **Número do prontuário do paciente**. Eles aparecem na revisão do envio, em Dados da notificação e no PDF interno para quem tem acesso ao protocolo. Os novos campos não integram o comprovante baixado pelo formulário nem a consulta pública por protocolo.

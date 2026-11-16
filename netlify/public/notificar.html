@@ -283,7 +283,10 @@
       </div>
       <div class="panel">
         <h2><img class="ui-icon" src="icons/paciente.png" alt="" width="22" height="22">Dados do paciente e do atendimento</h2>
+        <p class="hint">Informe a identificação se souber. Esses dados ficam disponíveis no painel para os perfis autorizados.</p>
         <div class="grid">
+          <div class="field"><label for="event-patient-name">Nome completo do paciente</label><input id="event-patient-name" name="patientName" maxlength="160" autocomplete="off" data-patient-identification></div>
+          <div class="field"><label for="event-patient-record">Número do prontuário do paciente</label><input id="event-patient-record" name="patientRecord" maxlength="60" autocomplete="off" data-patient-identification></div>
           <div class="field"><label for="event-sex">Sexo</label><select id="event-sex" name="sex"></select></div>
           <div class="field"><label for="event-race">Raça/cor</label><select id="event-race" name="race"></select></div>
           <div class="field"><label for="event-age">Idade no momento da ocorrência</label><input id="event-age" name="age" type="number" min="0" step="1" inputmode="numeric"></div>
@@ -358,7 +361,7 @@
     </div>
   </section>
 </main>
-<script src="form.js" defer></script>
+<script src="form.js?v=2" defer></script>
 <script src="banners.js" defer></script>
 <footer class="institutional-footer">
   <p>Direitos reservados para</p>

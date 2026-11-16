@@ -236,11 +236,12 @@
   get("event-age").addEventListener("input", updateIncidentFields);
   updateIncidentFields();
 
-  function reviewEntries(form) {
+  function reviewEntries(form, includePatientIdentification = true) {
     const entries = [];
     for (const field of form.elements) {
       if (!field.name || field.disabled || !field.value.trim() || (field.type === "radio" && !field.checked)) continue;
       if (["ageUnit", "factors", "otherSector"].includes(field.name)) continue;
+      if (!includePatientIdentification && field.hasAttribute("data-patient-identification")) continue;
       let value = field.value.trim();
       if (field.type === "date") value = value.split("-").reverse().join("/");
       if (field.name === "age") value += " " + get("event-age-unit").value.toLowerCase();
@@ -389,8 +390,13 @@
       subject: kind === "incident" ? String(data.get("type") || "") : "",
       harm: kind === "incident" ? String(data.get("harm") || "") : "",
       description: String(data.get("description") || "").trim(),
-      entries: reviewEntries(form)
+      entries: reviewEntries(form, false)
     };
+    if (kind === "incident") {
+      const name = String(data.get("patientName") || "").trim();
+      const recordNumber = String(data.get("patientRecord") || "").trim();
+      if (name || recordNumber) payload.patientIdentification = { name, recordNumber };
+    }
     const photo = photos.get(form);
     if (photo) payload.photo = photo;
     const body = JSON.stringify(payload);
