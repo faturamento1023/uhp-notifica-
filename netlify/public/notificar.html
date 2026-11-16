@@ -286,11 +286,9 @@
         <p class="hint">Informe a identificação se souber. Esses dados ficam disponíveis no painel para os perfis autorizados.</p>
         <div class="grid">
           <div class="field"><label for="event-patient-name">Nome completo do paciente</label><input id="event-patient-name" name="patientName" maxlength="160" autocomplete="off" data-patient-identification></div>
-          <div class="field"><label for="event-patient-record">Número do prontuário do paciente</label><input id="event-patient-record" name="patientRecord" maxlength="60" autocomplete="off" data-patient-identification></div>
+          <div class="field"><label for="event-patient-birth">Data de nascimento do paciente</label><input id="event-patient-birth" name="patientBirthDate" type="date" autocomplete="off" data-patient-identification></div>
           <div class="field"><label for="event-sex">Sexo</label><select id="event-sex" name="sex"></select></div>
           <div class="field"><label for="event-race">Raça/cor</label><select id="event-race" name="race"></select></div>
-          <div class="field"><label for="event-age">Idade no momento da ocorrência</label><input id="event-age" name="age" type="number" min="0" step="1" inputmode="numeric"></div>
-          <div class="field"><label for="event-age-unit">Unidade da idade</label><select id="event-age-unit" name="ageUnit" aria-describedby="age-hint"></select><span id="age-hint" class="hint" style="margin:0">Selecione se informou a idade.</span></div>
           <div class="field"><label for="event-admission">Data da internação ou do atendimento</label><input id="event-admission" name="admission" type="date"></div>
           <div class="field wide"><label for="event-reason">Motivo da busca pelo serviço de saúde</label><textarea id="event-reason" name="reason" maxlength="5000"></textarea></div>
         </div>
@@ -361,7 +359,7 @@
     </div>
   </section>
 </main>
-<script src="form.js?v=2" defer></script>
+<script src="form.js?v=3" defer></script>
 <script src="banners.js" defer></script>
 <footer class="institutional-footer">
   <p>Direitos reservados para</p>

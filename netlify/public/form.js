@@ -177,7 +177,6 @@
     "event-period": ["Manhã", "Tarde", "Noite", "Madrugada"],
     "event-sex": ["Feminino", "Masculino", "Não informado"],
     "event-race": ["Branca", "Preta", "Parda", "Amarela", "Indígena", "Não informada"],
-    "event-age-unit": ["Anos", "Meses", "Dias", "Horas"]
   };
 
   for (const [id, options] of Object.entries(selectOptions)) fillSelect(get(id), options);
@@ -226,25 +225,19 @@
     get("other-sector").hidden = !isOtherSector;
     get("event-other-sector").disabled = !isOtherSector;
     get("event-other-sector").required = isOtherSector;
-    const ageUnit = get("event-age-unit");
-    ageUnit.disabled = get("event-age").value === "";
-    ageUnit.required = !ageUnit.disabled;
-    if (ageUnit.disabled) ageUnit.value = "";
   }
 
   get("event-sector").addEventListener("change", updateIncidentFields);
-  get("event-age").addEventListener("input", updateIncidentFields);
   updateIncidentFields();
 
   function reviewEntries(form, includePatientIdentification = true) {
     const entries = [];
     for (const field of form.elements) {
       if (!field.name || field.disabled || !field.value.trim() || (field.type === "radio" && !field.checked)) continue;
-      if (["ageUnit", "factors", "otherSector"].includes(field.name)) continue;
+      if (["factors", "otherSector"].includes(field.name)) continue;
       if (!includePatientIdentification && field.hasAttribute("data-patient-identification")) continue;
       let value = field.value.trim();
       if (field.type === "date") value = value.split("-").reverse().join("/");
-      if (field.name === "age") value += " " + get("event-age-unit").value.toLowerCase();
       if (field.id === "event-sector" && value === "Outro") value = get("event-other-sector").value.trim();
       const label = field.name === "identity" ? "Identificação de quem notifica"
         : field.labels[0].textContent.replace(/ \*$/, "");
@@ -394,8 +387,8 @@
     };
     if (kind === "incident") {
       const name = String(data.get("patientName") || "").trim();
-      const recordNumber = String(data.get("patientRecord") || "").trim();
-      if (name || recordNumber) payload.patientIdentification = { name, recordNumber };
+      const birthDate = String(data.get("patientBirthDate") || "");
+      if (name || birthDate) payload.patientIdentification = { name, birthDate };
     }
     const photo = photos.get(form);
     if (photo) payload.photo = photo;
