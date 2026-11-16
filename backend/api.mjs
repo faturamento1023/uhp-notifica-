@@ -36,8 +36,19 @@ function notificationInput(body) {
     if (!Array.isArray(entry) || entry.length !== 2) invalid('entries');
     return [str(entry[0], 'entries.label', 160), str(entry[1], 'entries.value', 5000)];
   });
+  const patient = body.patientIdentification;
+  let patientIdentification;
+  if (patient !== undefined) {
+    if (kind !== 'incident' || !patient || typeof patient !== 'object' || Array.isArray(patient)) {
+      invalid('identificação do paciente');
+    }
+    const name = str(patient.name, 'nome do paciente', 160, true);
+    const recordNumber = str(patient.recordNumber, 'número do prontuário', 60, true);
+    if (name || recordNumber) patientIdentification = { name, recordNumber };
+  }
   return {
     kind,
+    ...(patientIdentification ? { patientIdentification } : {}),
     occurredOn: day(body.occurredOn, 'occurredOn'),
     sector: str(body.sector, 'sector', 120, kind === 'incident'),
     period: oneOf(body.period, periods, 'period'),
@@ -186,8 +197,14 @@ export function createApi(db, { origin, clock = () => new Date(), evidenceLimit 
         actions: actions.filter(action => action.assignment_id === item.id).map(({ assignment_id, ...action }) => ({ ...action, evidence: byAction.get(action.id) })),
         progress: progress.filter(entry => entry.assignment_id === item.id).map(({ assignment_id, ...entry }) => entry)
       }));
+    const { patientIdentification, ...payload } = JSON.parse(row.payload);
+    const identification = [
+      ['Nome completo do paciente', patientIdentification?.name],
+      ['Número do prontuário do paciente', patientIdentification?.recordNumber]
+    ].filter(([, value]) => value);
     return {
-      id: row.id, protocol: row.protocol, status: row.status, createdAt: row.created_at, ...JSON.parse(row.payload),
+      id: row.id, protocol: row.protocol, status: row.status, createdAt: row.created_at, ...payload,
+      entries: [...identification, ...(payload.entries ?? [])],
       closure: row.closure, closedAt: row.closed_at, closedBy: row.closed_by,
       photo: photo ?? null,
       assignments: treatments,
@@ -248,8 +265,9 @@ export function createApi(db, { origin, clock = () => new Date(), evidenceLimit 
   }
 
   async function pdfResponse(user, row, includeTreatments = true) {
+    const { patientIdentification: _privateIdentification, ...receipt } = JSON.parse(row.payload);
     const [record, photo] = await Promise.all([
-      includeTreatments ? detail(user, row) : { protocol: row.protocol, ...JSON.parse(row.payload) },
+      includeTreatments ? detail(user, row) : { protocol: row.protocol, ...receipt },
       get('SELECT mime,content FROM notification_photos WHERE notification_id=?', row.id)
     ]);
     const bytes = await notificationPdf(record, clock(), photo);
