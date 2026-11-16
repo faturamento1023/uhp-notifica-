@@ -176,7 +176,6 @@
     "event-sector": ["Pronto Socorro", "Internação", "Maternidade", "Centro Cirúrgico", "Outro"],
     "event-period": ["Manhã", "Tarde", "Noite", "Madrugada"],
     "event-sex": ["Feminino", "Masculino", "Não informado"],
-    "event-race": ["Branca", "Preta", "Parda", "Amarela", "Indígena", "Não informada"],
   };
 
   for (const [id, options] of Object.entries(selectOptions)) fillSelect(get(id), options);
