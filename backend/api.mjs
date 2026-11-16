@@ -44,7 +44,11 @@ function notificationInput(body) {
     }
     const name = str(patient.name, 'nome do paciente', 160, true);
     const recordNumber = str(patient.recordNumber, 'número do prontuário', 60, true);
-    if (name || recordNumber) patientIdentification = { name, recordNumber };
+    const birthDate = patient.birthDate === undefined || patient.birthDate === ''
+      ? '' : day(patient.birthDate, 'data de nascimento');
+    if (name || birthDate || recordNumber) {
+      patientIdentification = patient.birthDate === undefined ? { name, recordNumber } : { name, birthDate };
+    }
   }
   return {
     kind,
@@ -200,6 +204,7 @@ export function createApi(db, { origin, clock = () => new Date(), evidenceLimit 
     const { patientIdentification, ...payload } = JSON.parse(row.payload);
     const identification = [
       ['Nome completo do paciente', patientIdentification?.name],
+      ['Data de nascimento do paciente', patientIdentification?.birthDate?.split('-').reverse().join('/')],
       ['Número do prontuário do paciente', patientIdentification?.recordNumber]
     ].filter(([, value]) => value);
     return {
