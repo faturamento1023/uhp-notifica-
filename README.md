@@ -240,3 +240,7 @@ O mesmo padrão visual foi aplicado às telas de login, Bate-papo, Relatórios, 
 A aba **Notificações** recebeu o cabeçalho verde-petróleo do painel, com o ícone e a orientação do perfil. A fila e o cabeçalho do protocolo receberam ajustes de espaçamento e contraste.
 
 O formulário **Notificar incidente ou evento adverso** ganhou os campos opcionais **Nome completo do paciente** e **Data de nascimento do paciente**. Os campos de prontuário, idade, unidade da idade e raça/cor foram retirados do formulário. Os dados já registrados continuam disponíveis nos protocolos anteriores. Os dois campos aparecem na revisão do envio, em Dados da notificação e no PDF interno para quem tem acesso ao protocolo. Os novos campos não integram o comprovante baixado pelo formulário nem a consulta pública por protocolo.
+
+## Recuperação do acesso em 24/11/2026
+
+O projeto UHP Notifica foi encontrado pausado no Supabase, com erro 502 nas rotas da API. A reativação foi solicitada e o projeto entrou em reinicialização. A retomada deve ser conferida nas rotas de saúde e sessão. Em caso de nova indisponibilidade, conferir primeiro o estado do projeto no Supabase e a resposta de `/api/v1/health`.
