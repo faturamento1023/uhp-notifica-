@@ -75,6 +75,14 @@ const groupChat = (() => {
     if (session?.before) void load(session, true);
   });
 
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden && session) void load(session);
+  });
+
+  window.addEventListener("hashchange", () => {
+    if (location.hash === "#bate-papo" && session) void load(session);
+  });
+
   form.addEventListener("submit", async event => {
     event.preventDefault();
     const state = session;
@@ -85,10 +93,17 @@ const groupChat = (() => {
     send.disabled = true;
     status.textContent = "";
     try {
-      await state.api("/chat/messages", "POST", { message });
+      const sent = await state.api("/chat/messages", "POST", { message });
       if (state !== session) return;
+      if (!state.seen.has(sent.id)) {
+        state.seen.add(sent.id);
+        list.append(messageNode(sent, state.formatTime));
+      }
+      empty.hidden = true;
+      log.scrollTop = log.scrollHeight;
       input.value = "";
-      if (!state.loading) await load(state);
+      status.textContent = "Mensagem enviada.";
+      if (!state.loading) void load(state);
     } catch (error) {
       if (state !== session) return;
       if (error.status === 401) return state.onExpired();
