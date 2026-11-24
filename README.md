@@ -243,4 +243,4 @@ O formulário **Notificar incidente ou evento adverso** ganhou os campos opciona
 
 ## Recuperação do acesso em 24/11/2026
 
-O projeto UHP Notifica foi encontrado pausado no Supabase, com erro 502 nas rotas da API. A reativação foi solicitada e o projeto entrou em reinicialização. A retomada deve ser conferida nas rotas de saúde e sessão. Em caso de nova indisponibilidade, conferir primeiro o estado do projeto no Supabase e a resposta de `/api/v1/health`.
+O projeto UHP Notifica foi encontrado pausado no Supabase, com erro 502 nas rotas da API. O projeto foi reativado e voltou a ACTIVE_HEALTHY. A rota de saúde retornou 200, com o banco provisionado. A autenticação voltou a responder, mas as senhas iniciais das contas verificadas retornaram credenciais inválidas, portanto o login com as senhas atuais dos usuários ainda precisa ser confirmado. Em caso de nova indisponibilidade, conferir primeiro o estado do projeto no Supabase e a resposta de `/api/v1/health`.
